@@ -133,6 +133,10 @@
   .chat-envio{ display:flex; gap:8px; padding:12px; border-top:1px solid var(--borde); }
   .chat-envio input{ flex:1; padding:11px 12px; border:1.5px solid var(--borde); border-radius:10px; font-family:inherit; }
   @media (max-width:760px){ .chat-wrap{ flex-direction:column; } .chat-lista{ width:auto; } }
+
+  .chat-tabs{ display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap; }
+  .chat-tab{ background:#fff; border:1.5px solid var(--borde); color:var(--marino); border-radius:999px; padding:9px 16px; font-family:inherit; font-size:14px; font-weight:700; cursor:pointer; }
+  .chat-tab.on{ background:var(--marino); color:#fff; border-color:var(--marino); }
 </style>
 </head>
 <body>
@@ -255,9 +259,13 @@
 
     <div id="mod-chat" style="display:none">
       <div class="barra">
-        <div class="mod-titulo">Chat con visitantes</div>
+        <div class="mod-titulo">Chat</div>
       </div>
-      <p class="mod-nota">Conversaciones de la página <strong>plataformaedu.app</strong>: los visitantes escriben desde la burbuja de chat y aquí tú o tu equipo les responden. Las respuestas llegan al visitante en tiempo real.</p>
+      <p class="mod-nota">Dos canales: <strong>🌐 Página web</strong> (los visitantes escriben desde la burbuja de plataformaedu.app) y <strong>🏫 Plataformas de clientes</strong> (cada colegio escribe desde el botón «💬 Soporte» de su propia plataforma). Aquí tú o tu equipo responden; las respuestas llegan en tiempo real. Un empleado puede atender varios clientes a la vez, saltando entre conversaciones.</p>
+      <div class="chat-tabs">
+        <button type="button" class="chat-tab on" id="tab-chat-web">🌐 Página web<span class="bdg" id="bdg-chat-web" style="display:none">0</span></button>
+        <button type="button" class="chat-tab" id="tab-chat-plat">🏫 Plataformas de clientes<span class="bdg" id="bdg-chat-plat" style="display:none">0</span></button>
+      </div>
       <div class="chat-wrap">
         <div class="chat-lista" id="chat-lista"></div>
         <div class="chat-hilo">
@@ -655,16 +663,20 @@
     refEquipo.child(uid).remove().catch(err => alert("No se pudo eliminar: " + err.message));
   }
 
-  /* ---------- Módulo Chat (visitantes de plataformaedu.app) ---------- */
+  /* ---------- Módulo Chat: página web + plataformas de clientes ---------- */
   const refChats = db.ref("chats");
-  let chats = {};
-  let chatActivo = null;
+  const refChatsPlat = db.ref("chatsPlataforma");
+  let chats = {};        /* web: { uid: conversacion } */
+  let chatsPlat = {};    /* plataformas: { instId: { uid: conversacion } } */
+  let tabChat = "web";
+  let chatActivo = null; /* { tipo:"web", id } | { tipo:"plat", inst, id } */
   let escuchandoChats = false;
   let refMsgsActivo = null;
 
   function escucharChats(){
     if (escuchandoChats) return; escuchandoChats = true;
     refChats.on("value", snap => { chats = snap.val() || {}; pintarChats(); });
+    refChatsPlat.on("value", snap => { chatsPlat = snap.val() || {}; pintarChats(); });
   }
   function horaChat(ts){
     if (!ts) return "";
@@ -673,47 +685,105 @@
     return (esHoy ? "" : f.toLocaleDateString("es-CO", { day:"numeric", month:"short" }) + " · ") +
       f.toLocaleTimeString("es-CO", { hour:"numeric", minute:"2-digit" });
   }
+  function listaPlat(){
+    const out = [];
+    Object.keys(chatsPlat).forEach(inst => {
+      const por = chatsPlat[inst] || {};
+      Object.keys(por).forEach(uid => out.push({ inst: inst, id: uid, c: por[uid] || {} }));
+    });
+    return out.sort((a, b) => (b.c.ultimoMensaje || 0) - (a.c.ultimoMensaje || 0));
+  }
+  function refConv(tipo, inst, id){
+    return tipo === "web" ? refChats.child(id) : refChatsPlat.child(inst).child(id);
+  }
+  function convDe(tipo, inst, id){
+    if (tipo === "web") return chats[id] || {};
+    return ((chatsPlat[inst] || {})[id]) || {};
+  }
+  function esActiva(tipo, inst, id){
+    return !!chatActivo && chatActivo.tipo === tipo && chatActivo.id === id && (tipo === "web" || chatActivo.inst === inst);
+  }
   function pintarChats(){
-    const ids = Object.keys(chats).sort((a,b) => (chats[b].ultimoMensaje || 0) - (chats[a].ultimoMensaje || 0));
-    let sinLeer = 0;
-    ids.forEach(id => { sinLeer += Number(chats[id].noLeidos || 0); });
+    const slWeb = Object.values(chats).reduce((n, c) => n + Number((c || {}).noLeidos || 0), 0);
+    const lp = listaPlat();
+    const slPlat = lp.reduce((n, x) => n + Number(x.c.noLeidos || 0), 0);
+    const total = slWeb + slPlat;
     const bdg = $("chat-bdg");
-    bdg.style.display = sinLeer ? "inline-block" : "none";
-    bdg.textContent = sinLeer;
-    $("chat-vacio").style.display = ids.length ? "none" : "block";
-    $("chat-lista").innerHTML = ids.map(id => { const c = chats[id];
-      const nl = Number(c.noLeidos || 0);
-      return `<button type="button" class="chat-item${id === chatActivo ? " on" : ""}" data-chat="${id}">
-        <span class="cn">${esc(c.nombre || "Visitante")}${nl ? `<span class="bdg">${nl}</span>` : ""}</span>
-        <span class="cu">${esc(c.colegio || c.contacto || "")}</span>
-        <span class="cu">${esc(c.ultimoTexto || "—")}</span>
-        <span class="cf">${horaChat(c.ultimoMensaje)}</span>
-      </button>`;
-    }).join("");
-    document.querySelectorAll("[data-chat]").forEach(b => b.addEventListener("click", () => abrirChat(b.dataset.chat)));
-    if (chatActivo && chats[chatActivo]) pintarCabChat();
+    bdg.style.display = total ? "inline-block" : "none";
+    bdg.textContent = total;
+    const bw = $("bdg-chat-web"); bw.style.display = slWeb ? "inline-block" : "none"; bw.textContent = slWeb;
+    const bp = $("bdg-chat-plat"); bp.style.display = slPlat ? "inline-block" : "none"; bp.textContent = slPlat;
+    $("tab-chat-web").classList.toggle("on", tabChat === "web");
+    $("tab-chat-plat").classList.toggle("on", tabChat === "plat");
+    let html = "";
+    if (tabChat === "web"){
+      const ids = Object.keys(chats).sort((a, b) => (chats[b].ultimoMensaje || 0) - (chats[a].ultimoMensaje || 0));
+      $("chat-vacio").style.display = ids.length ? "none" : "block";
+      $("chat-vacio").innerHTML = "Todavía no hay conversaciones de la página web.<br>Cuando un visitante escriba en plataformaedu.app, aparecerá aquí.";
+      html = ids.map(id => { const c = chats[id];
+        const nl = Number(c.noLeidos || 0);
+        return `<button type="button" class="chat-item${esActiva("web", null, id) ? " on" : ""}" data-tipo="web" data-id="${id}">
+          <span class="cn">${esc(c.nombre || "Visitante")}${nl ? `<span class="bdg">${nl}</span>` : ""}</span>
+          <span class="cu">${esc(c.colegio || c.contacto || "")}</span>
+          <span class="cu">${esc(c.ultimoTexto || "—")}</span>
+          <span class="cf">${horaChat(c.ultimoMensaje)}</span>
+        </button>`;
+      }).join("");
+    } else {
+      $("chat-vacio").style.display = lp.length ? "none" : "block";
+      $("chat-vacio").innerHTML = "Todavía no hay conversaciones de plataformas de clientes.<br>Cuando un colegio escriba desde el «💬 Soporte» de su plataforma, aparecerá aquí.";
+      html = lp.map(x => { const c = x.c;
+        const nl = Number(c.noLeidos || 0);
+        return `<button type="button" class="chat-item${esActiva("plat", x.inst, x.id) ? " on" : ""}" data-tipo="plat" data-inst="${esc(x.inst)}" data-id="${x.id}">
+          <span class="cn">${esc(c.institucion || x.inst)}${nl ? `<span class="bdg">${nl}</span>` : ""}</span>
+          <span class="cu">${esc(c.nombre || "")}${c.rol ? " · " + esc(c.rol) : ""}</span>
+          <span class="cu">${esc(c.ultimoTexto || "—")}</span>
+          <span class="cf">${horaChat(c.ultimoMensaje)}</span>
+        </button>`;
+      }).join("");
+    }
+    $("chat-lista").innerHTML = html;
+    document.querySelectorAll("[data-tipo]").forEach(b => b.addEventListener("click", () => abrirChat(b.dataset.tipo, b.dataset.inst || null, b.dataset.id)));
+    if (chatActivo) pintarCabChat();
   }
   function pintarCabChat(){
-    const c = chats[chatActivo]; if (!c) return;
-    $("chat-cab").innerHTML = `${esc(c.nombre || "Visitante")}<span class="cs">${esc(c.colegio || "")}${c.colegio && c.contacto ? " · " : ""}${esc(c.contacto || "")}</span>`;
+    if (!chatActivo) return;
+    const c = convDe(chatActivo.tipo, chatActivo.inst, chatActivo.id);
+    if (chatActivo.tipo === "web"){
+      $("chat-cab").innerHTML = `${esc(c.nombre || "Visitante")}<span class="cs">${esc(c.colegio || "")}${c.colegio && c.contacto ? " · " : ""}${esc(c.contacto || "")}</span>`;
+    } else {
+      $("chat-cab").innerHTML = `${esc(c.institucion || chatActivo.inst)}<span class="cs">${esc(c.nombre || "")}${c.rol ? " · " + esc(c.rol) : ""} · desde su plataforma</span>`;
+    }
   }
-  function abrirChat(id){
-    chatActivo = id;
+  function abrirChat(tipo, inst, id){
+    chatActivo = { tipo: tipo, inst: inst, id: id };
     pintarCabChat();
     if (refMsgsActivo) refMsgsActivo.off();
     $("chat-msgs").innerHTML = "";
-    refMsgsActivo = refChats.child(id).child("mensajes");
+    refMsgsActivo = refConv(tipo, inst, id).child("mensajes");
     refMsgsActivo.on("child_added", snap => pintarMsgChat(snap.val()));
-    if (Number(chats[id].noLeidos || 0) > 0) refChats.child(id).update({ noLeidos: 0 });
+    if (Number(convDe(tipo, inst, id).noLeidos || 0) > 0) refConv(tipo, inst, id).update({ noLeidos: 0 });
     $("chat-input").disabled = false;
     $("chat-send").disabled = false;
     $("chat-input").focus();
     pintarChats();
   }
+  function irTabChat(t){
+    tabChat = t;
+    chatActivo = null;
+    if (refMsgsActivo) { refMsgsActivo.off(); refMsgsActivo = null; }
+    $("chat-msgs").innerHTML = "";
+    $("chat-cab").textContent = "Elige una conversación de la lista";
+    $("chat-input").disabled = true;
+    $("chat-send").disabled = true;
+    pintarChats();
+  }
+  $("tab-chat-web").addEventListener("click", () => irTabChat("web"));
+  $("tab-chat-plat").addEventListener("click", () => irTabChat("plat"));
   function pintarMsgChat(m){
     const d = document.createElement("div");
     d.className = "cmsg " + (m.de === "equipo" ? "eq" : "vis");
-    const autor = m.de === "equipo" ? `<span class="ma">${esc(m.autor || "PlataformaEDU")}</span>` : "";
+    const autor = m.autor ? `<span class="ma">${esc(m.autor)}</span>` : (m.de === "equipo" ? `<span class="ma">PlataformaEDU</span>` : "");
     d.innerHTML = autor + esc(m.texto || "") + `<span class="mh">${horaChat(m.ts)}</span>`;
     $("chat-msgs").appendChild(d);
     $("chat-msgs").scrollTop = $("chat-msgs").scrollHeight;
@@ -724,8 +794,9 @@
     if (!texto || !chatActivo) return;
     const autor = sesion.duenio ? "PlataformaEDU" : ((sesion.perfil && sesion.perfil.nombre) || "Equipo");
     const ts = Date.now();
-    refChats.child(chatActivo).child("mensajes").push({ de: "equipo", autor: autor, texto: texto, ts: ts });
-    refChats.child(chatActivo).update({ ultimoMensaje: ts, ultimoTexto: texto });
+    const ref = refConv(chatActivo.tipo, chatActivo.inst, chatActivo.id);
+    ref.child("mensajes").push({ de: "equipo", autor: autor, texto: texto, ts: ts });
+    ref.update({ ultimoMensaje: ts, ultimoTexto: texto });
     $("chat-input").value = "";
     $("chat-input").focus();
   });
