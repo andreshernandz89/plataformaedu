@@ -82,6 +82,7 @@
   .chat-msg .ma{ display:block; font-size:11px; font-weight:700; opacity:.75; margin-bottom:2px; }
   .chat-msg.vis{ background:#fff; border:1.5px solid #DCE4F0; align-self:flex-end; border-bottom-right-radius:4px; }
   .chat-msg.eq{ background:#E7F2FF; align-self:flex-start; border-bottom-left-radius:4px; }
+  .chat-fin{ margin:0 14px 10px; background:#E9F9F0; border:1.5px solid #7BD7A8; color:#0B6B3A; border-radius:11px; padding:9px 12px; font-size:13px; }
   .chat-bienvenida{ background:#fff; border:1.5px dashed #B9C6E4; color:#40506E; border-radius:12px; padding:10px 12px; font-size:13.5px; }
   #chat-form-datos{ padding:16px; display:flex; flex-direction:column; gap:9px; }
   #chat-form-datos label{ font-size:12.5px; font-weight:700; color:#13213F; }
@@ -254,6 +255,7 @@
   <div class="chat-msgs" id="chat-msgs">
     <div class="chat-bienvenida">👋 Hola, gracias por visitar PlataformaEDU. Déjanos tus datos y tu mensaje: un miembro de nuestro equipo te responde por este mismo chat.</div>
   </div>
+  <div class="chat-fin" id="chat-fin" style="display:none">✅ Conversación finalizada. Si necesitas algo más, escribe un mensaje y se reactivará automáticamente.</div>
   <form id="chat-form-datos">
     <div><label for="cd-nombre">Tu nombre *</label><input id="cd-nombre" required autocomplete="name"></div>
     <div><label for="cd-colegio">Tu institución</label><input id="cd-colegio" autocomplete="organization"></div>
@@ -306,6 +308,7 @@
       chatRef = app.database().ref("chats/" + u.uid);
       if (perfil) { chatRef.update({ nombre: perfil.nombre, colegio: perfil.colegio || "", contacto: perfil.contacto || "" }); mostrarChat(); }
       chatRef.child("mensajes").on("child_added", snap => pintarMsg(snap.val()));
+      chatRef.child("finalizada").on("value", snap => { $("chat-fin").style.display = snap.val() === true ? "block" : "none"; });
     });
   }
   function abrir(){
@@ -333,7 +336,7 @@
     if (!texto || !chatRef) return;
     const ts = Date.now();
     chatRef.child("mensajes").push({ de: "visitante", texto: texto, ts: ts });
-    chatRef.update({ ultimoMensaje: ts, ultimoTexto: texto, noLeidos: firebase.database.ServerValue.increment(1) });
+    chatRef.update({ ultimoMensaje: ts, ultimoTexto: texto, noLeidos: firebase.database.ServerValue.increment(1), finalizada: false });
     $("chat-input").value = "";
   });
 })();

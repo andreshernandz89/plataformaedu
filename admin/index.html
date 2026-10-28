@@ -137,6 +137,11 @@
   .chat-tabs{ display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap; }
   .chat-tab{ background:#fff; border:1.5px solid var(--borde); color:var(--marino); border-radius:999px; padding:9px 16px; font-family:inherit; font-size:14px; font-weight:700; cursor:pointer; }
   .chat-tab.on{ background:var(--marino); color:#fff; border-color:var(--marino); }
+
+  .online{ font-weight:700; color:#0B7A6E; font-size:13px; white-space:nowrap; }
+  .chat-tools{ display:flex; justify-content:flex-end; padding:8px 12px; border-bottom:1px solid var(--borde); background:#fff; }
+  .btn-fin{ background:#fff; border:1.5px solid #D92D20; color:#D92D20; border-radius:9px; padding:7px 14px; font-family:inherit; font-size:13.5px; font-weight:700; cursor:pointer; }
+  .btn-fin.reactivar{ border-color:#14B8A6; color:#0B7A6E; }
 </style>
 </head>
 <body>
@@ -211,6 +216,7 @@
         <div class="campo"><label>Próximo pago</label><input id="f-proximo" type="date"></div>
         <div class="campo"><label>Estudiantes</label><input id="f-estudiantes" type="number" min="0"></div>
         <div class="campo"><label>Último acceso</label><input id="f-acceso" type="date"></div>
+        <div class="campo"><label>ID de instancia (chat de soporte y presencia)</label><input id="f-inst" placeholder="Ej.: cemi"></div>
         <div class="campo ancho"><label>Módulos activos</label><div class="mods-check" id="f-modulos"></div></div>
         <div class="campo ancho"><label>Notas</label><textarea id="f-notas" placeholder="Acuerdos, descuentos, observaciones…"></textarea></div>
       </div>
@@ -265,11 +271,13 @@
       <div class="chat-tabs">
         <button type="button" class="chat-tab on" id="tab-chat-web">Web<span class="bdg" id="bdg-chat-web" style="display:none">0</span></button>
         <button type="button" class="chat-tab" id="tab-chat-plat">Clientes<span class="bdg" id="bdg-chat-plat" style="display:none">0</span></button>
+        <button type="button" class="chat-tab" id="tab-chat-fin">Finalizados</button>
       </div>
       <div class="chat-wrap">
         <div class="chat-lista" id="chat-lista"></div>
         <div class="chat-hilo">
           <div class="chat-cab" id="chat-cab">Elige una conversación de la lista</div>
+          <div class="chat-tools" id="chat-tools" style="display:none"><button type="button" class="btn-fin" id="chat-fin-btn">✓ Finalizar chat</button></div>
           <div class="chat-msgs" id="chat-msgs"></div>
           <form class="chat-envio" id="chat-form">
             <input id="chat-input" placeholder="Escribe tu respuesta…" autocomplete="off" disabled>
@@ -381,6 +389,7 @@
     $("nav-chat").style.display = (sesion.duenio || mods.includes("Chat")) ? "" : "none";
     escucharClientes();
     if (sesion.duenio || mods.includes("Chat")) escucharChats();
+    if (sesion.duenio || mods.includes("Clientes")) escucharPresencia();
     irModulo(mods.includes("Clientes") ? "clientes" : (mods.includes("Chat") ? "chat" : "perfiles"));
   }
 
@@ -452,6 +461,7 @@
         <div class="cab">
           <div class="nombre">${esc(c.institucion || "Sin nombre")}</div>
           <span class="chip ${esc((c.estado||"ACTIVA").replace(" ","-"))}">${esc(c.estado || "ACTIVA")}</span>
+          <span class="online" id="onl-${id}"></span>
           <div class="spacer"></div>
           ${c.pagina ? `<a class="btn-pagina" href="${esc(c.pagina)}" target="_blank" rel="noopener">🌐 Página</a>` : ""}
           <button class="btn-vermas" data-ver="${id}">▸ Ver más</button>
@@ -466,6 +476,7 @@
             <div><div class="k">Próximo pago</div><div class="v${claseVence}">${fechaLegible(c.proximoPago)}${textoVence}</div></div>
             <div><div class="k">Estudiantes</div><div class="v">${c.estudiantes ?? "—"}</div></div>
             <div><div class="k">Último acceso</div><div class="v">${fechaLegible(c.ultimoAcceso)}</div></div>
+            <div><div class="k">En línea ahora</div><div class="v" id="onl-det-${id}">—</div></div>
           </div>
           ${mods.length ? `<div class="mods"><div class="k">Módulos activos (${mods.length})</div>${mods.map(m => `<span class="mod">${esc(m)}</span>`).join("")}</div>` : ""}
           ${c.notas ? `<div class="notas">${esc(c.notas)}</div>` : ""}
@@ -485,6 +496,7 @@
     document.querySelectorAll("[data-editar]").forEach(b => b.addEventListener("click", () => abrirForm(b.dataset.editar)));
     document.querySelectorAll("[data-pago]").forEach(b => b.addEventListener("click", () => registrarPago(b.dataset.pago)));
     document.querySelectorAll("[data-borrar]").forEach(b => b.addEventListener("click", () => borrarCliente(b.dataset.borrar)));
+    pintarPresencia();
   }
 
   /* ---------- Formulario ---------- */
@@ -503,6 +515,7 @@
     $("f-proximo").value = c.proximoPago || "";
     $("f-estudiantes").value = c.estudiantes ?? "";
     $("f-acceso").value = c.ultimoAcceso || "";
+    $("f-inst").value = c.instId || "";
     $("f-notas").value = c.notas || "";
     const mods = Array.isArray(c.modulos) ? c.modulos : [];
     document.querySelectorAll(".f-mod").forEach(ch => ch.checked = mods.includes(ch.value));
@@ -526,6 +539,7 @@
       proximoPago: $("f-proximo").value || "",
       estudiantes: $("f-estudiantes").value === "" ? null : Number($("f-estudiantes").value),
       ultimoAcceso: $("f-acceso").value || "",
+      instId: $("f-inst").value.trim(),
       notas: $("f-notas").value.trim(),
       modulos: Array.from(document.querySelectorAll(".f-mod:checked")).map(ch => ch.value),
       actualizadoEn: new Date().toISOString()
@@ -549,6 +563,41 @@
     const c = clientes[id]; if (!c) return;
     if (!confirm(`Eliminar a ${c.institucion} de la consola. Esto no toca su plataforma, solo este registro. ¿Seguro?`)) return;
     refClientes.child(id).remove().catch(err => alert("No se pudo eliminar: " + err.message));
+  }
+
+
+  /* ---------- Presencia en tiempo real (plataformas de clientes) ---------- */
+  const refPresencia = db.ref("presencia");
+  let presencia = {};
+  let escuchandoPresencia = false;
+  function escucharPresencia(){
+    if (escuchandoPresencia) return; escuchandoPresencia = true;
+    refPresencia.on("value", snap => { presencia = snap.val() || {}; pintarPresencia(); });
+    setInterval(pintarPresencia, 20000);
+  }
+  function enLineaDe(instId){
+    if (!instId) return [];
+    const por = presencia[instId] || {};
+    const ahora = Date.now();
+    const vistos = new Map();
+    Object.values(por).forEach(n => {
+      if (!n || (ahora - (Number(n.visto) || 0)) > 90000) return;
+      const clave = n.perfilId || n.nombre || "?";
+      if (!vistos.has(clave)) vistos.set(clave, n);
+    });
+    return [...vistos.values()].sort((a, b) => String(a.nombre || "").localeCompare(String(b.nombre || ""), "es"));
+  }
+  function pintarPresencia(){
+    Object.keys(clientes).forEach(id => {
+      const chip = document.getElementById("onl-" + id);
+      const det = document.getElementById("onl-det-" + id);
+      if (!chip && !det) return;
+      const c = clientes[id] || {};
+      const lista = enLineaDe(c.instId);
+      if (chip) chip.textContent = lista.length ? `🟢 ${lista.length} en línea` : "";
+      if (det) det.textContent = !c.instId ? "— (sin ID de instancia)" :
+        (lista.length ? lista.map(n => n.nombre + (n.rol ? ` (${n.rol})` : "")).join(", ") : "—");
+    });
   }
 
   /* ---------- Módulo Perfiles (equipo de trabajo) ---------- */
@@ -663,16 +712,17 @@
     refEquipo.child(uid).remove().catch(err => alert("No se pudo eliminar: " + err.message));
   }
 
-  /* ---------- Módulo Chat: página web + plataformas de clientes ---------- */
+  /* ---------- Módulo Chat: Web + Clientes + Finalizados ---------- */
   const refChats = db.ref("chats");
   const refChatsPlat = db.ref("chatsPlataforma");
   let chats = {};        /* web: { uid: conversacion } */
   let chatsPlat = {};    /* plataformas: { instId: { uid: conversacion } } */
-  let tabChat = "web";
+  let tabChat = "web";   /* web | plat | fin */
   let chatActivo = null; /* { tipo:"web", id } | { tipo:"plat", inst, id } */
   let escuchandoChats = false;
   let refMsgsActivo = null;
 
+  const esFin = c => !!(c && c.finalizada);
   function escucharChats(){
     if (escuchandoChats) return; escuchandoChats = true;
     refChats.on("value", snap => { chats = snap.val() || {}; pintarChats(); });
@@ -703,10 +753,27 @@
   function esActiva(tipo, inst, id){
     return !!chatActivo && chatActivo.tipo === tipo && chatActivo.id === id && (tipo === "web" || chatActivo.inst === inst);
   }
+  function itemHTML(tipo, inst, id, c){
+    const nl = Number(c.noLeidos || 0);
+    const fin = esFin(c);
+    const titulo = tipo === "web" ? (c.nombre || "Visitante") : (c.institucion || inst);
+    let sub1 = "";
+    if (fin) sub1 = (tipo === "web" ? "Web" : "Clientes") + " · " + (tipo === "web" ? (c.colegio || c.contacto || "") : ((c.nombre || "") + (c.rol ? " · " + c.rol : "")));
+    else if (tipo === "web") sub1 = c.colegio || c.contacto || "";
+    else sub1 = (c.nombre || "") + (c.rol ? " · " + c.rol : "");
+    const cuando = fin ? (c.finalizadaEn || c.ultimoMensaje) : c.ultimoMensaje;
+    return `<button type="button" class="chat-item${esActiva(tipo, inst, id) ? " on" : ""}" data-tipo="${tipo}"${inst ? ` data-inst="${esc(inst)}"` : ""} data-id="${id}">
+      <span class="cn">${esc(titulo)}${nl && !fin ? `<span class="bdg">${nl}</span>` : ""}</span>
+      <span class="cu">${esc(sub1)}</span>
+      <span class="cu">${esc(c.ultimoTexto || "—")}</span>
+      <span class="cf">${horaChat(cuando)}${fin ? " · finalizada" : ""}</span>
+    </button>`;
+  }
   function pintarChats(){
-    const slWeb = Object.values(chats).reduce((n, c) => n + Number((c || {}).noLeidos || 0), 0);
-    const lp = listaPlat();
-    const slPlat = lp.reduce((n, x) => n + Number(x.c.noLeidos || 0), 0);
+    const webAct = Object.keys(chats).filter(id => !esFin(chats[id]));
+    const platAct = listaPlat().filter(x => !esFin(x.c));
+    const slWeb = webAct.reduce((n, id) => n + Number(chats[id].noLeidos || 0), 0);
+    const slPlat = platAct.reduce((n, x) => n + Number(x.c.noLeidos || 0), 0);
     const total = slWeb + slPlat;
     const bdg = $("chat-bdg");
     bdg.style.display = total ? "inline-block" : "none";
@@ -715,46 +782,67 @@
     const bp = $("bdg-chat-plat"); bp.style.display = slPlat ? "inline-block" : "none"; bp.textContent = slPlat;
     $("tab-chat-web").classList.toggle("on", tabChat === "web");
     $("tab-chat-plat").classList.toggle("on", tabChat === "plat");
+    $("tab-chat-fin").classList.toggle("on", tabChat === "fin");
     let html = "";
     if (tabChat === "web"){
-      const ids = Object.keys(chats).sort((a, b) => (chats[b].ultimoMensaje || 0) - (chats[a].ultimoMensaje || 0));
+      const ids = webAct.sort((a, b) => (chats[b].ultimoMensaje || 0) - (chats[a].ultimoMensaje || 0));
       $("chat-vacio").style.display = ids.length ? "none" : "block";
       $("chat-vacio").innerHTML = "Todavía no hay conversaciones web.<br>Cuando un visitante escriba en plataformaedu.app, aparecerá aquí.";
-      html = ids.map(id => { const c = chats[id];
-        const nl = Number(c.noLeidos || 0);
-        return `<button type="button" class="chat-item${esActiva("web", null, id) ? " on" : ""}" data-tipo="web" data-id="${id}">
-          <span class="cn">${esc(c.nombre || "Visitante")}${nl ? `<span class="bdg">${nl}</span>` : ""}</span>
-          <span class="cu">${esc(c.colegio || c.contacto || "")}</span>
-          <span class="cu">${esc(c.ultimoTexto || "—")}</span>
-          <span class="cf">${horaChat(c.ultimoMensaje)}</span>
-        </button>`;
-      }).join("");
-    } else {
-      $("chat-vacio").style.display = lp.length ? "none" : "block";
+      html = ids.map(id => itemHTML("web", null, id, chats[id])).join("");
+    } else if (tabChat === "plat"){
+      $("chat-vacio").style.display = platAct.length ? "none" : "block";
       $("chat-vacio").innerHTML = "Todavía no hay conversaciones de clientes.<br>Cuando un colegio escriba desde el «💬 Soporte» de su plataforma, aparecerá aquí.";
-      html = lp.map(x => { const c = x.c;
-        const nl = Number(c.noLeidos || 0);
-        return `<button type="button" class="chat-item${esActiva("plat", x.inst, x.id) ? " on" : ""}" data-tipo="plat" data-inst="${esc(x.inst)}" data-id="${x.id}">
-          <span class="cn">${esc(c.institucion || x.inst)}${nl ? `<span class="bdg">${nl}</span>` : ""}</span>
-          <span class="cu">${esc(c.nombre || "")}${c.rol ? " · " + esc(c.rol) : ""}</span>
-          <span class="cu">${esc(c.ultimoTexto || "—")}</span>
-          <span class="cf">${horaChat(c.ultimoMensaje)}</span>
-        </button>`;
-      }).join("");
+      html = platAct.map(x => itemHTML("plat", x.inst, x.id, x.c)).join("");
+    } else {
+      const fins = [];
+      Object.keys(chats).forEach(id => { if (esFin(chats[id])) fins.push({ tipo: "web", inst: null, id: id, c: chats[id] }); });
+      listaPlat().forEach(x => { if (esFin(x.c)) fins.push({ tipo: "plat", inst: x.inst, id: x.id, c: x.c }); });
+      fins.sort((a, b) => (b.c.finalizadaEn || b.c.ultimoMensaje || 0) - (a.c.finalizadaEn || a.c.ultimoMensaje || 0));
+      $("chat-vacio").style.display = fins.length ? "none" : "block";
+      $("chat-vacio").innerHTML = "No hay conversaciones finalizadas todavía.<br>Al finalizar un chat, queda guardado aquí.";
+      html = fins.map(x => itemHTML(x.tipo, x.inst, x.id, x.c)).join("");
     }
     $("chat-lista").innerHTML = html;
     document.querySelectorAll("[data-tipo]").forEach(b => b.addEventListener("click", () => abrirChat(b.dataset.tipo, b.dataset.inst || null, b.dataset.id)));
-    if (chatActivo) pintarCabChat();
+    if (chatActivo) { pintarCabChat(); actualizarFinBtn(); }
   }
   function pintarCabChat(){
     if (!chatActivo) return;
     const c = convDe(chatActivo.tipo, chatActivo.inst, chatActivo.id);
+    const finTxt = esFin(c) ? " · ✅ Finalizada" : "";
     if (chatActivo.tipo === "web"){
-      $("chat-cab").innerHTML = `${esc(c.nombre || "Visitante")}<span class="cs">${esc(c.colegio || "")}${c.colegio && c.contacto ? " · " : ""}${esc(c.contacto || "")}</span>`;
+      $("chat-cab").innerHTML = `${esc(c.nombre || "Visitante")}<span class="cs">${esc(c.colegio || "")}${c.colegio && c.contacto ? " · " : ""}${esc(c.contacto || "")}${finTxt}</span>`;
     } else {
-      $("chat-cab").innerHTML = `${esc(c.institucion || chatActivo.inst)}<span class="cs">${esc(c.nombre || "")}${c.rol ? " · " + esc(c.rol) : ""} · desde su plataforma</span>`;
+      $("chat-cab").innerHTML = `${esc(c.institucion || chatActivo.inst)}<span class="cs">${esc(c.nombre || "")}${c.rol ? " · " + esc(c.rol) : ""} · desde su plataforma${finTxt}</span>`;
     }
   }
+  function actualizarFinBtn(){
+    const tools = $("chat-tools");
+    if (!chatActivo) { tools.style.display = "none"; return; }
+    const c = convDe(chatActivo.tipo, chatActivo.inst, chatActivo.id);
+    tools.style.display = "flex";
+    const btn = $("chat-fin-btn");
+    if (esFin(c)){
+      btn.textContent = "↩ Reactivar";
+      btn.classList.add("reactivar");
+      $("chat-input").disabled = true;
+      $("chat-send").disabled = true;
+      $("chat-input").placeholder = "Conversación finalizada";
+    } else {
+      btn.textContent = "✓ Finalizar chat";
+      btn.classList.remove("reactivar");
+      $("chat-input").disabled = false;
+      $("chat-send").disabled = false;
+      $("chat-input").placeholder = "Escribe tu respuesta…";
+    }
+  }
+  $("chat-fin-btn").addEventListener("click", () => {
+    if (!chatActivo) return;
+    const ref = refConv(chatActivo.tipo, chatActivo.inst, chatActivo.id);
+    const c = convDe(chatActivo.tipo, chatActivo.inst, chatActivo.id);
+    if (esFin(c)) ref.update({ finalizada: false });
+    else ref.update({ finalizada: true, finalizadaEn: Date.now(), noLeidos: 0 });
+  });
   function abrirChat(tipo, inst, id){
     chatActivo = { tipo: tipo, inst: inst, id: id };
     pintarCabChat();
@@ -762,10 +850,9 @@
     $("chat-msgs").innerHTML = "";
     refMsgsActivo = refConv(tipo, inst, id).child("mensajes");
     refMsgsActivo.on("child_added", snap => pintarMsgChat(snap.val()));
-    if (Number(convDe(tipo, inst, id).noLeidos || 0) > 0) refConv(tipo, inst, id).update({ noLeidos: 0 });
-    $("chat-input").disabled = false;
-    $("chat-send").disabled = false;
-    $("chat-input").focus();
+    if (Number(convDe(tipo, inst, id).noLeidos || 0) > 0 && !esFin(convDe(tipo, inst, id))) refConv(tipo, inst, id).update({ noLeidos: 0 });
+    actualizarFinBtn();
+    if (!esFin(convDe(tipo, inst, id))) $("chat-input").focus();
     pintarChats();
   }
   function irTabChat(t){
@@ -774,12 +861,14 @@
     if (refMsgsActivo) { refMsgsActivo.off(); refMsgsActivo = null; }
     $("chat-msgs").innerHTML = "";
     $("chat-cab").textContent = "Elige una conversación de la lista";
+    $("chat-tools").style.display = "none";
     $("chat-input").disabled = true;
     $("chat-send").disabled = true;
     pintarChats();
   }
   $("tab-chat-web").addEventListener("click", () => irTabChat("web"));
   $("tab-chat-plat").addEventListener("click", () => irTabChat("plat"));
+  $("tab-chat-fin").addEventListener("click", () => irTabChat("fin"));
   function pintarMsgChat(m){
     const d = document.createElement("div");
     d.className = "cmsg " + (m.de === "equipo" ? "eq" : "vis");
