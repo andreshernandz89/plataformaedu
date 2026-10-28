@@ -261,10 +261,10 @@
       <div class="barra">
         <div class="mod-titulo">Chat</div>
       </div>
-      <p class="mod-nota">Dos canales: <strong>🌐 Página web</strong> (los visitantes escriben desde la burbuja de plataformaedu.app) y <strong>🏫 Plataformas de clientes</strong> (cada colegio escribe desde el botón «💬 Soporte» de su propia plataforma). Aquí tú o tu equipo responden; las respuestas llegan en tiempo real. Un empleado puede atender varios clientes a la vez, saltando entre conversaciones.</p>
+      <p class="mod-nota">Dos canales: <strong>Web</strong> (los visitantes escriben desde la burbuja de plataformaedu.app) y <strong>Clientes</strong> (cada colegio escribe desde el botón «💬 Soporte» de su propia plataforma). Aquí tú o tu equipo responden; las respuestas llegan en tiempo real. Un empleado puede atender varios clientes a la vez, saltando entre conversaciones.</p>
       <div class="chat-tabs">
-        <button type="button" class="chat-tab on" id="tab-chat-web">🌐 Página web<span class="bdg" id="bdg-chat-web" style="display:none">0</span></button>
-        <button type="button" class="chat-tab" id="tab-chat-plat">🏫 Plataformas de clientes<span class="bdg" id="bdg-chat-plat" style="display:none">0</span></button>
+        <button type="button" class="chat-tab on" id="tab-chat-web">Web<span class="bdg" id="bdg-chat-web" style="display:none">0</span></button>
+        <button type="button" class="chat-tab" id="tab-chat-plat">Clientes<span class="bdg" id="bdg-chat-plat" style="display:none">0</span></button>
       </div>
       <div class="chat-wrap">
         <div class="chat-lista" id="chat-lista"></div>
@@ -719,7 +719,7 @@
     if (tabChat === "web"){
       const ids = Object.keys(chats).sort((a, b) => (chats[b].ultimoMensaje || 0) - (chats[a].ultimoMensaje || 0));
       $("chat-vacio").style.display = ids.length ? "none" : "block";
-      $("chat-vacio").innerHTML = "Todavía no hay conversaciones de la página web.<br>Cuando un visitante escriba en plataformaedu.app, aparecerá aquí.";
+      $("chat-vacio").innerHTML = "Todavía no hay conversaciones web.<br>Cuando un visitante escriba en plataformaedu.app, aparecerá aquí.";
       html = ids.map(id => { const c = chats[id];
         const nl = Number(c.noLeidos || 0);
         return `<button type="button" class="chat-item${esActiva("web", null, id) ? " on" : ""}" data-tipo="web" data-id="${id}">
@@ -731,7 +731,7 @@
       }).join("");
     } else {
       $("chat-vacio").style.display = lp.length ? "none" : "block";
-      $("chat-vacio").innerHTML = "Todavía no hay conversaciones de plataformas de clientes.<br>Cuando un colegio escriba desde el «💬 Soporte» de su plataforma, aparecerá aquí.";
+      $("chat-vacio").innerHTML = "Todavía no hay conversaciones de clientes.<br>Cuando un colegio escriba desde el «💬 Soporte» de su plataforma, aparecerá aquí.";
       html = lp.map(x => { const c = x.c;
         const nl = Number(c.noLeidos || 0);
         return `<button type="button" class="chat-item${esActiva("plat", x.inst, x.id) ? " on" : ""}" data-tipo="plat" data-inst="${esc(x.inst)}" data-id="${x.id}">
