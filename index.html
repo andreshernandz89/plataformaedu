@@ -65,6 +65,31 @@
   .sube.visible{ opacity:1; transform:none; }
   @media (prefers-reduced-motion: reduce){ .sube{ opacity:1; transform:none; transition:none; } html{ scroll-behavior:auto; } }
   @media (max-width:640px){ .nav .links a:not(.btn){ display:none; } section{ padding:46px 0; } }
+
+  /* ---------- Chat con visitantes ---------- */
+  #chat-btn{ position:fixed; right:20px; bottom:20px; z-index:900; background:linear-gradient(90deg,#0792FE,#0A6ED1); color:#fff; border:none; border-radius:999px; padding:14px 22px; font-family:inherit; font-size:15.5px; font-weight:700; cursor:pointer; box-shadow:0 10px 28px rgba(7,60,140,.35); }
+  #chat-btn:hover{ filter:brightness(1.07); }
+  #chat-dot{ display:none; background:#D92D20; color:#fff; font-size:11px; font-weight:800; border-radius:999px; padding:1px 7px; margin-left:7px; vertical-align:2px; }
+  #chat-panel{ position:fixed; right:20px; bottom:86px; z-index:901; width:342px; max-width:calc(100vw - 32px); height:492px; max-height:calc(100vh - 120px); background:#fff; border-radius:18px; box-shadow:0 22px 60px rgba(10,25,60,.35); display:none; flex-direction:column; overflow:hidden; }
+  #chat-panel.abierto{ display:flex; }
+  .chat-head{ background:linear-gradient(120deg,#0D1830,#13213F); color:#fff; padding:14px 16px; display:flex; align-items:center; gap:10px; }
+  .chat-head .ct{ font-weight:800; font-size:15.5px; }
+  .chat-head .cs{ font-size:12px; color:#B9C6E4; }
+  .chat-head button{ margin-left:auto; background:transparent; border:none; color:#fff; font-size:19px; cursor:pointer; line-height:1; }
+  .chat-msgs{ flex:1; overflow-y:auto; padding:14px; display:flex; flex-direction:column; gap:8px; background:#F6F8FC; }
+  .chat-msg{ max-width:80%; padding:9px 12px; border-radius:14px; font-size:14px; line-height:1.42; }
+  .chat-msg .mh{ display:block; font-size:10.5px; opacity:.6; margin-top:3px; text-align:right; }
+  .chat-msg .ma{ display:block; font-size:11px; font-weight:700; opacity:.75; margin-bottom:2px; }
+  .chat-msg.vis{ background:#fff; border:1.5px solid #DCE4F0; align-self:flex-end; border-bottom-right-radius:4px; }
+  .chat-msg.eq{ background:#E7F2FF; align-self:flex-start; border-bottom-left-radius:4px; }
+  .chat-bienvenida{ background:#fff; border:1.5px dashed #B9C6E4; color:#40506E; border-radius:12px; padding:10px 12px; font-size:13.5px; }
+  #chat-form-datos{ padding:16px; display:flex; flex-direction:column; gap:9px; }
+  #chat-form-datos label{ font-size:12.5px; font-weight:700; color:#13213F; }
+  #chat-form-datos input{ width:100%; padding:10px 12px; border:1.5px solid #DCE4F0; border-radius:10px; font-family:inherit; box-sizing:border-box; }
+  #chat-form-datos button, .chat-envio button{ background:#0792FE; color:#fff; border:none; border-radius:10px; padding:11px 16px; font-weight:700; font-family:inherit; cursor:pointer; }
+  .chat-envio{ display:flex; gap:8px; padding:11px; border-top:1px solid #E4EAF3; background:#fff; }
+  .chat-envio input{ flex:1; padding:11px 12px; border:1.5px solid #DCE4F0; border-radius:10px; font-family:inherit; }
+  #btn-chat-contacto{ font-family:inherit; cursor:pointer; }
 </style>
 </head>
 <body>
@@ -193,6 +218,7 @@
     <h2 class="sube">¿Quieres una presentación para tu institución?</h2>
     <p class="sub sube">Cuéntanos de tu colegio y te mostramos la plataforma funcionando con tus propias necesidades.</p>
     <a class="btn sube" href="mailto:contacto@plataformaedu.app?subject=Quiero%20una%20presentaci%C3%B3n%20de%20PlataformaEDU">Escríbenos por correo</a>
+    <button class="btn sube" id="btn-chat-contacto" type="button">💬 Chatea con nosotros</button>
   </div>
 </section>
 
@@ -208,6 +234,104 @@
 <script>
   const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); } }), { threshold: 0.12 });
   document.querySelectorAll('.sube').forEach(el => io.observe(el));
+</script>
+
+<!-- ==================== CHAT CON VISITANTES ==================== -->
+<button id="chat-btn" type="button">💬 ¿Dudas? Escríbenos<span id="chat-dot">1</span></button>
+<div id="chat-panel" role="dialog" aria-label="Chat de PlataformaEDU">
+  <div class="chat-head">
+    <div>
+      <div class="ct">PlataformaEDU</div>
+      <div class="cs">Te respondemos en horario laboral (lun–vie)</div>
+    </div>
+    <button id="chat-cerrar" type="button" aria-label="Cerrar chat">✕</button>
+  </div>
+  <div class="chat-msgs" id="chat-msgs">
+    <div class="chat-bienvenida">👋 Hola, gracias por visitar PlataformaEDU. Déjanos tus datos y tu mensaje: un miembro de nuestro equipo te responde por este mismo chat.</div>
+  </div>
+  <form id="chat-form-datos">
+    <div><label for="cd-nombre">Tu nombre *</label><input id="cd-nombre" required autocomplete="name"></div>
+    <div><label for="cd-colegio">Tu institución</label><input id="cd-colegio" autocomplete="organization"></div>
+    <div><label for="cd-contacto">Correo o WhatsApp</label><input id="cd-contacto" autocomplete="email"></div>
+    <button type="submit">Iniciar conversación</button>
+  </form>
+  <form class="chat-envio" id="chat-envio" style="display:none">
+    <input id="chat-input" placeholder="Escribe tu mensaje…" autocomplete="off">
+    <button type="submit">Enviar</button>
+  </form>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
+<script>
+(function(){
+  const cfg = { apiKey: "AIzaSyAwR5Y6af4CBl_gv0iVNPpeJdtwWU1vF1g", authDomain: "plataformaedu-admin.firebaseapp.com",
+    databaseURL: "https://plataformaedu-admin-default-rtdb.firebaseio.com", projectId: "plataformaedu-admin",
+    storageBucket: "plataformaedu-admin.firebasestorage.app", messagingSenderId: "677869873209",
+    appId: "1:677869873209:web:ad8d4650fb96088b5285e8" };
+  const $ = id => document.getElementById(id);
+  let iniciado = false, chatRef = null;
+  let perfil = null;
+  try { perfil = JSON.parse(localStorage.getItem("eduChatPerfil") || "null"); } catch(e) { perfil = null; }
+
+  function hora(ts){ try { return new Date(ts).toLocaleTimeString("es-CO", { hour: "numeric", minute: "2-digit" }); } catch(e) { return ""; } }
+  function pintarMsg(m){
+    const d = document.createElement("div");
+    d.className = "chat-msg " + (m.de === "equipo" ? "eq" : "vis");
+    const autor = m.de === "equipo" ? `<span class="ma">${(m.autor || "PlataformaEDU").replace(/</g,"&lt;")}</span>` : "";
+    d.innerHTML = autor + String(m.texto || "").replace(/</g,"&lt;") + `<span class="mh">${hora(m.ts)}</span>`;
+    $("chat-msgs").appendChild(d);
+    $("chat-msgs").scrollTop = $("chat-msgs").scrollHeight;
+    if (m.de === "equipo" && !$("chat-panel").classList.contains("abierto")) $("chat-dot").style.display = "inline-block";
+  }
+  function mostrarChat(){
+    $("chat-form-datos").style.display = "none";
+    $("chat-envio").style.display = "flex";
+    $("chat-input").focus();
+  }
+  function iniciar(){
+    if (iniciado) return; iniciado = true;
+    const app = firebase.initializeApp(cfg, "sitioChat");
+    app.auth().signInAnonymously().catch(err => {
+      $("chat-msgs").insertAdjacentHTML("beforeend", `<div class="chat-bienvenida">El chat no está disponible en este momento. Escríbenos a contacto@plataformaedu.app</div>`);
+    });
+    app.auth().onAuthStateChanged(u => {
+      if (!u) return;
+      chatRef = app.database().ref("chats/" + u.uid);
+      if (perfil) { chatRef.update({ nombre: perfil.nombre, colegio: perfil.colegio || "", contacto: perfil.contacto || "" }); mostrarChat(); }
+      chatRef.child("mensajes").on("child_added", snap => pintarMsg(snap.val()));
+    });
+  }
+  function abrir(){
+    $("chat-panel").classList.add("abierto");
+    $("chat-dot").style.display = "none";
+    iniciar();
+    $("chat-msgs").scrollTop = $("chat-msgs").scrollHeight;
+  }
+  $("chat-btn").addEventListener("click", () => {
+    if ($("chat-panel").classList.contains("abierto")) { $("chat-panel").classList.remove("abierto"); } else { abrir(); }
+  });
+  $("btn-chat-contacto").addEventListener("click", abrir);
+  $("chat-cerrar").addEventListener("click", () => $("chat-panel").classList.remove("abierto"));
+  $("chat-form-datos").addEventListener("submit", e => {
+    e.preventDefault();
+    perfil = { nombre: $("cd-nombre").value.trim(), colegio: $("cd-colegio").value.trim(), contacto: $("cd-contacto").value.trim() };
+    if (!perfil.nombre) return;
+    try { localStorage.setItem("eduChatPerfil", JSON.stringify(perfil)); } catch(err) {}
+    if (chatRef) chatRef.update({ nombre: perfil.nombre, colegio: perfil.colegio, contacto: perfil.contacto, creadoEn: Date.now() });
+    mostrarChat();
+  });
+  $("chat-envio").addEventListener("submit", e => {
+    e.preventDefault();
+    const texto = $("chat-input").value.trim();
+    if (!texto || !chatRef) return;
+    const ts = Date.now();
+    chatRef.child("mensajes").push({ de: "visitante", texto: texto, ts: ts });
+    chatRef.update({ ultimoMensaje: ts, ultimoTexto: texto, noLeidos: firebase.database.ServerValue.increment(1) });
+    $("chat-input").value = "";
+  });
+})();
 </script>
 </body>
 </html>
