@@ -220,6 +220,23 @@
     .chat-lista{ width:auto; max-height:252px; overflow-y:auto; }
     .resumen{ grid-template-columns:repeat(2,1fr); }
   }
+
+  /* ---------- Módulos con interruptores modernos (2026-10-28, pedido de Andres) ---------- */
+  .campo input[type=checkbox]{ width:auto; } /* la regla general de campos no aplica a casillas */
+  .mods-check{ display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:10px; margin-top:8px; }
+  .mods-check label{ display:flex; align-items:center; gap:12px; background:#F8FAFD; border:1.5px solid var(--borde);
+    border-radius:12px; padding:11px 13px; font-size:14.5px; font-weight:600; color:var(--texto); cursor:pointer;
+    transition:border-color .15s ease, background .15s ease; }
+  .mods-check label:hover{ border-color:var(--azul); }
+  .mods-check input[type=checkbox]{ -webkit-appearance:none; appearance:none; order:2; margin:0 0 0 auto; flex:none;
+    width:46px; height:27px; border-radius:999px; background:#C7D3E8; border:none; padding:0; position:relative;
+    cursor:pointer; transition:background .18s ease; outline:none; }
+  .mods-check input[type=checkbox]::after{ content:''; position:absolute; top:3px; left:3px; width:21px; height:21px;
+    border-radius:50%; background:#fff; box-shadow:0 1px 4px rgba(19,33,63,.35); transition:left .18s ease; }
+  .mods-check input[type=checkbox]:checked{ background:var(--turq); }
+  .mods-check input[type=checkbox]:checked::after{ left:22px; }
+  .mods-check label:has(input[type=checkbox]:checked){ border-color:var(--turq); background:#EBFBF7; }
+  @media (max-width:760px){ .mods-check{ grid-template-columns:1fr; } }
 </style>
 </head>
 <body>
