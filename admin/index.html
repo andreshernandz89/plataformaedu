@@ -142,6 +142,69 @@
   .chat-tools{ display:flex; justify-content:flex-end; padding:8px 12px; border-bottom:1px solid var(--borde); background:#fff; }
   .btn-fin{ background:#fff; border:1.5px solid #D92D20; color:#D92D20; border-radius:9px; padding:7px 14px; font-family:inherit; font-size:13.5px; font-weight:700; cursor:pointer; }
   .btn-fin.reactivar{ border-color:#14B8A6; color:#0B7A6E; }
+
+  /* ---------- Responsive completo: PC, tablet y celular (2026-10-28) ---------- */
+  html,body{ overflow-x:hidden; }
+  .grid .v,.notas,.cmsg,.chat-item .cn{ overflow-wrap:anywhere; }
+  img{ max-width:100%; }
+
+  /* Tablet (hasta 1024px) */
+  @media (max-width:1024px){
+    main{ padding:16px 12px 34px; }
+    .chat-lista{ width:252px; }
+    .resumen{ grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); }
+  }
+
+  /* Celular y tablet pequeña (hasta 760px) */
+  @media (max-width:760px){
+    input,select,textarea{ font-size:16px; } /* evita el zoom automático de iOS al enfocar */
+    header.top{ padding:10px 12px; gap:8px; }
+    header.top img{ height:28px; }
+    header.top .marca{ font-size:16px; }
+    header.top .consola-t{ display:none; }
+    header.top .quien{ font-size:12px; }
+    .btn-salir{ padding:8px 12px; }
+    .side{ flex-wrap:wrap; gap:8px; position:sticky; top:0; z-index:20; box-shadow:0 4px 14px rgba(19,33,63,.25); }
+    .mod-btn{ flex:1 1 auto; text-align:center; white-space:nowrap; padding:12px 10px; font-size:14.5px; }
+    .resumen{ grid-template-columns:repeat(2,1fr); gap:10px; }
+    .stat{ padding:12px 13px; }
+    .stat .n{ font-size:21px; }
+    .barra{ gap:8px; }
+    .barra input[type=search]{ min-width:0; flex:1 1 150px; }
+    .barra select{ flex:1 1 120px; }
+    .btn-agregar{ flex:1 1 100%; padding:13px 18px; }
+    .cliente .cab{ padding:12px 13px; gap:8px; }
+    .cliente .nombre{ font-size:16px; }
+    .detalle{ padding:12px 13px 14px; }
+    .grid{ grid-template-columns:1fr; gap:8px; }
+    .acciones .btn-accion{ flex:1 1 44%; padding:11px 12px; text-align:center; }
+    .btn-pagina,.btn-vermas{ padding:11px 13px; }
+    #form-cliente,#form-perfil{ padding:14px 13px; }
+    .fgrid{ grid-template-columns:1fr; }
+    .mods-check{ grid-template-columns:1fr 1fr; gap:8px 10px; }
+    .mods-check label{ padding:6px 0; }
+    .form-btns{ flex-wrap:wrap; }
+    .form-btns .btn-guardar,.form-btns .btn-cancelar{ flex:1; padding:13px 18px; }
+    .chat-lista{ max-height:252px; overflow-y:auto; padding-right:2px; }
+    .chat-hilo{ min-height:340px; }
+    .chat-msgs{ max-height:52vh; padding:12px; }
+    .cmsg{ max-width:88%; }
+    .chat-envio{ padding:10px; }
+    .chat-envio input{ padding:12px; }
+    .chat-envio .btn-guardar,.chat-envio button{ padding:12px 16px; }
+    .online{ white-space:normal; }
+    #vista-login{ padding:14px; }
+    .login-card{ padding:26px 20px 20px; }
+    footer.pie{ padding:18px 10px 24px; }
+  }
+
+  /* Celulares pequeños (hasta 400px) */
+  @media (max-width:400px){
+    .resumen{ grid-template-columns:1fr 1fr; }
+    .mods-check{ grid-template-columns:1fr; }
+    .acciones .btn-accion{ flex:1 1 100%; }
+    header.top .quien{ display:none; }
+  }
 </style>
 </head>
 <body>
