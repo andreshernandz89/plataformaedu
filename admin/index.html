@@ -205,6 +205,21 @@
     .acciones .btn-accion{ flex:1 1 100%; }
     header.top .quien{ display:none; }
   }
+
+  /* ---------- Apilado estructural hasta 900px (2026-10-28, tras la captura de Andres) ---------- */
+  /* Cubre visores con viewport ancho (navegadores internos de apps y tabletas en vertical): */
+  /* la estructura se apila igual que en celular, sin esperar al corte de 760px. */
+  @media (max-width:900px){
+    .layout{ flex-direction:column; }
+    .side{ width:auto; flex-direction:row; flex-wrap:wrap; align-items:center; gap:8px; padding:10px 12px; position:sticky; top:0; z-index:20; box-shadow:0 4px 14px rgba(19,33,63,.25); }
+    .side-t{ display:none; }
+    .mod-btn{ flex:1 1 auto; text-align:center; white-space:nowrap; padding:12px 10px; }
+    .fgrid{ grid-template-columns:1fr; }
+    .grid{ grid-template-columns:1fr; }
+    .chat-wrap{ flex-direction:column; }
+    .chat-lista{ width:auto; max-height:252px; overflow-y:auto; }
+    .resumen{ grid-template-columns:repeat(2,1fr); }
+  }
 </style>
 </head>
 <body>
