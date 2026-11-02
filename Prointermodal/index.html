@@ -1555,5 +1555,61 @@ initFirebase();
   document.getElementById('peOut').addEventListener('click',function(){ auth.signOut(); });
 })();
 </script>
+<script>
+/* Presencia para la consola PlataformaEDU (igual que las plataformas de los
+   colegios): con sesion del tablero activa, reporta el latido a
+   presencia/prointermodal de plataformaedu-admin para que la consola
+   muestre quien esta en linea. Sin sesion, no reporta nada. */
+(function(){
+  var INST_ID = "prointermodal";
+  var CFG = { apiKey: "AIzaSyAwR5Y6af4CBl_gv0iVNPpeJdtwWU1vF1g", authDomain: "plataformaedu-admin.firebaseapp.com",
+    databaseURL: "https://plataformaedu-admin-default-rtdb.firebaseio.com", projectId: "plataformaedu-admin",
+    storageBucket: "plataformaedu-admin.firebasestorage.app", messagingSenderId: "677869873209",
+    appId: "1:677869873209:web:ad8d4650fb96088b5285e8" };
+  var presRef = null, presUid = null, ultLatido = 0, usuarioTablero = null, dbEdu = null;
+  function nombreDe(user){ return (user && user.email ? user.email.split('@')[0] : '') || 'Usuario'; }
+  function pidDe(t){ return String(t || 'usuario').replace(/[.#$\[\]]/g, '_'); }
+  function quitar(){
+    if (presRef) { try { presRef.remove(); } catch(e) {} presRef = null; }
+  }
+  function latido(){
+    if (!usuarioTablero || !presUid || !dbEdu) return;
+    var nombre = nombreDe(usuarioTablero);
+    if (!presRef) {
+      presRef = dbEdu.ref('presencia/' + INST_ID + '/' + presUid);
+      presRef.set({ perfilId: pidDe(nombre), nombre: nombre, rol: 'Tablero', desde: Date.now(), visto: Date.now() });
+      presRef.onDisconnect().remove();
+      ultLatido = Date.now();
+    } else if (Date.now() - ultLatido >= 25000) {
+      ultLatido = Date.now();
+      presRef.update({ visto: Date.now(), nombre: nombre, rol: 'Tablero' });
+    }
+  }
+  function iniciarEdu(){
+    var app;
+    try { app = firebase.app('eduSoporte'); } catch(e) { app = firebase.initializeApp(CFG, 'eduSoporte'); }
+    var a = firebase.auth(app);
+    if (!a.currentUser) a.signInAnonymously().catch(function(){});
+    a.onAuthStateChanged(function(u){
+      if (!u) return;
+      presUid = u.uid; dbEdu = app.database();
+      latido();
+    });
+  }
+  function vigilar(){
+    if (typeof firebase === 'undefined' || !firebase.auth) { setTimeout(vigilar, 1200); return; }
+    var auth;
+    try { auth = firebase.auth(firebase.app('peAuth')); }
+    catch(e) { setTimeout(vigilar, 1200); return; }
+    auth.onAuthStateChanged(function(user){
+      usuarioTablero = user || null;
+      if (user) { iniciarEdu(); latido(); }
+      else quitar();
+    });
+    setInterval(latido, 30000);
+  }
+  vigilar();
+})();
+</script>
 </body>
 </html>
