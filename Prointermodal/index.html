@@ -285,6 +285,41 @@ a.next-load { font-size: 12px; font-weight: 700; }
 </style>
 </head>
 <body>
+<style>
+#peGate{position:fixed;inset:0;z-index:999999;background:linear-gradient(160deg,#0d2f66,#1b4fa0);display:flex;align-items:center;justify-content:center;font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;padding:16px;box-sizing:border-box}
+#peGate .pe-card{background:#fff;border-radius:16px;max-width:360px;width:100%;padding:28px 26px 18px;box-shadow:0 18px 50px rgba(0,0,0,.35);text-align:center;box-sizing:border-box}
+#peGate .pe-logo{width:58px;height:58px;object-fit:contain}
+#peGate .pe-brand{font-weight:700;color:#1b4fa0;font-size:15px;letter-spacing:.4px;margin-top:6px}
+#peGate h1{font-size:21px;margin:10px 0 2px;color:#12233d}
+#peGate .pe-sub{font-size:13px;color:#5a6b82;margin:0 0 18px}
+#peGate label{display:block;text-align:left;font-size:12.5px;font-weight:600;color:#33475e;margin:12px 0 5px}
+#peGate input{width:100%;padding:11px 12px;border:1.5px solid #c9d4e2;border-radius:9px;font-size:15px;box-sizing:border-box;background:#fff;color:#12233d}
+#peGate input:focus{outline:none;border-color:#1b4fa0}
+#peGate button{width:100%;margin-top:18px;padding:12px;border:0;border-radius:9px;background:#1b4fa0;color:#fff;font-size:15.5px;font-weight:700;cursor:pointer}
+#peGate button:disabled{opacity:.6;cursor:default}
+#peGate .pe-err{display:none;background:#fdecec;color:#a12626;border:1px solid #f3c2c2;border-radius:8px;font-size:13px;padding:9px 10px;margin-top:14px}
+#peGate .pe-foot{margin-top:18px;font-size:11.5px;color:#8a99ad}
+#peChip{position:fixed;right:12px;bottom:12px;z-index:9999;display:none;align-items:center;gap:9px;background:rgba(18,35,61,.92);color:#fff;font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;font-size:12.5px;padding:7px 8px 7px 13px;border-radius:999px;box-shadow:0 6px 18px rgba(0,0,0,.3)}
+#peChip button{border:0;border-radius:999px;background:#1b4fa0;color:#fff;font-size:12.5px;font-weight:600;padding:5px 12px;cursor:pointer}
+</style>
+<div id="peGate" role="dialog" aria-label="Ingreso a Pending Stops">
+  <div class="pe-card">
+    <img class="pe-logo" src="https://plataformaedu.app/simbolo-web.png" alt="PlataformaEDU">
+    <div class="pe-brand">PlataformaEDU</div>
+    <h1>Pending Stops</h1>
+    <p class="pe-sub">Prointermodal · Acceso de clientes</p>
+    <form id="peForm" autocomplete="on">
+      <label for="peEmail">Correo</label>
+      <input id="peEmail" type="email" required autocomplete="username" placeholder="usuario@empresa.com">
+      <label for="pePass">Contraseña</label>
+      <input id="pePass" type="password" required autocomplete="current-password" placeholder="••••••••">
+      <button id="peBtn" type="submit">Ingresar</button>
+      <div class="pe-err" id="peErr"></div>
+    </form>
+    <div class="pe-foot">© 2026 PlataformaEDU · Todos los derechos reservados</div>
+  </div>
+</div>
+<div id="peChip"><span id="peChipUser"></span><button id="peOut" type="button">Salir</button></div>
 <div class="app-shell">
   <header class="signal-bar">
     <span class="brand">PENDING STOPS</span>
@@ -350,6 +385,7 @@ a.next-load { font-size: 12px; font-weight: 700; }
 
 <script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-auth-compat.js"></script>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <script>
 "use strict";
@@ -1496,6 +1532,32 @@ document.addEventListener("pointerdown",e=>{
 setInterval(()=>{ if(DATA_LOADED) render(); }, 30000);
 
 initFirebase();
+</script>
+<script>
+(function(){
+  var cfg={apiKey:"AIzaSyA9AAkBOxQGNZLm9cadULb6l_tBbSdB5NM",authDomain:"change-of-shift-prointermodal.firebaseapp.com",projectId:"change-of-shift-prointermodal"};
+  var gate=document.getElementById('peGate'), chip=document.getElementById('peChip'), chipUser=document.getElementById('peChipUser'),
+      err=document.getElementById('peErr'), form=document.getElementById('peForm'), btn=document.getElementById('peBtn');
+  function fail(msg){ err.textContent=msg; err.style.display='block'; btn.disabled=false; btn.textContent='Ingresar'; }
+  if(typeof firebase==='undefined' || !firebase.auth){ fail('No se pudo cargar el sistema de ingreso. Revisa tu conexión e intenta de nuevo.'); return; }
+  var app; try{ app=firebase.app('peAuth'); }catch(e){ app=firebase.initializeApp(cfg,'peAuth'); }
+  var auth=firebase.auth(app);
+  auth.onAuthStateChanged(function(user){
+    if(user){ gate.style.display='none'; chip.style.display='flex'; chipUser.textContent=user.email; }
+    else{ chip.style.display='none'; gate.style.display='flex'; }
+  });
+  form.addEventListener('submit',function(ev){
+    ev.preventDefault(); err.style.display='none'; btn.disabled=true; btn.textContent='Ingresando…';
+    auth.signInWithEmailAndPassword(document.getElementById('peEmail').value.trim(), document.getElementById('pePass').value)
+      .catch(function(e){
+        var m='Usuario o contraseña incorrectos.';
+        if(e && e.code==='auth/too-many-requests') m='Demasiados intentos. Espera un momento e intenta de nuevo.';
+        else if(e && e.code==='auth/network-request-failed') m='Error de conexión. Intenta de nuevo.';
+        fail(m);
+      });
+  });
+  document.getElementById('peOut').addEventListener('click',function(){ auth.signOut(); });
+})();
 </script>
 </body>
 </html>
