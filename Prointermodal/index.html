@@ -875,14 +875,6 @@ function routeIconHtml(s){
   }
   return "";
 }
-function routeProgressHtml(s){
-  const sr=(s.samsaraRoute&&typeof s.samsaraRoute==="object")?s.samsaraRoute:null;
-  const p=(sr&&sr.progress&&typeof sr.progress==="object")?sr.progress:null;
-  if(!p||p.total==null||p.total<=1) return "";
-  let cur=(p.current==null)?((p.done==null?0:p.done)+1):p.current;
-  cur=Math.max(1,Math.min(p.total,Math.round(cur)));
-  return '<span class="stop-progress" title="Route progress: stop '+cur+' of '+p.total+'">Stop '+cur+' of '+p.total+'</span>';
-}
 
 /* ===== notes ===== */
 function noteCellHtml(s){
@@ -935,7 +927,7 @@ function rowHtml(s, nowMs){
     '<div class="appointment-cell"><span class="mobile-label">Appointment</span><strong>'+esc(fmtAppt(new Date(s.appt)))+'</strong></div>'+
     '<div class="time-cell'+(late?" late":"")+'">'+(arrivalState(s)==="onsite"?"":'<span class="mobile-label">ETA</span><span class="eta-label">'+etaTooltipHtml(s)+'</span>')+'</div>'+
     '<div class="miles-cell"><span class="mobile-label">Miles</span><span class="miles-wrap"><strong>'+(s.miles==null?"—":esc(fmtNum(s.miles)))+'</strong>'+
-      routeIconHtml(s)+routeProgressHtml(s)+((s.stopIndex&&s.stopCount)?'<span class="stop-count">Stop '+s.stopIndex+'/'+s.stopCount+'</span>':"")+'</span></div>'+
+      routeIconHtml(s)+((s.stopIndex&&s.stopCount)?'<span class="stop-count">Stop '+s.stopIndex+'/'+s.stopCount+'</span>':"")+'</span></div>'+
     '<div class="place-cell"><span>'+esc(s.parada||s.addr||"Address unavailable")+'</span>'+(s.prevDlvry?'<span class="prev-dlvry-pill">ON PREVIOUS DLVRY</span>':arrivalPillHtml(s)+gpsAtStopPillHtml(s,nowMs)+verifyBtnHtml(s))+'</div>'+
     noteCellHtml(s)+
   '</article>';
