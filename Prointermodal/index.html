@@ -1,0 +1,1501 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Pending Stops — Prointermodal</title>
+<style>
+:root {
+  --bg: #e8eef1;
+  --surface: #f8fafb;
+  --surface-strong: #ffffff;
+  --text: #10263b;
+  --dim: #596d7c;
+  --border: #c7d2d9;
+  --accent: #0f7a4f;
+  --amber: #d97706;
+  --danger: #b42318;
+  --navy: #10263b;
+  --blue: #2763a3;
+  --radius: 8px;
+}
+:root[data-theme="dark"] {
+  --bg: #0c1721;
+  --surface: #132432;
+  --surface-strong: #182c3c;
+  --text: #ecf4f7;
+  --dim: #9fb1bc;
+  --border: #314653;
+  --accent: #43c58a;
+  --amber: #f4a340;
+  --danger: #ff776d;
+  --navy: #07131d;
+  --blue: #5b9bd5;
+}
+* { box-sizing: border-box; }
+html { background: var(--bg); }
+body { margin: 0; background: var(--bg); color: var(--text); font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+button, input, textarea, select { font: inherit; }
+button { -webkit-tap-highlight-color: transparent; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+
+.app-shell { min-height: 100vh; background: var(--bg); padding-bottom: max(28px, env(safe-area-inset-bottom)); }
+.signal-bar { position: sticky; top: 0; z-index: 30; min-height: 48px; padding: 8px 14px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; color: #eaf2f6; background: var(--navy); border-bottom: 1px solid rgba(255,255,255,.12); }
+:root[data-theme="dark"] .signal-bar { color: var(--text); }
+.brand { font-family: Bahnschrift, "Arial Narrow", sans-serif; font-size: 15px; font-weight: 800; letter-spacing: .06em; margin-right: auto; white-space: nowrap; }
+.theme-btn { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; padding: 0; border: 1px solid rgba(255,255,255,.26); border-radius: 5px; color: #eaf2f6; background: transparent; cursor: pointer; }
+:root[data-theme="dark"] .theme-btn { color: var(--text); border-color: var(--border); }
+.theme-btn svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
+.theme-btn .icon-sun { display: none; }
+:root[data-theme="dark"] .theme-btn .icon-sun { display: block; }
+:root[data-theme="dark"] .theme-btn .icon-moon { display: none; }
+.notes-chip { display: inline-flex; align-items: center; gap: 7px; min-height: 34px; padding: 6px 11px; border: 1px solid rgba(255,255,255,.26); border-radius: 5px; color: #eaf2f6; background: transparent; font-size: 12px; font-weight: 750; white-space: nowrap; }
+:root[data-theme="dark"] .notes-chip { color: var(--text); border-color: var(--border); }
+.updated-chip { display: inline-flex; align-items: center; gap: 4px; min-height: 34px; padding: 6px 11px; border: 1px solid rgba(255,255,255,.18); border-radius: 5px; color: #c9d8e2; background: rgba(255,255,255,.04); font-size: 12px; font-weight: 600; white-space: nowrap; }
+:root[data-theme="dark"] .updated-chip { color: var(--dim); border-color: var(--border); background: rgba(255,255,255,.02); }
+.notes-chip .nd { width: 8px; height: 8px; border-radius: 50%; background: #f4a340; animation: pulse 1.3s ease-in-out infinite; }
+.notes-chip.live .nd { background: #43c58a; animation: none; }
+
+main { width: min(1500px, 100%); margin: 0 auto; padding: 12px; }
+.type-mark { display: inline-flex; align-items: center; min-height: 21px; padding: 3px 7px; border-radius: 3px; color: white; font-family: Bahnschrift, "Arial Narrow", sans-serif; font-size: 10px; font-weight: 800; letter-spacing: .08em; }
+.type-mark.pickup { background: var(--blue); }
+.type-mark.delivery { background: var(--accent); }
+.arrival-pill { flex: 0 0 auto; align-self: center; display: inline-flex; align-items: center; min-height: 20px; padding: 2px 9px; border-radius: 999px; color: #fff; font-family: Bahnschrift, "Arial Narrow", sans-serif; font-size: 10px; font-weight: 800; letter-spacing: .07em; white-space: nowrap; }
+.arrival-pill.onsite { background: var(--accent); }
+.prev-dlvry-pill { flex: 0 0 auto; align-self: center; display: inline-flex; align-items: center; min-height: 20px; padding: 2px 9px; border-radius: 999px; color: #4a2f00; background: #ffc95e; font-family: Bahnschrift, "Arial Narrow", sans-serif; font-size: 10px; font-weight: 800; letter-spacing: .07em; white-space: nowrap; }
+.arrival-pill.enroute { background: #64727d; }
+.arrival-pill.gps { background: var(--amber); }
+.stop-row.gps-at-stop { border-left-color: var(--amber); }
+
+.controls { margin: 4px 0 10px; }
+.counts { display: flex; align-items: center; gap: 8px 14px; flex-wrap: wrap; color: var(--dim); font-size: 12px; }
+.counts strong { color: var(--text); font-family: Bahnschrift, "Arial Narrow", sans-serif; font-size: 15px; }
+.counts i { display: inline-block; width: 16px; height: 3px; margin-right: 5px; vertical-align: middle; }
+.pickup-line { background: var(--blue); }
+.delivery-line { background: var(--accent); }
+.late-toggle { padding: 4px 8px; border: 1px solid var(--border); border-radius: 4px; color: var(--danger); background: transparent; font-size: 12px; font-weight: 700; cursor: pointer; }
+.late-toggle.active { color: white; border-color: var(--danger); background: var(--danger); }
+.gps-toggle { padding: 4px 8px; border: 1px solid var(--border); border-radius: 4px; color: var(--amber); background: transparent; font-size: 12px; font-weight: 700; cursor: pointer; }
+.gps-toggle.active { color: white; border-color: var(--amber); background: var(--amber); }
+.pod-toggle { padding: 4px 8px; border: 1px solid var(--border); border-radius: 4px; color: var(--blue); background: transparent; font-size: 12px; font-weight: 700; cursor: pointer; }
+.pod-toggle.active { color: white; border-color: var(--blue); background: var(--blue); }
+.clear-toggle { padding: 4px 8px; border: 1px solid var(--border); border-radius: 4px; color: var(--dim); background: transparent; font-size: 12px; font-weight: 700; cursor: pointer; }
+.clear-toggle:hover { color: var(--text); border-color: var(--dim); }
+.xl-btn { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 24px; padding: 0; vertical-align: middle; }
+.xl-btn svg { display: block; }
+.xl-anchor { position: relative; display: inline-flex; }
+.xl-tooltip { position: absolute; left: 0; top: calc(100% + 8px); z-index: 40; width: max-content; max-width: min(290px, calc(100vw - 48px)); padding: 10px 12px; display: flex; flex-direction: column; gap: 2px; pointer-events: none; visibility: hidden; opacity: 0; transform: translateY(-3px); border: 1px solid rgba(255,255,255,.14); border-radius: 5px; color: #eef5f8; background: #0b1c2b; box-shadow: 0 10px 24px rgba(4,15,24,.28); font-size: 12px; line-height: 1.45; text-align: left; transition: opacity .12s ease, transform .12s ease, visibility .12s; }
+.xl-tooltip strong { font-size: 13px; color: #fff; }
+.xl-anchor:hover .xl-tooltip, .xl-anchor:focus-within .xl-tooltip { visibility: visible; opacity: 1; transform: translateY(0); }
+#latealert-toggle[aria-pressed="false"] { opacity: .55; }
+.late-toasts { position: fixed; top: 64px; right: 12px; z-index: 60; display: flex; flex-direction: column; gap: 8px; max-width: min(360px, calc(100vw - 24px)); }
+.late-toast { background: #7f1d1d; color: #fff; border: 1px solid rgba(255,255,255,.35); border-left: 6px solid #f87171; border-radius: 8px; padding: 10px 12px; box-shadow: 0 8px 24px rgba(0,0,0,.35); animation: lateFlash 1s ease-in-out 3; cursor: pointer; }
+.late-toast strong { display: block; font-size: 13.5px; }
+.late-toast span { display: block; font-size: 12px; opacity: .9; margin-top: 2px; }
+.late-toast.hide { opacity: 0; transition: opacity .4s; }
+@keyframes lateFlash { 0%,100% { filter: brightness(1); } 50% { filter: brightness(1.5); } }
+.desktop-head .sort-head { cursor: pointer; }
+.desktop-head .sort-head:hover { color: var(--text); }
+.desktop-head .sort-head .arr { font-size: 9px; }
+.filter-row { margin-top: 12px; display: flex; flex-direction: column; gap: 9px; }
+.search-box { min-height: 44px; display: flex; align-items: center; gap: 8px; padding: 0 12px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface-strong); }
+.search-box:focus-within { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(15,122,79,.18); }
+.search-box svg { width: 19px; height: 19px; fill: none; stroke: var(--dim); stroke-width: 1.8; }
+.search-box input { min-width: 0; flex: 1; border: 0; outline: 0; color: var(--text); background: transparent; font-size: 13px; }
+.search-box input::placeholder { color: var(--dim); }
+.type-filter { display: flex; flex: 0 0 auto; min-height: 44px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface-strong); overflow: hidden; }
+.type-filter-btn { flex: 1; padding: 0 12px; border: 0; border-left: 1px solid var(--border); color: var(--dim); background: transparent; font-size: 12.5px; font-weight: 750; white-space: nowrap; cursor: pointer; }
+.type-filter-btn:first-child { border-left: 0; }
+.type-filter-btn[aria-pressed="true"] { color: #fff; background: var(--navy); }
+.type-filter-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.dispatch-filter { position: relative; flex: 0 0 auto; }
+.dispatch-btn { min-height: 44px; max-width: 100%; padding: 0 12px; display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface-strong); color: var(--text); font-size: 12.5px; font-weight: 750; cursor: pointer; }
+.dispatch-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.dispatch-chev { color: var(--dim); font-size: 11px; }
+.dispatch-panel { position: absolute; top: calc(100% + 6px); left: 0; z-index: 60; width: 264px; max-width: 86vw; max-height: 320px; overflow: auto; padding: 6px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface-strong); box-shadow: 0 12px 28px rgba(16,38,59,.18); }
+.dispatch-opt { display: flex; align-items: center; gap: 9px; padding: 8px 9px; border-radius: 6px; font-size: 13px; font-weight: 650; color: var(--text); cursor: pointer; }
+.dispatch-opt:hover { background: var(--surface); }
+.dispatch-opt input { width: 17px; height: 17px; margin: 0; accent-color: var(--navy); flex: 0 0 auto; cursor: pointer; }
+.dispatch-opt .dispatch-count { margin-left: auto; color: var(--dim); font-size: 12px; font-weight: 700; }
+.dispatch-all { border-bottom: 1px solid var(--border); border-radius: 6px 6px 0 0; font-weight: 800; }
+
+.report-list { margin-top: 10px; }
+.desktop-head { display: none; }
+.type-section { margin-top: 20px; }
+.type-section:first-child { margin-top: 0; }
+.section-head { margin: 0; padding: 6px 14px; display: flex; align-items: center; gap: 10px; color: #fff; font-family: Bahnschrift, "Arial Narrow", sans-serif; font-size: 12px; font-weight: 800; letter-spacing: .09em; }
+.section-head.pickup { background: var(--blue); }
+.section-head.delivery { background: var(--accent); }
+.section-head .section-count { margin-left: auto; padding: 2px 10px; border-radius: 12px; background: rgba(255,255,255,.22); font-family: system-ui, sans-serif; font-size: 11px; font-weight: 800; letter-spacing: .03em; }
+.section-empty { margin: 10px 0 2px; padding: 16px 14px; border: 1px dashed var(--border); color: var(--dim); text-align: center; font-size: 13px; }
+.date-group { margin-top: 18px; }
+.date-group h2 { margin: 0 0 6px; display: flex; align-items: center; gap: 8px; color: var(--text); font-size: 12px; font-weight: 800; text-transform: capitalize; }
+.date-group h2::after { content: ""; height: 1px; flex: 1; background: var(--border); }
+.date-group h2 span { order: 2; min-width: 24px; padding: 2px 6px; border-radius: 10px; color: var(--dim); background: var(--surface); text-align: center; font-size: 11px; }
+.rows { display: flex; flex-direction: column; gap: 7px; }
+
+.stop-row { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); grid-template-areas: "truck load" "st appointment" "time time" "miles miles" "place place" "note note"; gap: 6px 12px; padding: 9px; border: 1px solid var(--border); border-left: 4px solid transparent; background: var(--surface-strong); box-shadow: 0 2px 8px rgba(16,38,59,.05); }
+.stop-row.late { border-left-color: var(--danger); }
+.stop-row.soon { border-left-color: var(--amber); }
+
+.truck-cell { grid-area: truck; display: flex; align-items: center; gap: 8px; min-width: 0; }
+.truck-id { display: inline-flex; flex-direction: column; align-items: flex-start; gap: 3px; }
+.truck-line { display: inline-flex; align-items: baseline; gap: 8px; }
+.crew-anchor { position: relative; display: inline-flex; }
+.truck-number { padding: 0; border: 0; border-bottom: 1px dotted var(--dim); color: var(--text); background: transparent; cursor: help; font-family: Bahnschrift, "Arial Narrow", sans-serif; font-size: 22px; font-weight: 800; line-height: 1.05; letter-spacing: -.03em; }
+.truck-number:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 2px; }
+.trailer-tag { color: var(--dim); font-size: 10px; font-weight: 700; letter-spacing: .04em; }
+.crew-tooltip { position: absolute; left: 0; top: calc(100% + 8px); z-index: 40; width: max-content; max-width: min(290px, calc(100vw - 48px)); padding: 10px 12px; display: flex; flex-direction: column; gap: 1px; pointer-events: none; visibility: hidden; opacity: 0; transform: translateY(-3px); border: 1px solid rgba(255,255,255,.14); border-radius: 5px; color: #eef5f8; background: #0b1c2b; box-shadow: 0 10px 24px rgba(4,15,24,.28); font-size: 12px; line-height: 1.45; transition: opacity .12s ease, transform .12s ease, visibility .12s; }
+.crew-anchor:hover .crew-tooltip, .crew-anchor:focus-within .crew-tooltip, .crew-anchor.force .crew-tooltip { visibility: visible; opacity: 1; transform: translateY(0); }
+.crew-role { color: #9fb8c6; font-size: 10px; font-weight: 800; letter-spacing: .07em; text-transform: uppercase; }
+.crew-tooltip strong { font-size: 13px; }
+.crew-divider { height: 1px; margin: 7px 0 5px; background: rgba(255,255,255,.16); }
+
+.gps-mark { flex: 0 0 auto; display: inline-flex; align-items: center; min-height: 17px; padding: 1px 8px; border-radius: 999px; color: #fff; font-family: Bahnschrift, "Arial Narrow", sans-serif; font-size: 10px; font-weight: 800; letter-spacing: .08em; white-space: nowrap; }
+.gps-mark.on { background: var(--accent); }
+.gps-mark.off { background: var(--danger); }
+a.gps-mark { text-decoration: none; }
+a.gps-mark.on { cursor: pointer; box-shadow: inset 0 0 0 1px rgba(255,255,255,.35); transition: filter .12s ease, box-shadow .12s ease; }
+a.gps-mark.on:hover { filter: brightness(1.12); box-shadow: inset 0 0 0 1px rgba(255,255,255,.55), 0 0 0 2px rgba(15,122,79,.35); }
+a.gps-mark.on:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; filter: brightness(1.12); }
+.av-tag { flex: 0 0 auto; font-size: 10px; font-weight: 600; opacity: .65; white-space: nowrap; }
+
+.load-cell { grid-area: load; display: flex; align-items: flex-end; flex-direction: column; gap: 1px; min-width: 0; color: var(--dim); text-align: right; font-size: 10px; }
+.load-cell > span:last-child { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.load-number { flex: 0 0 auto; color: var(--text); font-family: Bahnschrift, "Arial Narrow", sans-serif; font-size: 12px; font-weight: 800; }
+a.load-number { color: var(--accent); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+a.load-number:hover, a.load-number:focus-visible { color: var(--navy); }
+a.next-load { font-size: 12px; font-weight: 700; }
+.load-line { display: inline-flex; align-items: baseline; gap: 7px; flex-wrap: wrap; }
+.load-route { font-size: 10px; font-weight: 700; letter-spacing: .5px; color: var(--dim); white-space: nowrap; }
+.external-mark { margin-left: 3px; font-family: system-ui, sans-serif; font-size: 11px; }
+
+.st-cell { grid-area: st; display: flex; align-items: center; }
+.st-code { font-family: Bahnschrift, "Arial Narrow", sans-serif; font-size: 15px; font-weight: 800; letter-spacing: .02em; color: var(--text); }
+
+.appointment-cell { grid-area: appointment; min-width: 0; display: flex; align-items: baseline; gap: 5px; color: var(--dim); justify-content: flex-end; }
+.appointment-cell strong { color: var(--text); font-family: Bahnschrift, "Arial Narrow", sans-serif; font-size: 12px; }
+.stop-row.soon .appointment-cell strong { color: var(--amber); }
+.stop-row.late .appointment-cell strong { color: var(--danger); }
+
+.time-cell { grid-area: time; min-width: 0; display: flex; align-items: baseline; gap: 6px; color: var(--dim); font-size: 11px; }
+.eta-anchor { position: relative; display: inline-flex; }
+.eta-value { padding: 0; border: 0; border-bottom: 1px dotted var(--dim); color: var(--text); background: transparent; font-family: Bahnschrift, "Arial Narrow", sans-serif; font-size: 12px; font-weight: 800; cursor: help; }
+.eta-value:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 2px; }
+.time-cell.late .eta-value { color: var(--danger); border-bottom-color: var(--danger); }
+.time-cell.late .eta-label { color: var(--danger); font-weight: 700; }
+.eta-tooltip { position: absolute; left: 0; top: calc(100% + 8px); z-index: 45; width: min(320px, calc(100vw - 48px)); padding: 11px 12px; display: flex; flex-direction: column; gap: 5px; pointer-events: none; visibility: hidden; opacity: 0; transform: translateY(-3px); border: 1px solid rgba(255,255,255,.14); border-radius: 5px; color: #eef5f8; background: #0b1c2b; box-shadow: 0 10px 24px rgba(4,15,24,.28); font-size: 12px; line-height: 1.45; transition: opacity .12s ease, transform .12s ease, visibility .12s; }
+.eta-tooltip strong { color: white; font-size: 13px; }
+.eta-tooltip small { color: #9fb8c6; font-size: 10px; }
+.eta-anchor:hover .eta-tooltip, .eta-anchor:focus-within .eta-tooltip, .eta-anchor.force .eta-tooltip { visibility: visible; opacity: 1; transform: translateY(0); }
+.eta-hos { white-space: nowrap; }
+.hos-risk-inline { color: #ff776d; font-weight: 800; }
+
+.miles-cell { grid-area: miles; display: flex; align-items: baseline; gap: 5px; color: var(--dim); }
+.miles-cell strong { color: var(--text); font-family: Bahnschrift, "Arial Narrow", sans-serif; font-size: 13px; }
+.miles-wrap { display: inline-flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+.stop-count { flex: 0 0 100%; font-size: 9px; color: var(--dim); font-weight: 700; letter-spacing: .05em; margin-top: 1px; }
+.route-btn { display: inline-flex; align-items: center; justify-content: center; width: 29px; height: 29px; padding: 0; border: 1px solid var(--border); border-radius: 50%; background: var(--surface); color: var(--accent); cursor: pointer; text-decoration: none; }
+.route-btn svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.route-btn:hover { border-color: var(--accent); }
+.route-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.stop-progress { display: inline-flex; align-items: center; min-height: 22px; padding: 1px 8px; border: 1px solid var(--border); border-radius: 999px; color: var(--dim); background: var(--surface); font-size: 10px; font-weight: 800; letter-spacing: .05em; white-space: nowrap; }
+
+.place-cell { grid-area: place; display: flex; align-items: flex-start; flex-wrap: wrap; gap: 8px; color: var(--text); font-size: 11px; line-height: 1.4; }
+.mobile-label { font-size: 10px; font-weight: 800; text-transform: uppercase; color: var(--dim); }
+
+.note-cell { grid-area: note; min-width: 0; display: flex; justify-content: flex-end; }
+.note-button { max-width: none; padding: 3px 0; overflow: visible; border: 0; color: var(--dim); background: transparent; text-align: right; text-decoration: underline dotted; white-space: normal; overflow-wrap: anywhere; line-height: 1.35; font-size: 11px; cursor: pointer; }
+.stopdone-btn { display: inline-block; margin-top: 2px; padding: 2px 10px; border: 1px solid rgba(46,125,50,.55); border-radius: 20px; background: transparent; color: var(--green); font-size: 11px; font-weight: 600; cursor: pointer; }
+.stopdone-btn:hover { background: rgba(46,125,50,.12); }
+.stopdone-btn.checking { border-color: var(--dim); color: var(--dim); cursor: default; }
+.stopdone-btn.checking:hover { background: transparent; }
+.copyupd-btn { display: inline-flex; align-items: center; justify-content: center; width: 29px; height: 29px; padding: 0; margin-left: 6px; border: 1px solid var(--border); border-radius: 50%; background: var(--surface); color: var(--accent); cursor: pointer; vertical-align: middle; }
+.copyupd-btn svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.copyupd-btn:hover { border-color: var(--accent); }
+.copyupd-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.pdf-btn { display: inline-flex; align-items: center; justify-content: center; width: 29px; height: 29px; padding: 0; margin-left: 6px; border: 1px solid var(--border); border-radius: 50%; background: var(--surface); cursor: pointer; vertical-align: middle; text-decoration: none; }
+.pdf-btn:hover { border-color: #c62828; }
+.pdf-btn:focus-visible { outline: 2px solid #c62828; outline-offset: 2px; }
+.pdf-btn svg { width: 17px; height: 17px; display: block; }
+.pdf-mini { display: inline-flex; align-items: center; margin-left: 6px; vertical-align: middle; }
+.pdf-mini svg { width: 14px; height: 14px; display: block; }
+.row-actions { display: flex; align-items: center; gap: 6px; margin-top: 4px; }
+.row-actions .copyupd-btn, .row-actions .pdf-btn { margin-left: 0; }
+.copyupd-anchor { position: relative; display: inline-flex; }
+.copyupd-tooltip { position: absolute; left: 0; top: calc(100% + 8px); z-index: 40; width: max-content; max-width: min(290px, calc(100vw - 48px)); padding: 10px 12px; display: flex; flex-direction: column; gap: 2px; pointer-events: none; visibility: hidden; opacity: 0; transform: translateY(-3px); border: 1px solid rgba(255,255,255,.14); border-radius: 5px; color: #eef5f8; background: #0b1c2b; box-shadow: 0 10px 24px rgba(4,15,24,.28); font-size: 12px; line-height: 1.45; text-align: left; transition: opacity .12s ease, transform .12s ease, visibility .12s; }
+.copyupd-tooltip strong { font-size: 13px; color: #fff; }
+.copyupd-anchor:hover .copyupd-tooltip, .copyupd-anchor:focus-within .copyupd-tooltip { visibility: visible; opacity: 1; transform: translateY(0); }
+.copyupd-preview { border-top: 1px solid rgba(255,255,255,.14); margin-top: 4px; padding-top: 6px; font-size: 11px; line-height: 1.5; color: #cfe3ec; }
+.copyupd-btn.busy { opacity: .5; }
+.copyupd-btn.ok { color: var(--green); border-color: var(--green); }
+.copyupd-btn.fail { color: var(--danger); border-color: var(--danger); }
+.note-button:not(:hover) { text-decoration-color: var(--border); }
+.note-form { width: 100%; }
+.note-form textarea { width: 100%; padding: 8px; resize: vertical; border: 1px solid var(--border); border-radius: 5px; outline: none; color: var(--text); background: var(--bg); font-size: 12px; }
+.note-form textarea:focus { border-color: var(--accent); }
+.note-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 5px; }
+.text-button, .save-button { min-height: 30px; padding: 4px 9px; border-radius: 4px; font-size: 11px; font-weight: 750; cursor: pointer; }
+.text-button { border: 0; color: var(--dim); background: transparent; }
+.save-button { border: 1px solid var(--accent); color: white; background: var(--accent); }
+
+.no-results { margin: 0 0 10px; padding: 12px 14px; display: flex; align-items: center; gap: 10px 14px; flex-wrap: wrap; border: 1px dashed var(--border); }
+.no-results strong { font-size: 15px; }
+.no-results span { flex: 1 1 180px; color: var(--dim); font-size: 13px; }
+.no-results button { min-height: 36px; padding: 7px 12px; border: 0; border-radius: 5px; color: white; background: var(--navy); font-weight: 750; cursor: pointer; }
+.loading-shell { min-height: 100vh; display: grid; place-content: center; padding: 24px; text-align: center; background: var(--bg); }
+.loading-shell p { color: var(--dim); font-size: 13px; }
+[hidden] { display: none !important; }
+.loading-rule { width: 120px; height: 4px; margin: 0 auto 14px; background: linear-gradient(90deg, var(--accent) 50%, var(--border) 50%); background-size: 200% 100%; animation: loading 1.2s linear infinite; }
+
+@keyframes pulse { 50% { opacity: .4; } }
+@keyframes loading { to { background-position: -200% 0; } }
+@media (prefers-reduced-motion: reduce) { * { animation-duration: .01ms !important; animation-iteration-count: 1 !important; } }
+
+@media (min-width: 760px) {
+  main { padding: 20px 24px 44px; }
+  .filter-row { flex-direction: row; align-items: center; }
+  .search-box { flex: 1; }
+  .type-filter-btn { padding-left: 18px; padding-right: 18px; }
+}
+
+@media (min-width: 1100px) {
+  .desktop-head { display: grid; grid-template-columns: 100px minmax(140px,.95fr) 56px 140px minmax(150px,1.05fr) 100px minmax(190px,1.35fr) 150px; gap: 14px; padding: 9px 14px; color: var(--dim); border-bottom: 2px solid var(--navy); font-family: Bahnschrift, "Arial Narrow", sans-serif; font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
+  .stop-row { grid-template-columns: 100px minmax(140px,.95fr) 56px 140px minmax(150px,1.05fr) 100px minmax(190px,1.35fr) 150px; grid-template-areas: "truck load st appointment note miles place time"; gap: 12px; align-items: center; min-height: 54px; padding: 5px 14px; box-shadow: none; }
+  .truck-number { font-size: 21px; }
+  .truck-cell { align-items: flex-start; flex-direction: column; gap: 2px; }
+  .load-cell { align-items: flex-start; text-align: left; }
+  .load-cell > span:last-child { white-space: normal; }
+  .st-code { font-size: 15px; }
+  .appointment-cell { flex-direction: column; align-items: flex-start; gap: 0; justify-content: center; }
+  .time-cell { flex-direction: column; align-items: flex-start; gap: 2px; }
+  .eta-value { font-size: 13px; }
+  .eta-tooltip { left: 0; }
+  .miles-cell { flex-direction: column; align-items: flex-start; gap: 0; }
+  .place-cell { align-items: center; }
+  .mobile-label { display: none; }
+  .note-cell { justify-content: flex-start; }
+  .note-button { text-align: left; }
+}
+@media (max-width: 480px) {
+  .notes-chip, .updated-chip { padding: 6px 9px; font-size: 11px; }
+  .brand { font-size: 13px; }
+}
+</style>
+</head>
+<body>
+<div class="app-shell">
+  <header class="signal-bar">
+    <span class="brand">PENDING STOPS</span>
+    <button type="button" class="theme-btn" id="theme-toggle" aria-label="Toggle dark mode" title="Toggle dark mode">
+      <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg>
+      <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></svg>
+    </button>
+    <span class="updated-chip" id="updated-chip" hidden>Last SOS update: <span id="updated-text"></span></span>
+    <span class="updated-chip" id="gps-chip" hidden>Last GPS update: <span id="gps-text"></span></span>
+    <span class="notes-chip" id="notes-chip"><span class="nd"></span><span id="notes-text">Notes · connecting</span></span>
+  </header>
+  <div id="late-toasts" class="late-toasts" aria-live="polite"></div>
+
+  <main>
+    <div id="loading" class="loading-shell">
+      <div>
+        <div class="loading-rule"></div>
+        <p>Loading live stops…</p>
+      </div>
+    </div>
+
+    <div id="board" hidden>
+      <section class="controls" aria-label="Report filters">
+        <div class="counts" aria-label="Summary">
+          <span><strong id="c-stops">0</strong> stops</span>
+          <span><i class="pickup-line"></i><span id="c-pick">0</span> pickups</span>
+          <span><i class="delivery-line"></i><span id="c-del">0</span> deliveries</span>
+          <button class="late-toggle" id="late-toggle" aria-pressed="false"><span id="c-late">0</span> late ETA</button>
+          <button class="gps-toggle" id="gps-toggle" aria-pressed="false" title="Trucks whose GPS is already at the stop but SOS arrival is not signed yet"><span id="c-gps-at-stop">0</span> at stop · SOS pending</button>
+          <button class="pod-toggle" id="pod-toggle" aria-pressed="false" title="Loads where the truck is ON SITE at the last stop (delivery)"><span id="c-pod">0</span> pending POD</button>
+          <button class="clear-toggle" id="latealert-toggle" type="button" aria-pressed="true" title="Alert on this page when a truck's ETA turns late. Click to cycle: sound, visual only, off.">&#128276; Late alerts</button>
+          <button class="clear-toggle" id="clear-filters" type="button">Clear filters</button>
+          <span class="xl-anchor"><button class="clear-toggle xl-btn" id="export-excel" type="button" aria-label="Export Excel"><svg viewBox="0 0 24 24" width="19" height="19" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="4.5" fill="#217346"/><path d="M14.5 2h3A4.5 4.5 0 0 1 22 6.5v11A4.5 4.5 0 0 1 17.5 22h-3Z" fill="#2FA36B"/><path d="M14.5 8.8H22M14.5 15.2H22" stroke="rgba(255,255,255,.55)" stroke-width="1.3"/><path d="M6.1 8.3 11 15.7M11 8.3 6.1 15.7" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/></svg></button><span class="xl-tooltip" role="tooltip"><strong>Export Excel</strong><span>Downloads an .xlsx file with the stops you see right now, with your search and filters applied: pick ups first, then deliveries, with truck, load #, appointment, miles, ETA and notes.</span></span></span>
+        </div>
+        <div class="filter-row">
+          <label class="search-box">
+            <span class="sr-only">Search report</span>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6"></circle><path d="m16 16 4 4"></path></svg>
+            <input type="search" id="q" placeholder="Truck, load, ref #, broker or city" autocomplete="off">
+          </label>
+          <div class="type-filter" role="group" aria-label="Filter by stop type">
+            <button type="button" class="type-filter-btn" data-type="all" aria-pressed="true">Pick ups + deliveries</button>
+            <button type="button" class="type-filter-btn" data-type="P" aria-pressed="false">Pick ups</button>
+            <button type="button" class="type-filter-btn" data-type="D" aria-pressed="false">Deliveries</button>
+          </div>
+          <div class="dispatch-filter" id="dispatcher-filter" hidden>
+            <button type="button" id="dispatcher-btn" class="dispatch-btn" aria-haspopup="true" aria-expanded="false"><span id="dispatcher-btn-label">Dispatcher: All</span><span class="dispatch-chev" aria-hidden="true">▾</span></button>
+            <div class="dispatch-panel" id="dispatcher-panel" role="group" aria-label="Choose dispatchers" hidden>
+              <label class="dispatch-opt dispatch-all"><input type="checkbox" id="dispatcher-all"><span>All dispatchers</span><span class="dispatch-count" id="dispatcher-all-count"></span></label>
+              <div id="dispatcher-list"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="report-list" aria-label="Pending stops">
+        <p id="feed-note" class="section-empty" hidden>Live data hasn't arrived yet — the board fills in automatically as soon as the feed connects.</p>
+        <div id="groups"></div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-database-compat.js"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+<script>
+"use strict";
+/* ===== data (stops arrive live from Firebase /stops) ===== */
+let STOPS = [];
+let DATA_LOADED = false;
+let NOW_ETA = new Date();
+
+const TZ = "America/New_York";
+const FIREBASE_URL = "https://change-of-shift-prointermodal-default-rtdb.firebaseio.com";
+
+/* ===== theme (explicit toggle, persisted; defaults to system) ===== */
+(function initTheme(){
+  let t = null;
+  try { t = localStorage.getItem("ps-theme"); } catch(e) {}
+  if (t !== "light" && t !== "dark") {
+    t = (window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches) ? "dark" : "light";
+  }
+  document.documentElement.dataset.theme = t;
+})();
+document.getElementById("theme-toggle").addEventListener("click", function(){
+  const next = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+  document.documentElement.dataset.theme = next;
+  try { localStorage.setItem("ps-theme", next); } catch(e) {}
+});
+
+/* ===== helpers ===== */
+const $ = id => document.getElementById(id);
+const esc = s => String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const fmtDay = new Intl.DateTimeFormat("en-US",{timeZone:TZ,weekday:"long",month:"long",day:"numeric"});
+const fmtCA = new Intl.DateTimeFormat("en-CA",{timeZone:TZ});
+const fmtApptParts = new Intl.DateTimeFormat("en-US",{timeZone:TZ,month:"2-digit",day:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit",hour12:true});
+function fmtAppt(d){
+  if(!d || isNaN(d.getTime())) return "—";
+  const p={};
+  fmtApptParts.formatToParts(d).forEach(x=>{ p[x.type]=x.value; });
+  return p.month+"/"+p.day+"/"+p.year+" "+p.hour+":"+p.minute+" "+p.dayPeriod;
+}
+const fmtEtaT = new Intl.DateTimeFormat("en-US",{timeZone:TZ,hour:"numeric",minute:"2-digit"});
+const fmtEtaD = new Intl.DateTimeFormat("en-US",{timeZone:TZ,weekday:"short",month:"short",day:"numeric"});
+const fmtUpd = new Intl.DateTimeFormat("en-US",{timeZone:TZ,day:"2-digit",month:"short",hour:"numeric",minute:"2-digit"});
+function fmtNum(n){ return Number(n).toLocaleString("en-US",{maximumFractionDigits:1}); }
+function fmtDur(mins){
+  mins = Math.round(mins);
+  const h = Math.floor(mins/60), m = mins%60;
+  if(h>=48) return Math.floor(h/24)+"d "+(h%24)+"h";
+  if(h<1) return m+"m";
+  return h+"h "+String(m).padStart(2,"0")+"m";
+}
+function urgencyClass(iso, nowMs){
+  const minutes = (new Date(iso).getTime()-nowMs)/60000;
+  if(minutes<0) return "late";
+  if(minutes<=180) return "soon";
+  return "scheduled";
+}
+function firstNum(){
+  for(const v of arguments){
+    if(v==null||v==="") continue;
+    const n=Number(v);
+    if(isFinite(n)) return n;
+  }
+  return null;
+}
+function fmtAge(ms){
+  if(!(ms>0)) return "";
+  const mins=Math.floor(ms/60000);
+  const days=Math.floor(mins/1440), hours=Math.floor((mins%1440)/60), m=mins%60;
+  if(days>0) return days+"d "+hours+"h";
+  if(hours>0) return hours+"h "+String(m).padStart(2,"0")+"m";
+  return m+"m";
+}
+function fmtHos(mins){
+  if(mins==null) return "—";
+  mins=Math.max(0,Math.round(mins));
+  const h=Math.floor(mins/60), m=mins%60;
+  return h+":"+String(m).padStart(2,"0");
+}
+
+/* ===== shared notes (Firebase Realtime Database) ===== */
+const NOTES = {};
+const notesRefHolder = { ref: null, online: false };
+const VERIFY = {};
+const verifyRefHolder = { ref: null };
+let EDITING = null;
+
+function paintNotesChip(){
+  const chip = $("notes-chip"), online = notesRefHolder.online;
+  chip.classList.toggle("live", online);
+  $("notes-text").textContent = online ? "Notes · live" : "Notes · offline";
+}
+function normStop(s){
+  if(!s.id) s.id=String(s.t||"d").toLowerCase()+":"+(s.load||"")+":"+(s.truck||"");
+  let t="";
+  if(s.t!=null) t=String(s.t).toUpperCase().startsWith("P")?"P":"D";
+  else { const ty=String(s.type||"P").toUpperCase(); t=ty.startsWith("D")?"D":"P"; }
+  s.t=t;
+  if(s.miles!=null && s.miles!==""){
+    const n=(typeof s.miles==="number")?s.miles:Number(s.miles);
+    s.miles=isFinite(n)?n:null;
+  }
+  if(s.hos&&typeof s.hos==="object"){
+    const h=s.hos;
+    ["driveMin","shiftMin","cycleMin"].forEach(function(k){
+      const raw=h[k];
+      const n=(typeof raw==="number")?raw:Number(raw);
+      h[k]=(raw==null||raw===""||!isFinite(n))?null:n;
+    });
+  }
+  return s;
+}
+function initNotes(db){
+  const ref=db.ref("notes");
+  notesRefHolder.ref=ref;
+  ref.on("value", snap=>{
+    const v=snap.val()||{};
+    Object.keys(v).forEach(k=>{ const it=v[k]; NOTES[k]=(it&&typeof it.text==="string")?it.text:""; });
+    Object.keys(NOTES).forEach(k=>{ if(!(k in v)) delete NOTES[k]; });
+    if(DATA_LOADED) render();
+  }, err=>{ console.error("notes read",err); });
+}
+function initVerify(db){
+  const ref=db.ref("verifyQueue");
+  verifyRefHolder.ref=ref;
+  ref.on("value", snap=>{
+    const v=snap.val()||{};
+    Object.keys(v).forEach(k=>{ VERIFY[k]=v[k]&&v[k].ts?v[k].ts:Date.now(); });
+    Object.keys(VERIFY).forEach(k=>{ if(!(k in v)) delete VERIFY[k]; });
+    if(DATA_LOADED) render();
+  }, err=>{ console.error("verify read",err); });
+}
+function requestVerify(truck, load, sosId){
+  const ref=verifyRefHolder.ref;
+  if(!ref) return;
+  const t=String(truck);
+  VERIFY[t]=Date.now();
+  render();
+  ref.child(t).set({ts: Date.now(), load: load||"", sosId: sosId==null?"":String(sosId)})
+    .catch(err=>{ console.error("verify write",err); delete VERIFY[t]; render(); });
+}
+function verifyBtnHtml(s){
+  const t=String(s.truck);
+  if(VERIFY[t]) return '<button class="stopdone-btn checking" disabled>Checking&hellip;</button>';
+  return '<button class="stopdone-btn" data-verify="'+esc(t)+'" data-load="'+esc(s.load||"")+'" data-sosid="'+esc(s.sosId==null?"":String(s.sosId))+'">Update Stop</button>';
+}
+
+const PDF_ICON='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2.5h7.5L18 7v14.5H6z" fill="#ffffff" stroke="#c62828" stroke-width="1.4"/><path d="M13.5 2.5 18 7h-4.5z" fill="#ef9a9a"/><rect x="4" y="13" width="16" height="6.4" rx="1.2" fill="#c62828"/><text x="12" y="17.9" text-anchor="middle" font-family="Arial, sans-serif" font-size="4.8" font-weight="700" fill="#ffffff">PDF</text></svg>';
+function lcDocHtml(s){
+  if(!s.lcDoc) return "";
+  return '<span class="copyupd-anchor"><a class="pdf-btn" href="'+esc(s.lcDoc)+'" target="_blank" rel="noopener" aria-label="View LC Document (rate confirmation) for load '+esc(s.load||"")+'">'+PDF_ICON+'</a><span class="copyupd-tooltip" role="tooltip"><strong>LC Document</strong><span>Opens this load&#8217;s rate confirmation (PDF) in a new tab.</span></span></span>';
+}
+
+/* ===== meta chips ===== */
+let META_SOS_UPDATED = null;
+let META_GPS_UPDATED = null;
+function stopGpsRaw(s){
+  const g=s.gps;
+  if(g&&typeof g==="object"&&g.ts) return g.ts;
+  return null;
+}
+function freshestStopGpsMs(){
+  let best=null;
+  for(const s of STOPS){
+    const t=stopGpsRaw(s);
+    if(!t) continue;
+    const ms=new Date(t).getTime();
+    if(isNaN(ms)) continue;
+    if(best==null||ms>best) best=ms;
+  }
+  return best;
+}
+function paintGpsChip(){
+  const chip=$("gps-chip");
+  if(!chip) return;
+  let ms=META_GPS_UPDATED;
+  const fromJob=ms!=null;
+  if(ms==null) ms=freshestStopGpsMs();
+  const t=(ms!=null)?new Date(ms):null;
+  if(!t||isNaN(t.getTime())){ chip.hidden=true; return; }
+  chip.title=fromJob?"Last GPS refresh":"Freshest GPS reading across the trucks on this board";
+  $("gps-text").textContent=fmtUpd.format(t);
+  chip.hidden=false;
+}
+function paintSosChip(){
+  const chip=$("updated-chip");
+  const t=(META_SOS_UPDATED!=null)?new Date(META_SOS_UPDATED):null;
+  if(!t||isNaN(t.getTime())){ chip.hidden=true; return; }
+  $("updated-text").textContent=fmtUpd.format(t);
+  chip.hidden=false;
+}
+function initMeta(db){
+  const readSos = snap=>{
+    const v=snap.val(), t=v?new Date(v):null;
+    META_SOS_UPDATED=(t&&!isNaN(t))?t.getTime():null;
+    paintSosChip();
+  };
+  db.ref("meta/lastApiMirror").on("value", snap=>{
+    if(snap.val()!=null) readSos(snap);
+    else db.ref("meta/lastUpdated").once("value").then(readSos);
+  }, err=>{ console.error("meta read",err); });
+  db.ref("meta/lastGpsUpdate").on("value", snap=>{
+    const v=snap.val(), t=v?new Date(v):null;
+    META_GPS_UPDATED=(t&&!isNaN(t))?t.getTime():null;
+    paintGpsChip();
+  }, err=>{ console.error("meta gps read",err); });
+}
+function initStops(db){
+  db.ref("stops").on("value", snap=>{
+    const v=snap.val(), arr=[];
+    if(Array.isArray(v)) v.forEach(s=>{ if(s) arr.push(s); });
+    else if(v&&typeof v==="object") Object.keys(v).forEach(k=>{ const s=v[k]; if(s) arr.push(s); });
+    arr.forEach(normStop);
+    STOPS=arr; DATA_LOADED=true; NOW_ETA=new Date(); paintGpsChip();
+    render();
+  }, err=>{ console.error("stops read",err); });
+}
+let LOAD_FALLBACK=null;
+function armLoadFallback(){
+  if(LOAD_FALLBACK!=null) return;
+  LOAD_FALLBACK=setTimeout(()=>{ if(!DATA_LOADED) render(); }, 10000);
+}
+function initFirebase(){
+  armLoadFallback();
+  try{
+    if(typeof firebase==="undefined" || !firebase.database) throw new Error("lib");
+    /* databaseURL only — RTDB reads are public, no API key needed */
+    firebase.initializeApp({ databaseURL: FIREBASE_URL });
+    const db=firebase.database();
+    db.ref(".info/connected").on("value", snap=>{
+      notesRefHolder.online = !!snap.val();
+      paintNotesChip();
+    });
+    initStops(db);
+    initNotes(db);
+    initVerify(db);
+    initMeta(db);
+  }catch(e){
+    console.error("firebase init", e);
+    render();
+  }
+}
+function saveNote(key, text){
+  NOTES[key]=text;
+  const ref=notesRefHolder.ref;
+  if(!ref) return;
+  ref.child(key).set({text, ts: Date.now()}).catch(err=>{
+    console.error("notes write",err);
+    notesRefHolder.online=false; paintNotesChip();
+  });
+}
+
+/* ===== board ===== */
+const state={ q:"", lateOnly:false, gpsAtStopOnly:false, podOnly:false, milesSort:null, type:"all", dispatchersHidden:new Set() };
+
+function isLateStop(s){ if(s && s.arrivedTs && !s.departedTs) return false; return s.isLate===true || s.isLate===1; }
+function filtered(){
+  const q=state.q.trim().toLowerCase();
+  const nowMs=Date.now();
+  return STOPS.filter(s=>{
+    if(state.lateOnly && !isLateStop(s)) return false;
+    if(state.gpsAtStopOnly && !isGpsAtStop(s, nowMs)) return false;
+    if(state.podOnly && !isPendingPod(s)) return false;
+    if(state.type==="P" && s.t!=="P"){
+      /* Una fila en delivery con reload (nextLoad) cuya cita es hoy o antes SI entra al filtro de pick ups:
+         de su nextLoad se construye la fila de pickup en render(). Antes el filtro la descartaba aqui
+         y el truck desaparecia del filtro Pick ups aunque tuviera un pickup pendiente (caso trk 55). */
+      const nl=(s.nextLoad&&typeof s.nextLoad==="object")?s.nextLoad:null;
+      if(!nl||!nl.load) return false;
+      if(nl.appt){ const ms=new Date(nl.appt).getTime(); const end=new Date(); end.setHours(23,59,59,999); if(!isNaN(ms)&&ms>end.getTime()) return false; }
+    } else if(state.type==="D" && s.t==="P") return false;
+    if(state.dispatchersHidden.size){
+      const d=String(s.dispatcher==null?"":s.dispatcher).trim().toLowerCase()||"__none__";
+      if(state.dispatchersHidden.has(d)) return false;
+    }
+    if(q){
+      const atStop=isGpsAtStop(s, nowMs);
+      const hay=(s.truck+" "+s.load+" "+(s.ref||"")+" "+(s.broker||"")+" "+(s.addr||"")+" "+(s.parada||"")+" "+(s.st||"")+" "+(NOTES[s.id]||"")+" "+(s.driver||"")+" "+(s.drv||"")+" "+(s.co||"")+" "+(s.dispatcher||"")+" "+(s.hosRisk?"hos risk":"")+" "+(atStop?"gps at stop sos pending arrived":"")+" "+(s.nextLoad?((s.nextLoad.load||"")+" "+(s.nextLoad.ref||"")+" "+(s.nextLoad.broker||"")+" "+(s.nextLoad.parada||"")):"")).toLowerCase();
+      if(!hay.includes(q)) return false;
+    }
+    return true;
+  });
+}
+
+/* ===== GPS helpers ===== */
+function truckCoords(s){
+  const g=(s.gps&&typeof s.gps==="object")?s.gps:null;
+  const lat=firstNum(g?g.lat:null);
+  const lon=firstNum(g?g.lng:null);
+  if(lat==null||lon==null||!isFinite(lat)||!isFinite(lon)) return null;
+  if(Math.abs(lat)>90||Math.abs(lon)>180) return null;
+  return {lat:lat, lng:lon};
+}
+function stopCoords(s){
+  const lat=firstNum(s.stopLat), lng=firstNum(s.stopLng);
+  if(lat==null||lng==null||!isFinite(lat)||!isFinite(lng)) return null;
+  if(Math.abs(lat)>90||Math.abs(lng)>180) return null;
+  return {lat:lat,lng:lng};
+}
+const GPS_FRESH_MS = 12*60*60*1000;
+function gpsActive(s, nowMs){
+  if(!truckCoords(s)) return false;
+  const raw=stopGpsRaw(s);
+  const t=raw?new Date(raw):null;
+  if(!t||isNaN(t.getTime())) return true;
+  return nowMs-t.getTime()<GPS_FRESH_MS;
+}
+function samsaraUrl(raw){
+  const v=raw!=null?String(raw).trim():"";
+  if(!/^https:\/\//i.test(v)) return null;
+  try{
+    const u=new URL(v);
+    if(u.hostname!=="cloud.samsara.com") return null;
+    return u.href;
+  }catch(e){ return null; }
+}
+function truckLocationUrl(s){
+  const dev=samsaraUrl(s.deviceUrl);
+  if(dev) return dev;
+  const sr=(s.samsaraRoute&&typeof s.samsaraRoute==="object")?s.samsaraRoute:null;
+  return samsaraUrl(sr?sr.liveUrl:null);
+}
+function esAvalanche(s){
+  const g=(s&&s.gps&&typeof s.gps==="object")?s.gps:null;
+  if(g&&String(g.fleet)==="3") return true;
+  const u=truckLocationUrl(s);
+  return !!(u&&u.indexOf("/o/7011081/")>=0);
+}
+function gpsMarkHtml(s, nowMs){
+  const av=esAvalanche(s)?'<span class="av-tag">(Avalanche)</span>':"";
+  const on=gpsActive(s, nowMs);
+  const raw=stopGpsRaw(s);
+  const t=raw?new Date(raw):null;
+  const age=(t&&!isNaN(t))?fmtAge(nowMs-t.getTime()):"";
+  const title=on
+    ? (age?"GPS live · updated "+age+" ago":"GPS live")
+    : (age?"GPS inactive · last fix "+age+" ago":"GPS inactive");
+  if(on){
+    const url=truckLocationUrl(s);
+    if(url){
+      return '<a class="gps-mark on" href="'+esc(url)+'" target="_blank" rel="noopener"'+
+        ' title="'+esc(title+" · view truck location in Samsara (opens in a new window)")+'" aria-label="View truck '+esc(s.truck)+' live location in Samsara (opens in a new window)">gps on</a>'+av;
+    }
+    return '<span class="gps-mark on" title="'+esc(title)+'">gps on</span>'+av;
+  }
+  return '<span class="gps-mark off" title="'+esc(title)+'">gps off</span>'+av;
+}
+
+/* ===== arrival / departure pills ===== */
+function arrivalState(s){
+  const has=v=>v!=null&&String(v).trim()!=="";
+  const arrived=has(s.arrivedTs);
+  const departed=has(s.departedTs);
+  if(!arrived&&!departed) return null;
+  return (arrived&&!departed)?"onsite":"enroute";
+}
+function isPendingPod(s){
+  if(arrivalState(s)!=="onsite") return false;
+  if(s.isLastStop===true) return true;
+  if(s.isLastStop===false) return false;
+  const t=(s.type||"").toUpperCase();
+  return t.indexOf("DELIV")===0;
+}
+function arrivalPillHtml(s){
+  const st=arrivalState(s);
+  if(!st) return "";
+  return st==="onsite"
+    ? '<span class="arrival-pill onsite">ON SITE</span>'
+    : '<span class="arrival-pill enroute">EN ROUTE</span>';
+}
+const GPS_AT_STOP_RADIUS_MI = 0.5;
+function haversineMiles(a,b){
+  if(!a||!b) return null;
+  const R=3958.8, toRad=function(d){ return d*Math.PI/180; };
+  const dLat=toRad(b.lat-a.lat), dLng=toRad(b.lng-a.lng);
+  const s1=Math.sin(dLat/2), s2=Math.sin(dLng/2);
+  const h=s1*s1+Math.cos(toRad(a.lat))*Math.cos(toRad(b.lat))*s2*s2;
+  return 2*R*Math.asin(Math.min(1,Math.sqrt(h)));
+}
+function gpsAtStopInfo(s, nowMs){
+  const empty={atStop:false, distMiles:null, gpsAgeMs:null};
+  if(arrivalState(s)==="onsite") return empty;
+  const raw=stopGpsRaw(s);
+  const gt=raw?new Date(raw):null;
+  const gpsAgeMs=(gt&&!isNaN(gt.getTime()))?(nowMs-gt.getTime()):null;
+  const distMiles=haversineMiles(truckCoords(s), stopCoords(s));
+  if(typeof s.gpsAtStop==="boolean"){
+    if(s.arrivedTs) return empty;
+    return {atStop:s.gpsAtStop, distMiles:distMiles, gpsAgeMs:gpsAgeMs};
+  }
+  if(s.arrivedTs) return empty;
+  if(gpsAgeMs==null || gpsAgeMs>GPS_FRESH_MS) return {atStop:false, distMiles:null, gpsAgeMs:gpsAgeMs};
+  if(distMiles==null) return empty;
+  return {atStop:distMiles<=GPS_AT_STOP_RADIUS_MI, distMiles:distMiles, gpsAgeMs:gpsAgeMs};
+}
+function isGpsAtStop(s, nowMs){ return gpsAtStopInfo(s, nowMs).atStop; }
+function gpsAtStopPillHtml(s, nowMs){
+  const info=gpsAtStopInfo(s, nowMs);
+  if(!info.atStop) return "";
+  const distTxt=(info.distMiles!=null)?(info.distMiles<0.1?"<0.1 mi":info.distMiles.toFixed(1)+" mi"):"at stop";
+  const ageTxt=(info.gpsAgeMs!=null)?(" · GPS "+fmtAge(info.gpsAgeMs)+" ago"):"";
+  const title="GPS shows truck at the stop ("+distTxt+")"+ageTxt+" — SOS arrival not signed yet";
+  return '<span class="arrival-pill gps" title="'+esc(title)+'" aria-label="'+esc(title)+'">GPS AT STOP · please sign SOS</span>';
+}
+
+/* ===== reload (next load) ===== */
+function nextLoadHtml(s){
+  const nl=(s.nextLoad&&typeof s.nextLoad==="object")?s.nextLoad:null;
+  if(!nl) return "";
+  /* only show when the next pickup is today or past (feed may pre-filter) */
+  if(nl.appt){
+    const ms=new Date(nl.appt).getTime();
+    if(!isNaN(ms)){
+      const endOfToday=new Date(); endOfToday.setHours(23,59,59,999);
+      if(ms>endOfToday.getTime()) return "";
+    }
+  }
+  const load=(nl.load==null?"":String(nl.load)).trim();
+  const id=(nl.sosId==null?"":String(nl.sosId)).trim();
+  if(!load&&!id) return "";
+  const label="next"+(load?" #"+load:"");
+  const rtHtml = (nl.route||"").trim() ? '<span class="load-route">'+esc(nl.route)+'</span>' : '';
+  if(!id) return '<span class="load-line"><span class="load-number next-load" title="Next load SOS link unavailable">'+esc(label)+'</span>'+rtHtml+'</span>';
+  const href="https://pro-intermodal.sostruckingsoftware.com/app/long-loads-edit?id="+encodeURIComponent(id);
+  const pdfHtml = nl.lcDoc ? '<a class="pdf-mini" href="'+esc(nl.lcDoc)+'" target="_blank" rel="noopener" title="LC Document of next load '+esc(load)+'" aria-label="View LC Document of next load '+esc(load)+'">'+PDF_ICON+'</a>' : '';
+  return '<span class="load-line"><a class="load-number next-load" href="'+esc(href)+'" target="_blank" rel="noopener noreferrer" aria-label="Open SOS next load '+esc(load)+'">'+esc(label)+'<span aria-hidden="true" class="external-mark">↗</span></a>'+pdfHtml+rtHtml+'</span>';
+}
+
+/* ===== tooltips ===== */
+function crewTooltipHtml(s){
+  const safeId = "c-"+String(s.id).replace(/[^a-zA-Z0-9_-]/g,"-");
+  const drv=s.driver||s.drv||"", co=s.co||"";
+  let body;
+  if(drv||co){
+    body='<span class="crew-role">Driver</span><strong>'+esc(drv||"Not listed")+'</strong>'+
+      (s.drvPhone?'<span>'+esc(s.drvPhone)+'</span>':"");
+    if(co){
+      body+='<span class="crew-divider"></span><span class="crew-role">Co-driver</span><strong>'+esc(co)+'</strong>'+
+        (s.coPhone?'<span>'+esc(s.coPhone)+'</span>':"");
+    }
+  }else{
+    body='<span>Driver information unavailable.</span>';
+  }
+  return '<span class="crew-anchor"><button type="button" class="truck-number" aria-describedby="'+safeId+'">'+esc(s.truck)+'</button>'+
+    '<span class="crew-tooltip" id="'+safeId+'" role="tooltip">'+body+'</span></span>';
+}
+function hosRiskFlag(s){
+  const v=s.hosRisk;
+  if(v===true||v===1) return true;
+  if(typeof v==="string"){ const t=v.trim().toLowerCase(); return t!==""&&t!=="false"&&t!=="0"; }
+  return false;
+}
+function etaTooltipHtml(s){
+  const safeId = "e-"+String(s.id).replace(/[^a-zA-Z0-9_-]/g,"-");
+  const e=s.eta?new Date(s.eta):null;
+  const validEta=e&&!isNaN(e.getTime());
+  const late=isLateStop(s);
+  const hos=(s.hos&&typeof s.hos==="object")?s.hos:null;
+  const hasHos=hos&&(hos.driveMin!=null||hos.shiftMin!=null||hos.cycleMin!=null);
+  let hosLine="";
+  if(hasHos){
+    hosLine="Drive "+fmtHos(hos.driveMin)+" · Shift "+fmtHos(hos.shiftMin)+" · Cycle "+fmtHos(hos.cycleMin);
+  }
+  if(hosRiskFlag(s)){
+    hosLine+=(hosLine?" · ":"")+'<span class="hos-risk-inline" title="The miles left don\'t fit the driver\'s legal hours.">HOS RISK</span>';
+  }
+  return '<span class="eta-anchor"><button type="button" class="eta-value" aria-describedby="'+safeId+'" aria-label="'+(late?"Late ":"")+'ETA for truck '+esc(s.truck)+'">'+
+    (validEta?esc((fmtEtaD.format(e)!==fmtEtaD.format(NOW_ETA)?fmtEtaD.format(e)+" \u00b7 ":"")+fmtEtaT.format(e)):"—")+'</button>'+
+    '<span class="eta-tooltip" id="'+safeId+'" role="tooltip"><strong>'+(validEta?(late?"Projected after appointment":"Projected on time"):"ETA unavailable")+'</strong>'+
+    '<span>'+(validEta?esc(fmtEtaD.format(e))+" · evaluated "+esc(fmtUpd.format(NOW_ETA))+" ET":"Awaiting current GPS and miles data.")+'</span>'+
+    (hosLine?'<small class="eta-hos">'+hosLine+'</small>':"")+'</span></span>';
+}
+
+/* ===== route icon ===== */
+function routeIconHtml(s){
+  const svg='<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="6" cy="18" r="2.4" fill="currentColor" stroke="none"/>'+
+    '<circle cx="18" cy="6" r="2.4" fill="currentColor" stroke="none"/>'+
+    '<path d="M6 15.4V13c0-2.2 1.8-3.5 4-3.5h5c1.4 0 3-.7 3-2" stroke-dasharray="2.4 2"/></svg>';
+  const sr=(s.samsaraRoute&&typeof s.samsaraRoute==="object")?s.samsaraRoute:null;
+  const rawUrl=sr&&sr.url!=null?String(sr.url).trim():"";
+  if(rawUrl&&/^https?:\/\//i.test(rawUrl)){
+    return '<a class="route-btn" href="'+esc(rawUrl)+'" target="_blank" rel="noopener" title="View route in Samsara (opens in a new window)" aria-label="View route in Samsara">'+svg+'</a>';
+  }
+  /* fallback: Google Maps directions from the truck GPS to the stop */
+  const from=truckCoords(s), dest=stopCoords(s);
+  if(from&&dest){
+    const href="https://www.google.com/maps/dir/?api=1&travelmode=driving&origin="+from.lat+","+from.lng+"&destination="+dest.lat+","+dest.lng;
+    return '<a class="route-btn" href="'+esc(href)+'" target="_blank" rel="noopener" title="Open driving directions in Google Maps" aria-label="Open driving directions">'+svg+'</a>';
+  }
+  return "";
+}
+function routeProgressHtml(s){
+  const sr=(s.samsaraRoute&&typeof s.samsaraRoute==="object")?s.samsaraRoute:null;
+  const p=(sr&&sr.progress&&typeof sr.progress==="object")?sr.progress:null;
+  if(!p||p.total==null||p.total<=1) return "";
+  let cur=(p.current==null)?((p.done==null?0:p.done)+1):p.current;
+  cur=Math.max(1,Math.min(p.total,Math.round(cur)));
+  return '<span class="stop-progress" title="Route progress: stop '+cur+' of '+p.total+'">Stop '+cur+' of '+p.total+'</span>';
+}
+
+/* ===== notes ===== */
+function noteCellHtml(s){
+  const key=s.id, note=NOTES[key]||"";
+  if(EDITING===key){
+    return '<div class="note-cell" data-key="'+esc(key)+'"><form class="note-form" data-key="'+esc(key)+'">'+
+      '<textarea rows="2" aria-label="Note for truck '+esc(s.truck)+'" title="Shared with everyone viewing this page · notes can be edited but not deleted · Enter to save">'+esc(note)+'</textarea>'+
+      '<div class="note-actions"><button type="button" class="text-button" data-act="cancel">Cancel</button>'+
+      '<button type="submit" class="save-button">Save</button></div></form></div>';
+  }
+  return '<div class="note-cell"><button type="button" class="note-button" data-key="'+esc(key)+
+    '" aria-label="Edit note for truck '+esc(s.truck)+'">'+(note?esc(note):"Add note")+'</button></div>';
+}
+
+/* ===== row / sections ===== */
+function brokerRefLine(s){
+  const b=(s.broker||"").trim(), r=(s.ref||"").trim();
+  if(b&&r){
+    if(r.toLowerCase().includes(b.toLowerCase())||r===b) return r;
+    if(b.toLowerCase().includes(r.toLowerCase())) return b;
+    return b+" / "+r;
+  }
+  return b||r||"No broker / reference";
+}
+function truckTypeWord(s){ return s.t==="P"?"pickup":"delivery"; }
+function typeLabel(s){ return s.t==="P"?"PICK UP":"DELIVERY"; }
+
+function rowHtml(s, nowMs){
+  const late = isLateStop(s);
+  const gpsInfo = gpsAtStopInfo(s, nowMs);
+  const timeMs = new Date(s.appt).getTime();
+  let rel, past=false;
+  if(isNaN(timeMs)){ rel="time to be confirmed"; }
+  else if(timeMs<nowMs){ rel="past due"; past=true; } else { rel="in "+fmtDur((timeMs-nowMs)/60000); }
+  const loadNum = "#"+s.load;
+  const sosId = (s.sosId==null?"":String(s.sosId)).trim();
+  const loadHtml = sosId
+    ? '<a class="load-number" href="https://pro-intermodal.sostruckingsoftware.com/app/long-loads-edit?id='+esc(encodeURIComponent(sosId))+'" target="_blank" rel="noopener noreferrer" aria-label="Open SOS load '+esc(s.load)+'">'+esc(loadNum)+'<span aria-hidden="true" class="external-mark">↗</span></a>'
+    : '<span class="load-number" title="SOS link unavailable">'+esc(loadNum)+'</span>';
+  const routeHtml = s.route ? '<span class="load-route">'+esc(s.route)+'</span>' : '';
+  const trailer = (s.trailer||"").trim();
+  const mailHtml = gpsActive(s,nowMs) ? '<span class="copyupd-anchor"><button type="button" class="copyupd-btn" data-copyup="'+esc(s.id)+'" aria-label="Copy broker update email for truck '+esc(s.truck)+'"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg></button><span class="copyupd-tooltip" role="tooltip"><strong>Copy broker update</strong><span>Copies an email-ready update for this truck: where it is now, miles to the stop and ETA, with OTP / OTD status for the appointment. Paste it into your email to the broker.</span><span class="copyupd-preview">'+esc(buildBrokerUpdate(s,null)).replace(/\n/g,"<br>")+'</span></span></span>' : '';
+  const actionsHtml = (mailHtml || s.lcDoc) ? '<div class="row-actions">'+mailHtml+lcDocHtml(s)+'</div>' : '';
+  return '<article class="stop-row '+urgencyClass(s.appt,nowMs)+(gpsInfo.atStop?" gps-at-stop":"")+'">'+
+    '<div class="truck-cell"><span class="truck-id"><span class="truck-line">'+crewTooltipHtml(s)+
+      (trailer?'<span class="trailer-tag">'+esc(trailer)+'</span>':"")+'</span>'+
+      gpsMarkHtml(s,nowMs)+'</span><span class="type-mark '+truckTypeWord(s)+'">'+typeLabel(s)+'</span></div>'+
+    '<div class="load-cell"><span class="load-line">'+loadHtml+routeHtml+'</span>'+nextLoadHtml(s)+'<span>'+esc(brokerRefLine(s))+'</span>'+actionsHtml+'</div>'+
+    '<div class="st-cell"><span class="mobile-label">ST&nbsp;</span><span class="st-code">'+esc(s.st||"—")+'</span></div>'+
+    '<div class="appointment-cell"><span class="mobile-label">Appointment</span><strong>'+esc(fmtAppt(new Date(s.appt)))+'</strong></div>'+
+    '<div class="time-cell'+(late?" late":"")+'">'+(arrivalState(s)==="onsite"?"":'<span class="mobile-label">ETA</span><span class="eta-label">'+etaTooltipHtml(s)+'</span>')+'</div>'+
+    '<div class="miles-cell"><span class="mobile-label">Miles</span><span class="miles-wrap"><strong>'+(s.miles==null?"—":esc(fmtNum(s.miles)))+'</strong>'+
+      routeIconHtml(s)+routeProgressHtml(s)+((s.stopIndex&&s.stopCount)?'<span class="stop-count">Stop '+s.stopIndex+'/'+s.stopCount+'</span>':"")+'</span></div>'+
+    '<div class="place-cell"><span>'+esc(s.parada||s.addr||"Address unavailable")+'</span>'+(s.prevDlvry?'<span class="prev-dlvry-pill">ON PREVIOUS DLVRY</span>':arrivalPillHtml(s)+gpsAtStopPillHtml(s,nowMs)+verifyBtnHtml(s))+'</div>'+
+    noteCellHtml(s)+
+  '</article>';
+}
+function headHtml(){
+  const ms=state.milesSort;
+  const milesHead='<span class="sort-head" data-sort="miles" title="Sort by miles">Miles'+(ms?' <span class="arr">'+(ms==="asc"?"\u25B2":"\u25BC")+'</span>':"")+'</span>';
+  return '<div class="desktop-head"><span>Truck</span><span>Load #</span>'+
+    '<span>ST</span><span>Appt</span><span>Notes</span>'+milesHead+'<span>Next stop</span><span>ETA</span></div>';
+}
+function dateGroupsHtml(rows, nowMs){
+  if(state.milesSort){
+    const dir=state.milesSort==="asc"?1:-1;
+    const byMiles=rows.slice().sort((a,b)=>{
+      const ma=(a.miles==null||a.miles==="")?null:Number(a.miles);
+      const mb=(b.miles==null||b.miles==="")?null:Number(b.miles);
+      if(ma==null&&mb==null) return new Date(a.appt)-new Date(b.appt);
+      if(ma==null) return 1;
+      if(mb==null) return -1;
+      return (ma-mb)*dir || (new Date(a.appt)-new Date(b.appt));
+    });
+    return '<div class="rows">'+byMiles.map(s2=>rowHtml(s2,nowMs)).join("")+'</div>';
+  }
+  rows=rows.slice().sort((a,b)=>new Date(a.appt)-new Date(b.appt));
+  const map=new Map();
+  rows.forEach(s=>{
+    const d0=new Date(s.appt);
+    const key=isNaN(d0.getTime())?"undated":fmtCA.format(d0);
+    if(!map.has(key)) map.set(key,[]);
+    map.get(key).push(s);
+  });
+  return [...map.keys()].sort().map(k=>{
+    const list=map.get(k);
+    const d0=new Date(list[0].appt);
+    const head=isNaN(d0.getTime())?"Date to be confirmed":fmtDay.format(d0);
+    return '<section class="date-group"><h2>'+esc(head)+'<span>'+list.length+'</span></h2>'+
+      '<div class="rows">'+list.map(s=>rowHtml(s,nowMs)).join("")+'</div></section>';
+  }).join("");
+}
+function typeSectionHtml(kind, rows, nowMs){
+  const isP=kind==="P";
+  const label=isP?"PICK UPS":"DELIVERY", cls=isP?"pickup":"delivery";
+  const word=isP?"pick ups":"deliveries";
+  const emptyNote=rows.length?"":'<div class="section-empty">No '+word+' match the current filters.</div>';
+  return '<section class="type-section" aria-label="'+(isP?"Pick ups":"Deliveries")+'">'+
+    '<h2 class="section-head '+cls+'">'+label+'<span class="section-count">'+rows.length+'</span></h2>'+
+    headHtml()+emptyNote+(rows.length?dateGroupsHtml(rows,nowMs):"")+'</section>';
+}
+
+/* ===== dispatcher filter (multi-select with checkboxes) ===== */
+let DP_SIG="";
+function dispatcherList(){
+  const seen=new Map();
+  STOPS.forEach(s=>{
+    const d=String(s.dispatcher==null?"":s.dispatcher).trim();
+    const key=d?d.toLowerCase():"__none__";
+    if(!seen.has(key)) seen.set(key, d||"(No dispatcher)");
+  });
+  return [...seen.entries()].map(([key,label])=>({key,label}))
+    .sort((a,b)=> (a.key==="__none__")-(b.key==="__none__") || a.label.localeCompare(b.label));
+}
+function syncDispatcherUI(){
+  const wrap=$("dispatcher-filter"); if(!wrap) return;
+  const list=dispatcherList();
+  if(list.length===0){ wrap.hidden=true; DP_SIG=""; state.dispatchersHidden.clear(); return; }
+  wrap.hidden=false;
+  const keys=new Set(list.map(x=>x.key));
+  for(const k of [...state.dispatchersHidden]) if(!keys.has(k)) state.dispatchersHidden.delete(k);
+  const sig=list.map(x=>x.key).join("|");
+  const box=$("dispatcher-list");
+  if(sig!==DP_SIG){
+    DP_SIG=sig;
+    box.innerHTML=list.map(x=>'<label class="dispatch-opt"><input type="checkbox" data-dkey="'+esc(x.key)+'"><span>'+esc(x.label)+'</span><span class="dispatch-count" data-dcount="'+esc(x.key)+'"></span></label>').join("");
+  }
+  const dcounts=new Map();
+  STOPS.forEach(s=>{
+    const d=String(s.dispatcher==null?"":s.dispatcher).trim().toLowerCase()||"__none__";
+    dcounts.set(d,(dcounts.get(d)||0)+1);
+  });
+  box.querySelectorAll("input[data-dkey]").forEach(inp=>{
+    inp.checked=!state.dispatchersHidden.has(inp.getAttribute("data-dkey"));
+  });
+  box.querySelectorAll("[data-dcount]").forEach(sp=>{
+    sp.textContent="("+(dcounts.get(sp.getAttribute("data-dcount"))||0)+")";
+  });
+  const allBox=$("dispatcher-all");
+  allBox.checked=state.dispatchersHidden.size===0;
+  allBox.indeterminate=state.dispatchersHidden.size>0 && state.dispatchersHidden.size<list.length;
+  $("dispatcher-all-count").textContent="("+STOPS.length+")";
+  const vis=list.filter(x=>!state.dispatchersHidden.has(x.key));
+  $("dispatcher-btn-label").textContent = state.dispatchersHidden.size===0 ? "Dispatcher: All"
+    : vis.length===1 ? "Dispatcher: "+vis[0].label
+    : "Dispatcher: "+vis.length+" of "+list.length;
+}
+
+/* ===== render ===== */
+function render(){
+  let keepText=null;
+  if(EDITING!=null){
+    const ta=document.querySelector(".note-form[data-key] textarea");
+    if(ta) keepText=ta.value;
+  }
+  const nowMs=Date.now();
+  const allSorted=STOPS.slice().sort((a,b)=>new Date(a.appt)-new Date(b.appt));
+  const rows=filtered();
+
+  const pick=allSorted.filter(s=>s.t==="P").length;
+  $("c-stops").textContent=allSorted.length;
+  $("c-pick").textContent=pick;
+  $("c-del").textContent=allSorted.length-pick;
+  $("c-late").textContent=allSorted.filter(isLateStop).length;
+  const lt=$("late-toggle");
+  lt.classList.toggle("active", state.lateOnly);
+  lt.setAttribute("aria-pressed", state.lateOnly?"true":"false");
+  const gpsAtStopCount=allSorted.filter(s=>isGpsAtStop(s, nowMs)).length;
+  $("c-gps-at-stop").textContent=gpsAtStopCount;
+  const gt=$("gps-toggle");
+  gt.classList.toggle("active", state.gpsAtStopOnly);
+  gt.setAttribute("aria-pressed", state.gpsAtStopOnly?"true":"false");
+  const podCount=allSorted.filter(isPendingPod).length;
+  $("c-pod").textContent=podCount;
+  const pt=$("pod-toggle");
+  pt.classList.toggle("active", state.podOnly);
+  pt.setAttribute("aria-pressed", state.podOnly?"true":"false");
+  document.querySelectorAll(".type-filter-btn").forEach(b=>
+    b.setAttribute("aria-pressed", b.getAttribute("data-type")===state.type?"true":"false"));
+  syncDispatcherUI();
+
+  const groupsEl=$("groups");
+  const deliveries=rows.filter(s=>s.t!=="P");
+  const pickups=rows.filter(s=>s.t==="P");
+  if(state.type!=="D"){
+    const endToday=new Date(); endToday.setHours(23,59,59,999);
+    deliveries.forEach(s=>{
+      const nl=(s.nextLoad&&typeof s.nextLoad==="object")?s.nextLoad:null;
+      if(!nl||!nl.load) return;
+      if(nl.appt){ const ms=new Date(nl.appt).getTime(); if(!isNaN(ms)&&ms>endToday.getTime()) return; }
+      pickups.push(Object.assign({}, s, {
+        t:"P", type:"PICK UP", load:String(nl.load), sosId:(nl.sosId==null?"":nl.sosId),
+        appt:nl.appt||null, parada:nl.parada||"", addr:nl.parada||"",
+        st:nl.st||"", broker:nl.broker||"", ref:nl.ref||"", route:(nl.route||""),
+        miles:(nl.miles!=null?nl.miles:null), eta:null, isLate:false, hos:null, hosRisk:false,
+        arrivedTs:null, departedTs:null, signedBy:"",
+        stopIndex:nl.stopIndex||null, stopCount:nl.stopCount||null,
+        isLastStop:false, nextLoad:null,
+        stopLat:(nl.lat!=null?nl.lat:null), stopLng:(nl.lng!=null?nl.lng:null), gpsAtStop:false, samsaraRoute:null,
+        id:"p:"+nl.load+":"+s.truck, prevDlvry:true
+      }));
+    });
+  }
+  const noResults=rows.length ? "" :
+    '<div class="no-results"><strong>No matches.</strong><span>Try another truck, load, or filter.</span>'+
+    '<button data-act="clear">Clear filters</button></div>';
+  let sections="";
+  if(state.type!=="D") sections+=typeSectionHtml("P",pickups,nowMs);
+  if(state.type!=="P") sections+=typeSectionHtml("D",deliveries,nowMs);
+  groupsEl.innerHTML=noResults+sections;
+
+  if(EDITING!=null){
+    const ta=document.querySelector('.note-form[data-key="'+EDITING.split('"').join('\\"')+'"] textarea');
+    if(ta){
+      if(keepText!=null) ta.value=keepText;
+      ta.focus(); ta.setSelectionRange(ta.value.length,ta.value.length);
+    }else{
+      EDITING=null;
+    }
+  }
+
+  const fn=$("feed-note");
+  if(fn) fn.hidden = DATA_LOADED;
+  $("loading").hidden=true;
+  $("board").hidden=false;
+  checkLateTransitions();
+}
+
+/* ===== export to Excel (exactly the filtered view on screen) ===== */
+const EXPORT_HEADERS=["SECTION","TRUCK","LOAD #","ROUTE","BROKER / REF","NEXT LOAD","ST","APPT","NOTES","MILES","NEXT STOP","ETA","STATUS","LATE","DISPATCHER","DRIVER"];
+const EXPORT_WIDTHS=[11,9,11,9,30,11,5,20,40,9,45,20,24,6,16,22];
+function sortSectionForExport(list){
+  if(state.milesSort){
+    const dir=state.milesSort==="asc"?1:-1;
+    return list.slice().sort((a,b)=>{
+      const ma=(a.miles==null||a.miles==="")?null:Number(a.miles);
+      const mb=(b.miles==null||b.miles==="")?null:Number(b.miles);
+      if(ma==null&&mb==null) return new Date(a.appt)-new Date(b.appt);
+      if(ma==null) return 1;
+      if(mb==null) return -1;
+      return (ma-mb)*dir || (new Date(a.appt)-new Date(b.appt));
+    });
+  }
+  return list.slice().sort((a,b)=>{
+    const ta=new Date(a.appt).getTime(), tb=new Date(b.appt).getTime();
+    const na=isNaN(ta), nb=isNaN(tb);
+    if(na&&nb) return 0;
+    if(na) return 1;
+    if(nb) return -1;
+    return ta-tb;
+  });
+}
+function buildExportRows(){
+  const nowMs=Date.now();
+  const rows=filtered();
+  const deliveries=rows.filter(s=>s.t!=="P");
+  const pickups=rows.filter(s=>s.t==="P");
+  if(state.type!=="D"){
+    const endToday=new Date(); endToday.setHours(23,59,59,999);
+    deliveries.forEach(s=>{
+      const nl=(s.nextLoad&&typeof s.nextLoad==="object")?s.nextLoad:null;
+      if(!nl||!nl.load) return;
+      if(nl.appt){ const ms=new Date(nl.appt).getTime(); if(!isNaN(ms)&&ms>endToday.getTime()) return; }
+      pickups.push(Object.assign({}, s, {
+        t:"P", type:"PICK UP", load:String(nl.load), sosId:(nl.sosId==null?"":nl.sosId),
+        appt:nl.appt||null, parada:nl.parada||"", addr:nl.parada||"",
+        st:nl.st||"", broker:nl.broker||"", ref:nl.ref||"", route:(nl.route||""),
+        miles:(nl.miles!=null?nl.miles:null), eta:null, isLate:false, hos:null, hosRisk:false,
+        arrivedTs:null, departedTs:null, signedBy:"",
+        stopIndex:nl.stopIndex||null, stopCount:nl.stopCount||null,
+        isLastStop:false, nextLoad:null,
+        stopLat:(nl.lat!=null?nl.lat:null), stopLng:(nl.lng!=null?nl.lng:null), gpsAtStop:false, samsaraRoute:null,
+        id:"p:"+nl.load+":"+s.truck, prevDlvry:true
+      }));
+    });
+  }
+  const out=[];
+  const pushRow=(section,s)=>{
+    const st=arrivalState(s);
+    const parts=[];
+    if(s.prevDlvry) parts.push("ON PREVIOUS DLVRY");
+    else{
+      if(st==="onsite") parts.push("ON SITE");
+      else if(st==="enroute") parts.push("EN ROUTE");
+      if(isGpsAtStop(s, nowMs)) parts.push("GPS AT STOP");
+    }
+    let etaTxt="";
+    if(st!=="onsite" && s.eta){
+      const e=new Date(s.eta);
+      if(!isNaN(e.getTime())) etaTxt=(fmtEtaD.format(e)!==fmtEtaD.format(NOW_ETA)?fmtEtaD.format(e)+" \u00b7 ":"")+fmtEtaT.format(e);
+    }
+    const milesNum=(s.miles==null||s.miles==="")?null:Number(s.miles);
+    out.push([
+      section,
+      s.truck==null?"":String(s.truck),
+      s.load==null?"":String(s.load),
+      s.route||"",
+      brokerRefLine(s),
+      (s.nextLoad&&s.nextLoad.load!=null)?String(s.nextLoad.load):"",
+      s.st||"",
+      fmtAppt(new Date(s.appt)),
+      NOTES[s.id]||"",
+      (milesNum==null||isNaN(milesNum))?null:milesNum,
+      s.parada||s.addr||"",
+      etaTxt,
+      parts.join(" \u00b7 "),
+      isLateStop(s)?"Yes":"",
+      s.dispatcher||"",
+      s.driver||s.drv||""
+    ]);
+  };
+  if(state.type!=="D") sortSectionForExport(pickups).forEach(s=>pushRow("PICK UP",s));
+  if(state.type!=="P") sortSectionForExport(deliveries).forEach(s=>pushRow("DELIVERY",s));
+  return out;
+}
+function downloadBlob(blob, name){
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  a.href=url; a.download=name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url), 4000);
+}
+function exportExcel(){
+  const data=buildExportRows();
+  const now=new Date();
+  const p2=n=>String(n).padStart(2,"0");
+  const stamp=now.getFullYear()+p2(now.getMonth()+1)+p2(now.getDate())+"-"+p2(now.getHours())+p2(now.getMinutes());
+  if(window.XLSX && XLSX.utils && XLSX.writeFile){
+    const ws=XLSX.utils.aoa_to_sheet([EXPORT_HEADERS].concat(data));
+    ws["!cols"]=EXPORT_WIDTHS.map(w=>({wch:w}));
+    const wb=XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Pending Stops");
+    XLSX.writeFile(wb, "pending-stops-"+stamp+".xlsx");
+    return;
+  }
+  /* Fallback: .xls (HTML table) when the SheetJS CDN did not load, so the button never dead-ends */
+  const cell=v=>"<td>"+esc(v==null?"":String(v))+"</td>";
+  const html='<html xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="UTF-8"></head><body><table>'+
+    "<tr>"+EXPORT_HEADERS.map(h=>"<th>"+esc(h)+"</th>").join("")+"</tr>"+
+    data.map(r=>"<tr>"+r.map(cell).join("")+"</tr>").join("")+
+    "</table></body></html>";
+  downloadBlob(new Blob(["\ufeff"+html],{type:"application/vnd.ms-excel"}), "pending-stops-"+stamp+".xls");
+}
+
+/* ===== late ETA alerts (in-page only; nothing is sent to any chat) ===== */
+let lateAlertMode=(function(){ try{ const v=localStorage.getItem("psLateAlerts"); return (v==="visual"||v==="off")?v:"sound"; }catch(e){ return "sound"; } })();
+let knownLateIds=null;
+let lateAudioCtx=null;
+function paintLateAlertToggle(){
+  const b=$("latealert-toggle"); if(!b) return;
+  if(lateAlertMode==="sound"){ b.innerHTML="&#128276; Late alerts"; b.setAttribute("aria-pressed","true"); }
+  else if(lateAlertMode==="visual"){ b.innerHTML="&#128276; Late alerts · silent"; b.setAttribute("aria-pressed","true"); }
+  else { b.innerHTML="&#128277; Late alerts off"; b.setAttribute("aria-pressed","false"); }
+}
+function playLateBeep(){
+  try{
+    const AC=window.AudioContext||window.webkitAudioContext; if(!AC) return;
+    lateAudioCtx=lateAudioCtx||new AC();
+    if(lateAudioCtx.state==="suspended"){ const p=lateAudioCtx.resume(); if(p&&p.catch) p.catch(()=>{}); }
+    const t0=lateAudioCtx.currentTime;
+    [880,659].forEach((f,i)=>{
+      const o=lateAudioCtx.createOscillator(), g=lateAudioCtx.createGain();
+      o.type="sine"; o.frequency.value=f;
+      const st=t0+i*0.18;
+      g.gain.setValueAtTime(0.0001,st);
+      g.gain.exponentialRampToValueAtTime(0.15,st+0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001,st+0.16);
+      o.connect(g); g.connect(lateAudioCtx.destination);
+      o.start(st); o.stop(st+0.18);
+    });
+  }catch(e){}
+}
+function showLateToast(s, extraCount){
+  const box=$("late-toasts"); if(!box) return;
+  const d=document.createElement("div");
+  d.className="late-toast"; d.setAttribute("role","alert");
+  if(s){
+    let etaTxt="";
+    if(s.eta){ const e=new Date(s.eta); if(!isNaN(e.getTime())) etaTxt=(fmtEtaD.format(e)!==fmtEtaD.format(NOW_ETA)?fmtEtaD.format(e)+" \u00b7 ":"")+fmtEtaT.format(e); }
+    d.innerHTML="<strong>\u26a0 Truck "+esc(s.truck)+" is now LATE</strong>"+
+      "<span>Load #"+esc(s.load==null?"":String(s.load))+" \u00b7 Appt "+esc(fmtAppt(new Date(s.appt)))+(etaTxt?" \u00b7 ETA "+esc(etaTxt):"")+"</span>"+
+      "<span>"+esc(s.parada||s.addr||"")+"</span>";
+  }else{
+    d.innerHTML="<strong>\u26a0 +"+extraCount+" more truck"+(extraCount===1?"":"s")+" just turned LATE</strong><span>Open the Late ETA filter to see them all.</span>";
+  }
+  const kill=()=>{ d.classList.add("hide"); setTimeout(()=>d.remove(),450); };
+  d.addEventListener("click",kill);
+  box.appendChild(d);
+  setTimeout(kill, 14000);
+}
+function checkLateTransitions(){
+  if(!DATA_LOADED) return;
+  const cur=new Map();
+  STOPS.forEach(s=>{ if(isLateStop(s)) cur.set(s.id,s); });
+  if(knownLateIds===null){ knownLateIds=cur; return; }
+  const fresh=[...cur.keys()].filter(id=>!knownLateIds.has(id));
+  knownLateIds=cur;
+  if(!fresh.length||lateAlertMode==="off") return;
+  fresh.slice(0,3).forEach(id=>showLateToast(cur.get(id)));
+  if(fresh.length>3) showLateToast(null, fresh.length-3);
+  if(lateAlertMode==="sound") playLateBeep();
+}
+
+/* ===== broker update (Copy update button) ===== */
+function findDisplayStop(id){
+  const base=STOPS.find(s=>s.id===id);
+  if(base) return base;
+  if(id.indexOf("p:")===0){
+    const endToday=new Date(); endToday.setHours(23,59,59,999);
+    for(const s of STOPS){
+      if(s.t==="P") continue;
+      const nl=(s.nextLoad&&typeof s.nextLoad==="object")?s.nextLoad:null;
+      if(!nl||!nl.load) continue;
+      if("p:"+nl.load+":"+s.truck!==id) continue;
+      if(nl.appt){ const ms=new Date(nl.appt).getTime(); if(!isNaN(ms)&&ms>endToday.getTime()) return null; }
+      return Object.assign({}, s, {
+        t:"P", type:"PICK UP", load:String(nl.load), sosId:(nl.sosId==null?"":nl.sosId),
+        appt:nl.appt||null, parada:nl.parada||"", addr:nl.parada||"",
+        st:nl.st||"", broker:nl.broker||"", ref:nl.ref||"", route:(nl.route||""),
+        miles:(nl.miles!=null?nl.miles:null), eta:null, isLate:false, hos:null, hosRisk:false,
+        arrivedTs:null, departedTs:null, signedBy:"",
+        stopIndex:nl.stopIndex||null, stopCount:nl.stopCount||null,
+        isLastStop:false, nextLoad:null,
+        stopLat:(nl.lat!=null?nl.lat:null), stopLng:(nl.lng!=null?nl.lng:null), gpsAtStop:false, samsaraRoute:null,
+        id:id, prevDlvry:true
+      });
+    }
+  }
+  return null;
+}
+const cityCache=new Map();
+async function resolveCity(s){
+  const c=truckCoords(s);
+  if(!c||!gpsActive(s, Date.now())) return null;
+  const key=c.lat.toFixed(2)+","+c.lng.toFixed(2);
+  if(cityCache.has(key)) return cityCache.get(key);
+  let out=null;
+  try{
+    const r=await fetch("https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=10&lat="+c.lat+"&lon="+c.lng);
+    if(r.ok){
+      const j=await r.json(), a=(j&&j.address)||{};
+      const city=a.city||a.town||a.village||a.county||"";
+      const st=a.state_code||a.state||"";
+      if(city) out=st?city+", "+st:city;
+    }
+  }catch(e){}
+  cityCache.set(key,out);
+  return out;
+}
+const fmtMilParts=new Intl.DateTimeFormat("en-US",{timeZone:TZ,month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",hourCycle:"h23"});
+function fmtMil(d){
+  if(!d||isNaN(d.getTime())) return "";
+  const p={}; fmtMilParts.formatToParts(d).forEach(x=>{ p[x.type]=x.value; });
+  return p.month+"/"+p.day+" "+p.hour+p.minute;
+}
+function ordinalWord(n){
+  const s=String(n), d=n%10, h=n%100;
+  if(d===1&&h!==11) return s+"st";
+  if(d===2&&h!==12) return s+"nd";
+  if(d===3&&h!==13) return s+"rd";
+  return s+"th";
+}
+function stopTargetPhrase(s){
+  const isP=s.t==="P";
+  const place=isP?"the shipper":"the receiver", word=isP?"pick":"drop";
+  let ord=null;
+  const ls=Array.isArray(s.legStops)?s.legStops:null;
+  const idx=(s.stopIndex!=null&&s.stopIndex>0)?s.stopIndex-1:null;
+  if(ls&&idx!=null&&idx<ls.length){
+    const isPk=x=>{ const t=String((x&&(x.t||x.type))||"").toUpperCase(); return t==="P"||t.indexOf("PICK")===0; };
+    let n=0;
+    for(let i=0;i<=idx;i++) if(isPk(ls[i])===isP) n++;
+    if(n>0) ord=n;
+  }else if(isP&&idx!=null){
+    ord=idx+1;
+  }
+  return ord?place+" ("+ordinalWord(ord)+" "+word+")":place;
+}
+function buildBrokerUpdate(s, city){
+  const isP=s.t==="P", code=isP?"OTP":"OTD";
+  const target=stopTargetPhrase(s);
+  const hourET=Number(new Intl.DateTimeFormat("en-US",{timeZone:TZ,hour:"2-digit",hourCycle:"h23"}).format(new Date()));
+  const lines=[hourET<12?"Good morning,":"Good afternoon,",""];
+  if(s.prevDlvry){
+    const pm=(s.miles==null||s.miles==="")?null:Math.round(Number(s.miles));
+    lines.push(pm!=null&&!isNaN(pm)
+      ? "Driver completing his previous delivery, "+pm+" miles from your shipper location."
+      : "Driver completing his previous delivery.");
+    lines.push("","We\u2019ll provide a better ETA once empty and rolling.");
+    return lines.join("\n");
+  }
+  const miles=(s.miles==null||s.miles==="")?null:Math.round(Number(s.miles));
+  const onsite=arrivalState(s)==="onsite";
+  const atStop=!onsite&&isGpsAtStop(s, Date.now());
+  if(onsite) lines.push("Truck is on site at "+target+".");
+  else if(atStop) lines.push("Truck is already at "+target+".");
+  else if(city&&miles!=null&&!isNaN(miles)) lines.push("Truck is passing by "+city+", "+miles+" miles from "+target+".");
+  else if(city) lines.push("Truck is passing by "+city+", heading to "+target+".");
+  else if(miles!=null&&!isNaN(miles)) lines.push("Truck is en route, "+miles+" miles from "+target+".");
+  else lines.push("Truck is en route to "+target+".");
+  if(!onsite&&!atStop){
+    lines.push("");
+    const apptMil=fmtMil(new Date(s.appt));
+    const e=s.eta?new Date(s.eta):null;
+    if(e&&!isNaN(e.getTime())){
+      lines.push(isLateStop(s)
+        ? "We\u2019re not good for "+code+" for "+apptMil+" appt \u2014 ETA "+fmtMil(e)+"."
+        : "We\u2019re good for "+code+" for "+apptMil+" appt.");
+    }else{
+      lines.push("ETA to be confirmed for "+apptMil+" appt.");
+    }
+  }
+  lines.push("","We\u2019ll keep you posted.");
+  return lines.join("\n");
+}
+async function copyBrokerUpdate(btn, id){
+  const s=findDisplayStop(id);
+  if(!s) return;
+  btn.classList.add("busy");
+  const done=ok=>{
+    btn.classList.remove("busy");
+    btn.classList.add(ok?"ok":"fail");
+    setTimeout(()=>btn.classList.remove("ok","fail"), 1600);
+  };
+  try{
+    const city=await resolveCity(s);
+    const text=buildBrokerUpdate(s, city);
+    let ok=false;
+    if(navigator.clipboard&&navigator.clipboard.writeText){ try{ await navigator.clipboard.writeText(text); ok=true; }catch(e){} }
+    if(!ok){
+      const ta=document.createElement("textarea");
+      ta.value=text; ta.style.position="fixed"; ta.style.opacity="0";
+      document.body.appendChild(ta); ta.select();
+      try{ ok=document.execCommand("copy"); }catch(e){}
+      ta.remove();
+    }
+    done(ok);
+  }catch(e){ done(false); }
+}
+
+/* ===== controls ===== */
+$("q").addEventListener("input",e=>{ state.q=e.target.value; render(); });
+$("late-toggle").addEventListener("click",()=>{ state.lateOnly=!state.lateOnly; render(); });
+$("gps-toggle").addEventListener("click",()=>{ state.gpsAtStopOnly=!state.gpsAtStopOnly; render(); });
+$("pod-toggle").addEventListener("click",()=>{ state.podOnly=!state.podOnly; render(); });
+function clearFilters(){ state.q=""; state.lateOnly=false; state.gpsAtStopOnly=false; state.podOnly=false; state.milesSort=null; state.type="all"; state.dispatchersHidden.clear(); $("q").value=""; render(); }
+$("clear-filters").addEventListener("click",clearFilters);
+$("export-excel").addEventListener("click",exportExcel);
+$("latealert-toggle").addEventListener("click",()=>{
+  lateAlertMode = lateAlertMode==="sound" ? "visual" : lateAlertMode==="visual" ? "off" : "sound";
+  try{ localStorage.setItem("psLateAlerts", lateAlertMode); }catch(e){}
+  paintLateAlertToggle();
+  if(lateAlertMode==="sound") playLateBeep();
+});
+paintLateAlertToggle();
+document.addEventListener("pointerdown",()=>{ if(lateAudioCtx&&lateAudioCtx.state==="suspended"){ const p=lateAudioCtx.resume(); if(p&&p.catch) p.catch(()=>{}); } });
+document.querySelectorAll(".type-filter-btn").forEach(b=>
+  b.addEventListener("click",()=>{ state.type=b.getAttribute("data-type"); render(); }));
+$("dispatcher-btn").addEventListener("click",e=>{
+  e.stopPropagation();
+  const panel=$("dispatcher-panel");
+  const open=panel.hidden;
+  panel.hidden=!open;
+  $("dispatcher-btn").setAttribute("aria-expanded", open?"true":"false");
+});
+document.addEventListener("click",e=>{
+  const wrap=$("dispatcher-filter");
+  if(wrap && !wrap.contains(e.target)){
+    $("dispatcher-panel").hidden=true;
+    $("dispatcher-btn").setAttribute("aria-expanded","false");
+  }
+});
+document.addEventListener("keydown",e=>{
+  if(e.key==="Escape"){ const p=$("dispatcher-panel"); if(p && !p.hidden){ p.hidden=true; $("dispatcher-btn").setAttribute("aria-expanded","false"); } }
+});
+$("dispatcher-list").addEventListener("change",e=>{
+  const inp=e.target.closest("input[data-dkey]"); if(!inp) return;
+  const k=inp.getAttribute("data-dkey");
+  if(inp.checked) state.dispatchersHidden.delete(k); else state.dispatchersHidden.add(k);
+  render();
+});
+$("dispatcher-all").addEventListener("change",e=>{
+  if(e.target.checked) state.dispatchersHidden.clear();
+  else dispatcherList().forEach(x=>state.dispatchersHidden.add(x.key));
+  render();
+});
+
+$("board").addEventListener("click",e=>{
+  const sh=e.target.closest('[data-sort="miles"]');
+  if(sh){ state.milesSort = state.milesSort===null ? "asc" : state.milesSort==="asc" ? "desc" : null; render(); return; }
+
+  const clear=e.target.closest('[data-act="clear"]');
+  if(clear){ clearFilters(); return; }
+
+  const nb=e.target.closest(".note-button");
+  if(nb){ EDITING=nb.getAttribute("data-key"); render(); return; }
+
+  const vb=e.target.closest("[data-verify]");
+  if(vb){ requestVerify(vb.getAttribute("data-verify"), vb.getAttribute("data-load"), vb.getAttribute("data-sosid")); return; }
+
+  const cb=e.target.closest("[data-copyup]");
+  if(cb){ copyBrokerUpdate(cb, cb.getAttribute("data-copyup")); return; }
+  const cancel=e.target.closest('[data-act="cancel"]');
+  if(cancel){ EDITING=null; render(); return; }
+
+  const tn=e.target.closest(".truck-number");
+  if(tn){ tn.closest(".crew-anchor").classList.toggle("force"); return; }
+  const ev=e.target.closest(".eta-value");
+  if(ev){ ev.closest(".eta-anchor").classList.toggle("force"); return; }
+});
+$("board").addEventListener("mouseover",e=>{
+  const a=e.target.closest(".copyupd-anchor");
+  if(!a||a.dataset.cityDone) return;
+  const btn=a.querySelector("[data-copyup]"); if(!btn) return;
+  a.dataset.cityDone="1";
+  const s=findDisplayStop(btn.getAttribute("data-copyup"));
+  if(!s) return;
+  resolveCity(s).then(city=>{
+    if(!city) return;
+    const pv=a.querySelector(".copyupd-preview");
+    if(pv) pv.innerHTML=esc(buildBrokerUpdate(s,city)).replace(/\n/g,"<br>");
+  });
+});
+$("board").addEventListener("submit",e=>{
+  const form=e.target.closest(".note-form"); if(!form) return;
+  e.preventDefault();
+  const key=form.getAttribute("data-key");
+  const txt=form.querySelector("textarea").value.trim();
+  if(!txt && NOTES[key]){
+    /* notes can be edited, never deleted: empty saves are ignored */
+    EDITING=null; render(); return;
+  }
+  if(txt) saveNote(key, txt);
+  EDITING=null; render();
+});
+$("board").addEventListener("keydown",e=>{
+  if(e.key!=="Enter"||e.shiftKey) return;
+  const ta=e.target.closest(".note-form textarea"); if(!ta) return;
+  e.preventDefault();
+  ta.closest(".note-form").requestSubmit();
+});
+document.addEventListener("pointerdown",e=>{
+  if(!e.target.closest(".crew-anchor")) document.querySelectorAll(".crew-anchor.force").forEach(a=>a.classList.remove("force"));
+  if(!e.target.closest(".eta-anchor")) document.querySelectorAll(".eta-anchor.force").forEach(a=>a.classList.remove("force"));
+});
+
+setInterval(()=>{ if(DATA_LOADED) render(); }, 30000);
+
+initFirebase();
+</script>
+</body>
+</html>
