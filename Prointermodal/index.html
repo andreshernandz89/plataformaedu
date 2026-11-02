@@ -1543,7 +1543,8 @@ initFirebase();
   var app; try{ app=firebase.app('peAuth'); }catch(e){ app=firebase.initializeApp(cfg,'peAuth'); }
   var auth=firebase.auth(app);
   auth.onAuthStateChanged(function(user){
-    if(user){ gate.style.display='none'; chip.style.display='flex'; chipUser.textContent=user.email; }
+    btn.disabled=false; btn.textContent='Ingresar';
+    if(user){ gate.style.display='none'; chip.style.display='flex'; chipUser.textContent=user.email; document.getElementById('pePass').value=''; }
     else{ chip.style.display='none'; gate.style.display='flex'; }
   });
   form.addEventListener('submit',function(ev){
