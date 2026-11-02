@@ -313,6 +313,7 @@
         <div class="campo"><label>Último acceso</label><input id="f-acceso" type="date"></div>
         <div class="campo"><label>ID de instancia (chat de soporte y presencia)</label><input id="f-inst" placeholder="Ej.: cemi"></div>
         <div class="campo ancho"><label>Módulos activos</label><div class="mods-check" id="f-modulos"></div></div>
+        <div class="campo ancho"><label><input type="checkbox" id="f-tablero"> Cliente de tablero — Pending Stops (tiene usuarios propios de ingreso al tablero; tú los creas y administras desde su ficha)</label></div>
         <div class="campo ancho"><label>Notas</label><textarea id="f-notas" placeholder="Acuerdos, descuentos, observaciones…"></textarea></div>
       </div>
       <div class="form-btns">
@@ -575,6 +576,7 @@
           </div>
           ${mods.length ? `<div class="mods"><div class="k">Módulos activos (${mods.length})</div>${mods.map(m => `<span class="mod">${esc(m)}</span>`).join("")}</div>` : ""}
           ${c.notas ? `<div class="notas">${esc(c.notas)}</div>` : ""}
+          ${(c.esTablero && sesion.duenio) ? seccionTablero(id, c) : ""}
           <div class="acciones">
             <button class="btn-accion" data-editar="${id}">✏️ Editar</button>
             <button class="btn-accion pago" data-pago="${id}">💰 Registrar pago</button>
@@ -591,6 +593,13 @@
     document.querySelectorAll("[data-editar]").forEach(b => b.addEventListener("click", () => abrirForm(b.dataset.editar)));
     document.querySelectorAll("[data-pago]").forEach(b => b.addEventListener("click", () => registrarPago(b.dataset.pago)));
     document.querySelectorAll("[data-borrar]").forEach(b => b.addEventListener("click", () => borrarCliente(b.dataset.borrar)));
+    document.querySelectorAll("[data-crearu]").forEach(b => b.addEventListener("click", () => crearUsuarioTablero(b.dataset.crearu)));
+    document.querySelectorAll("[data-veru]").forEach(b => b.addEventListener("click", () => {
+      const inp = document.getElementById(b.dataset.veru);
+      if (inp) inp.type = inp.type === "password" ? "text" : "password";
+    }));
+    document.querySelectorAll("[data-claveu]").forEach(b => b.addEventListener("click", () => cambiarClaveTablero(b.dataset.claveu, b.dataset.uid)));
+    document.querySelectorAll("[data-borraru]").forEach(b => b.addEventListener("click", () => eliminarUsuarioTablero(b.dataset.borraru, b.dataset.uid)));
     pintarPresencia();
   }
 
@@ -611,6 +620,7 @@
     $("f-estudiantes").value = c.estudiantes ?? "";
     $("f-acceso").value = c.ultimoAcceso || "";
     $("f-inst").value = c.instId || "";
+    $("f-tablero").checked = !!c.esTablero;
     $("f-notas").value = c.notas || "";
     const mods = Array.isArray(c.modulos) ? c.modulos : [];
     document.querySelectorAll(".f-mod").forEach(ch => ch.checked = mods.includes(ch.value));
@@ -635,6 +645,7 @@
       estudiantes: $("f-estudiantes").value === "" ? null : Number($("f-estudiantes").value),
       ultimoAcceso: $("f-acceso").value || "",
       instId: $("f-inst").value.trim(),
+      esTablero: $("f-tablero").checked,
       notas: $("f-notas").value.trim(),
       modulos: Array.from(document.querySelectorAll(".f-mod:checked")).map(ch => ch.value),
       actualizadoEn: new Date().toISOString()
@@ -658,6 +669,98 @@
     const c = clientes[id]; if (!c) return;
     if (!confirm(`Eliminar a ${c.institucion} de la consola. Esto no toca su plataforma, solo este registro. ¿Seguro?`)) return;
     refClientes.child(id).remove().catch(err => alert("No se pudo eliminar: " + err.message));
+  }
+
+  /* ---------- Usuarios del tablero (clientes Pending Stops) ----------
+     El dueño crea y administra los usuarios con los que cada cliente de
+     tablero ingresa a su página. Las cuentas viven en el proyecto del
+     tablero (change-of-shift-prointermodal); aquí se guarda el registro
+     (nombre, correo y contraseña actual) para poder administrarlas. */
+  const STOPS_CFG = {
+    apiKey: "AIzaSyA9AAkBOxQGNZLm9cadULb6l_tBbSdB5NM",
+    authDomain: "change-of-shift-prointermodal.firebaseapp.com",
+    databaseURL: "https://change-of-shift-prointermodal-default-rtdb.firebaseio.com",
+    projectId: "change-of-shift-prointermodal"
+  };
+  function seccionTablero(id, c){
+    const users = c.usuariosTablero || {};
+    const uids = Object.keys(users).sort((a, b) => String(users[a].nombre || "").localeCompare(String(users[b].nombre || ""), "es"));
+    const filas = uids.map(uid => { const u = users[uid];
+      return `<div class="grid" style="margin-top:8px">
+          <div><div class="k">Nombre</div><div class="v">${esc(u.nombre || "—")}</div></div>
+          <div><div class="k">Correo (usuario)</div><div class="v">${esc(u.correo || "—")}</div></div>
+          <div><div class="k">Contraseña</div><div class="v"><input type="password" id="tup-${uid}" value="${esc(u.clave || "")}" readonly style="border:0;background:transparent;font:inherit;width:130px"> <button type="button" class="btn-accion" data-veru="tup-${uid}">👁</button></div></div>
+        </div>
+        <div class="acciones" style="margin-top:4px">
+          <button class="btn-accion" data-claveu="${id}" data-uid="${uid}">🔑 Cambiar contraseña</button>
+          <button class="btn-accion borrar" data-borraru="${id}" data-uid="${uid}">🗑 Eliminar usuario</button>
+        </div>`;
+    }).join("");
+    return `<div class="mods"><div class="k">🔐 Usuarios del tablero (${uids.length}) — ingresan a su página de Pending Stops con este correo y contraseña</div>
+      ${filas || '<div class="v" style="margin-top:6px">Todavía no hay usuarios. Crea el primero abajo.</div>'}
+      <div class="fgrid" style="margin-top:10px">
+        <div class="campo"><label>Nombre</label><input id="tu-nombre-${id}" placeholder="Ej.: Despacho Miami"></div>
+        <div class="campo"><label>Correo (usuario de ingreso)</label><input id="tu-correo-${id}" type="email" placeholder="usuario@empresa.com"></div>
+        <div class="campo"><label>Contraseña</label><input id="tu-clave-${id}" type="text" placeholder="Mínimo 6 caracteres"></div>
+      </div>
+      <div class="acciones" style="margin-top:6px"><button class="btn-accion" data-crearu="${id}">➕ Crear usuario</button></div>
+      <div class="error" id="tu-error-${id}" style="display:none"></div>
+    </div>`;
+  }
+  function errorTablero(id, msg){
+    const el = $("tu-error-" + id); if (!el) return;
+    el.style.display = "block"; el.textContent = msg;
+  }
+  function appTablero(){
+    return firebase.initializeApp(STOPS_CFG, "tablero-" + Date.now());
+  }
+  function crearUsuarioTablero(id){
+    const nombre = ($("tu-nombre-" + id).value || "").trim();
+    const correo = ($("tu-correo-" + id).value || "").trim().toLowerCase();
+    const clave = $("tu-clave-" + id).value || "";
+    if (!nombre) return errorTablero(id, "Escribe el nombre del usuario.");
+    if (!correo) return errorTablero(id, "Escribe el correo (será su usuario de ingreso).");
+    if (clave.length < 6) return errorTablero(id, "La contraseña debe tener al menos 6 caracteres.");
+    const app2 = appTablero();
+    const guardar = uid => db.ref("clientes/" + id + "/usuariosTablero/" + uid)
+      .set({ nombre: nombre, correo: correo, clave: clave, creadoEn: new Date().toISOString() });
+    app2.auth().createUserWithEmailAndPassword(correo, clave)
+      .then(cred => guardar(cred.user.uid))
+      .catch(err => {
+        if (err.code === "auth/email-already-in-use") {
+          /* La cuenta ya existe en el tablero: si la contraseña coincide, se adopta al registro. */
+          return app2.auth().signInWithEmailAndPassword(correo, clave)
+            .then(cred => guardar(cred.user.uid))
+            .catch(() => { throw new Error("Ese correo ya tiene una cuenta en el tablero, pero la contraseña no coincide. Si el usuario ya está en la lista, cámbiale la contraseña desde ahí; si no, créalo con otro correo."); });
+        }
+        throw err;
+      })
+      .then(() => app2.delete())
+      .catch(err => { app2.delete().catch(() => {}); errorTablero(id, "No se pudo crear el usuario: " + err.message); });
+  }
+  function conSesionTablero(u, fn){
+    const app2 = appTablero();
+    return app2.auth().signInWithEmailAndPassword(u.correo, u.clave)
+      .then(cred => fn(cred.user))
+      .then(() => app2.delete())
+      .catch(err => { app2.delete().catch(() => {}); throw err; });
+  }
+  function cambiarClaveTablero(id, uid){
+    const u = ((clientes[id] || {}).usuariosTablero || {})[uid]; if (!u) return;
+    const nueva = prompt(`Nueva contraseña para ${u.correo} (mínimo 6 caracteres):`);
+    if (nueva === null) return;
+    if (nueva.length < 6) return alert("La contraseña debe tener al menos 6 caracteres.");
+    conSesionTablero(u, user => user.updatePassword(nueva))
+      .then(() => db.ref("clientes/" + id + "/usuariosTablero/" + uid).update({ clave: nueva, actualizadoEn: new Date().toISOString() }))
+      .then(() => alert("Contraseña actualizada. Entrégala al usuario; la anterior ya no sirve."))
+      .catch(err => alert("No se pudo cambiar la contraseña: " + err.message));
+  }
+  function eliminarUsuarioTablero(id, uid){
+    const u = ((clientes[id] || {}).usuariosTablero || {})[uid]; if (!u) return;
+    if (!confirm(`Eliminar el usuario ${u.correo} del tablero. Ya no podrá ingresar a Pending Stops. ¿Seguro?`)) return;
+    conSesionTablero(u, user => user.delete())
+      .then(() => db.ref("clientes/" + id + "/usuariosTablero/" + uid).remove())
+      .catch(err => alert("No se pudo eliminar el usuario: " + err.message));
   }
 
 
