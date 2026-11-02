@@ -688,7 +688,7 @@
     const filas = uids.map(uid => { const u = users[uid];
       return `<div class="grid" style="margin-top:8px">
           <div><div class="k">Nombre</div><div class="v">${esc(u.nombre || "—")}</div></div>
-          <div><div class="k">Correo (usuario)</div><div class="v">${esc(u.correo || "—")}</div></div>
+          <div><div class="k">Usuario de ingreso</div><div class="v">${esc((u.correo || "—").replace(/@plataformaedu\.app$/, ""))}</div></div>
           <div><div class="k">Contraseña</div><div class="v"><input type="password" id="tup-${uid}" value="${esc(u.clave || "")}" readonly style="border:0;background:transparent;font:inherit;width:130px"> <button type="button" class="btn-accion" data-veru="tup-${uid}">👁</button></div></div>
         </div>
         <div class="acciones" style="margin-top:4px">
@@ -700,7 +700,7 @@
       ${filas || '<div class="v" style="margin-top:6px">Todavía no hay usuarios. Crea el primero abajo.</div>'}
       <div class="fgrid" style="margin-top:10px">
         <div class="campo"><label>Nombre</label><input id="tu-nombre-${id}" placeholder="Ej.: Despacho Miami"></div>
-        <div class="campo"><label>Correo (usuario de ingreso)</label><input id="tu-correo-${id}" type="email" placeholder="usuario@empresa.com"></div>
+        <div class="campo"><label>Usuario (sin @) o correo</label><input id="tu-correo-${id}" type="text" placeholder="Ej.: ahernandez"></div>
         <div class="campo"><label>Contraseña</label><input id="tu-clave-${id}" type="text" placeholder="Mínimo 6 caracteres"></div>
       </div>
       <div class="acciones" style="margin-top:6px"><button class="btn-accion" data-crearu="${id}">➕ Crear usuario</button></div>
@@ -716,10 +716,11 @@
   }
   function crearUsuarioTablero(id){
     const nombre = ($("tu-nombre-" + id).value || "").trim();
-    const correo = ($("tu-correo-" + id).value || "").trim().toLowerCase();
+    let correo = ($("tu-correo-" + id).value || "").trim().toLowerCase();
+    if (correo && correo.indexOf("@") < 0) correo += "@plataformaedu.app";
     const clave = $("tu-clave-" + id).value || "";
     if (!nombre) return errorTablero(id, "Escribe el nombre del usuario.");
-    if (!correo) return errorTablero(id, "Escribe el correo (será su usuario de ingreso).");
+    if (!correo) return errorTablero(id, "Escribe el usuario de ingreso (sin @, o el correo completo).");
     if (clave.length < 6) return errorTablero(id, "La contraseña debe tener al menos 6 caracteres.");
     const app2 = appTablero();
     const guardar = uid => db.ref("clientes/" + id + "/usuariosTablero/" + uid)

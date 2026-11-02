@@ -309,8 +309,8 @@ a.next-load { font-size: 12px; font-weight: 700; }
     <h1>Pending Stops</h1>
     <p class="pe-sub">Prointermodal · Acceso de clientes</p>
     <form id="peForm" autocomplete="on">
-      <label for="peEmail">Correo</label>
-      <input id="peEmail" type="email" required autocomplete="username" placeholder="usuario@empresa.com">
+      <label for="peEmail">Usuario</label>
+      <input id="peEmail" type="text" required autocomplete="username" placeholder="ahernandez">
       <label for="pePass">Contraseña</label>
       <input id="pePass" type="password" required autocomplete="current-password" placeholder="••••••••">
       <button id="peBtn" type="submit">Ingresar</button>
@@ -1544,12 +1544,14 @@ initFirebase();
   var auth=firebase.auth(app);
   auth.onAuthStateChanged(function(user){
     btn.disabled=false; btn.textContent='Ingresar';
-    if(user){ gate.style.display='none'; chip.style.display='flex'; chipUser.textContent=user.email; document.getElementById('pePass').value=''; }
+    if(user){ gate.style.display='none'; chip.style.display='flex'; chipUser.textContent=(user.email||'').split('@')[0]; document.getElementById('pePass').value=''; }
     else{ chip.style.display='none'; gate.style.display='flex'; }
   });
   form.addEventListener('submit',function(ev){
     ev.preventDefault(); err.style.display='none'; btn.disabled=true; btn.textContent='Ingresando…';
-    auth.signInWithEmailAndPassword(document.getElementById('peEmail').value.trim(), document.getElementById('pePass').value)
+    var u=document.getElementById('peEmail').value.trim().toLowerCase();
+    if(u.indexOf('@')<0) u+='@plataformaedu.app';
+    auth.signInWithEmailAndPassword(u, document.getElementById('pePass').value)
       .catch(function(e){
         var m='Usuario o contraseña incorrectos.';
         if(e && e.code==='auth/too-many-requests') m='Demasiados intentos. Espera un momento e intenta de nuevo.';
