@@ -200,6 +200,7 @@ a.next-load { font-size: 12px; font-weight: 700; }
 .route-btn { display: inline-flex; align-items: center; justify-content: center; width: 29px; height: 29px; padding: 0; border: 1px solid var(--border); border-radius: 50%; background: var(--surface); color: var(--accent); cursor: pointer; text-decoration: none; }
 .route-btn svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .route-btn:hover { border-color: var(--accent); }
+.route-btn.route-samsara { color: #22c55e; border-color: #22c55e; }
 .route-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .stop-progress { display: inline-flex; align-items: center; min-height: 22px; padding: 1px 8px; border: 1px solid var(--border); border-radius: 999px; color: var(--dim); background: var(--surface); font-size: 10px; font-weight: 800; letter-spacing: .05em; white-space: nowrap; }
 
@@ -865,7 +866,7 @@ function routeIconHtml(s){
   const sr=(s.samsaraRoute&&typeof s.samsaraRoute==="object")?s.samsaraRoute:null;
   const rawUrl=sr&&sr.url!=null?String(sr.url).trim():"";
   if(rawUrl&&/^https?:\/\//i.test(rawUrl)){
-    return '<a class="route-btn" href="'+esc(rawUrl)+'" target="_blank" rel="noopener" title="View route in Samsara (opens in a new window)" aria-label="View route in Samsara">'+svg+'</a>';
+    return '<a class="route-btn route-samsara" href="'+esc(rawUrl)+'" target="_blank" rel="noopener" title="View route in Samsara (opens in a new window)" aria-label="View route in Samsara">'+svg+'</a>';
   }
   /* fallback: Google Maps directions from the truck GPS to the stop */
   const from=truckCoords(s), dest=stopCoords(s);
