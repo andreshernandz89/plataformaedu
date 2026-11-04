@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Track &amp; Trace — Tablero en vivo para empresas de transporte · PlataformaEDU</title>
+<meta name="description" content="Track & Trace: el tablero en vivo de PlataformaEDU para empresas de transporte y logística. Todas tus cargas con estado, GPS, millas y ETA calculada con las horas reales del conductor, en una sola pantalla.">
+<link rel="icon" type="image/png" href="../simbolo-web.png">
+<style>
+  :root{ --azul:#0792FE; --marino:#13213F; --turq:#14B8A6; --gris:#5A6B84; --fondo:#F5F8FC; }
+  *{ margin:0; padding:0; box-sizing:border-box; }
+  body{ font-family:'Segoe UI', system-ui, Arial, sans-serif; color:#1B2A44; background:#fff; line-height:1.55; }
+  .cont{ max-width:1120px; margin:0 auto; padding:0 20px; }
+  header{ position:sticky; top:0; z-index:50; background:rgba(255,255,255,.96); border-bottom:1px solid #E3EAF3; }
+  .nav{ display:flex; align-items:center; gap:14px; height:60px; }
+  .nav a{ color:var(--marino); text-decoration:none; font-weight:600; font-size:15px; }
+  .nav a:hover{ color:var(--azul); }
+  .nav .marca{ margin-left:auto; font-weight:800; color:var(--marino); font-size:17px; }
+  .nav .marca span{ color:var(--azul); }
+  .btn{ display:inline-block; background:linear-gradient(135deg,#0792FE,#0B6FD6); color:#fff !important; padding:11px 22px; border-radius:10px; font-weight:700; text-decoration:none; box-shadow:0 4px 14px rgba(7,146,254,.35); }
+  .btn.suave{ background:#fff; color:var(--marino) !important; box-shadow:0 4px 14px rgba(19,33,63,.18); }
+  .hero{ background:linear-gradient(150deg,#0D1830,#13213F 55%,#173058); color:#fff; padding:60px 0 66px; text-align:center; }
+  .hero .emoji{ font-size:56px; }
+  .hero h1{ font-size:clamp(26px,4.4vw,40px); line-height:1.2; margin:14px auto 12px; max-width:780px; }
+  .hero p{ color:#C9D8EF; font-size:clamp(16px,2.2vw,19px); max-width:700px; margin:0 auto 28px; }
+  .hero .ctas{ display:flex; gap:14px; justify-content:center; flex-wrap:wrap; }
+  .hero .mini{ margin-top:26px; color:#8FA8CC; font-size:13.5px; font-weight:600; letter-spacing:.3px; }
+  section{ padding:60px 0; }
+  section.gris{ background:var(--fondo); }
+  h2{ color:var(--marino); font-size:clamp(23px,3.4vw,31px); text-align:center; margin-bottom:10px; }
+  .sub{ color:var(--gris); text-align:center; max-width:680px; margin:0 auto 36px; font-size:16.5px; }
+  .grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:18px; }
+  .card{ background:#fff; border:1px solid #E3EAF3; border-radius:16px; padding:22px; box-shadow:0 2px 10px rgba(19,33,63,.05); }
+  .card .ic{ font-size:29px; margin-bottom:9px; }
+  .card h3{ color:var(--marino); font-size:17px; margin-bottom:6px; }
+  .card p{ color:var(--gris); font-size:14.5px; }
+  .banda{ background:linear-gradient(150deg,#0D1830,#13213F 60%,#173058); color:#fff; border-radius:22px; padding:40px 30px; text-align:center; }
+  .banda h2{ color:#fff; }
+  .banda p{ color:#C9D8EF; max-width:640px; margin:0 auto 22px; }
+  footer{ border-top:1px solid #E3EAF3; padding:30px 0; text-align:center; color:var(--gris); font-size:14px; }
+  footer a{ color:var(--azul); text-decoration:none; font-weight:600; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="cont nav">
+    <a href="../">← PlataformaEDU</a>
+    <div class="marca">🚛 Track &amp; <span>Trace</span></div>
+  </div>
+</header>
+
+<div class="hero">
+  <div class="cont">
+    <div class="emoji">🚛</div>
+    <h1>Tu flota completa, en vivo, en una sola pantalla</h1>
+    <p>Track &amp; Trace es el tablero de dispatch de PlataformaEDU: cada carga con su próxima parada, su cita, el GPS del camión, las millas que faltan y la hora estimada de llegada, sin hojas de cálculo ni llamadas de rastreo.</p>
+    <div class="ctas">
+      <a class="btn" href="mailto:contacto@plataformaedu.app?subject=Quiero%20una%20demostraci%C3%B3n%20de%20Track%20%26%20Trace">Pedir una demostración</a>
+      <a class="btn suave" href="#funciones">Ver las funciones</a>
+    </div>
+    <div class="mini">EN OPERACIÓN DIARIA &nbsp;·&nbsp; INTEGRADO CON SAMSARA &nbsp;·&nbsp; SIN INSTALAR NADA</div>
+  </div>
+</div>
+
+<section id="funciones">
+  <div class="cont">
+    <h2>Lo que tu equipo ve cada mañana</h2>
+    <p class="sub">Las recogidas y las entregas, ordenadas por cita, siempre sincronizadas con tu sistema de cargas.</p>
+    <div class="grid">
+      <div class="card"><div class="ic">🛰️</div><h3>GPS en tiempo real</h3><p>La posición de cada camión se actualiza en minutos y se ve junto a su carga: ciudad, estado de movimiento y si ya llegó a su parada.</p></div>
+      <div class="card"><div class="ic">🕐</div><h3>ETA con horas reales</h3><p>La hora estimada de llegada se calcula con las horas legales que le quedan al conductor (HOS), no con una velocidad promedio: si necesita su descanso, el ETA lo refleja.</p></div>
+      <div class="card"><div class="ic">⚠️</div><h3>Alertas de tardanza</h3><p>El tablero marca las cargas que van tarde contra su cita y las que están en riesgo, para actuar antes de que el broker llame a preguntar.</p></div>
+      <div class="card"><div class="ic">📝</div><h3>Notas del equipo en vivo</h3><p>Todo el equipo de dispatch escribe y ve las notas de cada carga en tiempo real, desde cualquier sede: se acabó el cambio de turno por mensajes sueltos.</p></div>
+      <div class="card"><div class="ic">🗺️</div><h3>Rutas y documentos a un clic</h3><p>Cada carga abre su ruta de Samsara, su dirección en el mapa y su documento de confirmación (rate confirmation) sin salir del tablero.</p></div>
+      <div class="card"><div class="ic">📊</div><h3>Filtros y exportación</h3><p>Filtra por dispatcher, por estado o por texto, y exporta a Excel exactamente la vista que tienes en pantalla, en el mismo orden.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="gris">
+  <div class="cont">
+    <h2>Probado en operación real</h2>
+    <p class="sub" style="margin-bottom:0">Track &amp; Trace no es una maqueta: hoy lo usa a diario el equipo de dispatch de una empresa de transporte intermodal de Estados Unidos para coordinar sus flotas — tres organizaciones de GPS integradas en un solo tablero — en el cambio de turno y durante toda la jornada.</p>
+  </div>
+</section>
+
+<section style="padding-top:0">
+  <div class="cont">
+    <div class="banda">
+      <h2>Precio a la medida de tu flota</h2>
+      <p>Cada operación es distinta: el precio se cotiza según el tamaño de tu flota y tus sistemas actuales (GPS y software de cargas). Cuéntanos cómo trabajas y te mostramos el tablero con una operación como la tuya.</p>
+      <a class="btn" href="mailto:contacto@plataformaedu.app?subject=Cotizaci%C3%B3n%20de%20Track%20%26%20Trace">Cotizar sin compromiso</a>
+      <p style="margin-top:18px;margin-bottom:0">También puedes escribirnos desde el chat de <a href="../#contacto" style="color:#7FC4FF;font-weight:700">nuestra página principal</a>.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="cont">
+    <div><strong>Track &amp; Trace</strong> es un producto de <a href="../">PlataformaEDU</a> · Barranquilla, Colombia</div>
+    <div style="margin-top:6px"><a href="../privacidad/">Política de privacidad</a></div>
+  </div>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ArriendOS — Demo · PlataformaEDU</title>
+<style>
+:root{--azul:#1d4ed8;--azul2:#2563eb;--celeste:#eff6ff;--gris:#64748b;--borde:#e2e8f0;--verde:#16a34a;--rojo:#dc2626;--ambar:#d97706;--fondo:#f1f5f9}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;background:var(--fondo);color:#0f172a;font-size:15px}
+button{font-family:inherit;cursor:pointer}
+/* ---------- Login ---------- */
+#login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:linear-gradient(135deg,#1e3a8a,#2563eb)}
+.caja-login{background:#fff;border-radius:16px;padding:34px 30px;max-width:380px;width:100%;box-shadow:0 20px 50px rgba(0,0,0,.3);text-align:center}
+.caja-login .logo{font-size:44px}
+.caja-login h1{font-size:21px;margin:8px 0 2px}
+.caja-login p.sub{color:var(--gris);font-size:13px;margin-bottom:20px}
+.caja-login input{width:100%;padding:11px 12px;border:1px solid var(--borde);border-radius:9px;margin-bottom:10px;font-size:15px}
+.btn{display:inline-block;background:var(--azul2);color:#fff;border:none;padding:11px 18px;border-radius:9px;font-size:15px;font-weight:600;width:100%}
+.btn:hover{background:var(--azul)}
+.btn.sec{background:#fff;color:var(--azul2);border:1px solid var(--azul2)}
+.btn.chico{width:auto;padding:7px 12px;font-size:13px}
+.nota-demo{margin-top:14px;background:#fef3c7;color:#92400e;border-radius:8px;padding:9px 11px;font-size:12.5px;text-align:left}
+/* ---------- App ---------- */
+#app{display:none;min-height:100vh}
+header.top{background:#fff;border-bottom:1px solid var(--borde);padding:12px 18px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:20}
+header.top .marca{font-weight:800;font-size:17px}
+header.top .marca span{color:var(--azul2)}
+header.top .duena{margin-left:auto;text-align:right;font-size:13px}
+header.top .duena b{display:block;font-size:14px}
+header.top .duena span{color:var(--gris)}
+nav.tabs{display:flex;gap:6px;padding:10px 14px 0;flex-wrap:wrap}
+nav.tabs button{background:#fff;border:1px solid var(--borde);border-bottom:none;border-radius:10px 10px 0 0;padding:9px 14px;font-size:14px;font-weight:600;color:var(--gris)}
+nav.tabs button.act{color:var(--azul);border-color:var(--azul2);box-shadow:inset 0 -3px 0 var(--azul2)}
+main{padding:16px 14px 40px;max-width:1150px;margin:0 auto}
+.vista{display:none;background:#fff;border:1px solid var(--borde);border-radius:0 12px 12px 12px;padding:18px}
+.vista.act{display:block}
+h2.tit{font-size:18px;margin-bottom:4px}
+p.desc{color:var(--gris);font-size:13.5px;margin-bottom:14px}
+/* KPI */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:16px}
+.kpi{border:1px solid var(--borde);border-radius:12px;padding:14px}
+.kpi .n{font-size:23px;font-weight:800}
+.kpi .l{color:var(--gris);font-size:12.5px;margin-top:2px}
+.kpi.verde .n{color:var(--verde)}.kpi.rojo .n{color:var(--rojo)}.kpi.ambar .n{color:var(--ambar)}.kpi.azul .n{color:var(--azul)}
+/* Tablas */
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{padding:9px 8px;border-bottom:1px solid var(--borde);text-align:left;vertical-align:top}
+th{color:var(--gris);font-size:12px;text-transform:uppercase;letter-spacing:.4px}
+tr:hover td{background:#f8fafc}
+.pill{display:inline-block;padding:2px 9px;border-radius:99px;font-size:12px;font-weight:700}
+.pill.v{background:#dcfce7;color:#166534}.pill.a{background:#fef3c7;color:#92400e}.pill.r{background:#fee2e2;color:#991b1b}.pill.g{background:#e2e8f0;color:#475569}.pill.b{background:#dbeafe;color:#1e40af}
+.mut{color:var(--gris);font-size:12.5px}
+.filtros{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.filtros select{padding:8px 10px;border:1px solid var(--borde);border-radius:8px;font-size:14px;background:#fff}
+.alerta{border:1px solid #fde68a;background:#fffbeb;border-radius:10px;padding:11px 13px;margin-bottom:10px;font-size:14px}
+.alerta.roja{border-color:#fecaca;background:#fef2f2}
+.barra{height:10px;background:#e2e8f0;border-radius:99px;overflow:hidden}
+.barra i{display:block;height:100%;background:var(--verde)}
+.link{color:var(--azul2);font-weight:600;cursor:pointer;text-decoration:none}
+.link:hover{text-decoration:underline}
+/* Modal */
+#modal{position:fixed;inset:0;background:rgba(15,23,42,.55);display:none;align-items:flex-start;justify-content:center;padding:22px 12px;z-index:50;overflow:auto}
+#modal .hoja{background:#fff;border-radius:14px;max-width:560px;width:100%;padding:22px}
+#modal h3{margin-bottom:6px}
+#modal .x{float:right;background:none;border:none;font-size:21px;color:var(--gris)}
+#modal label{font-size:13px;color:var(--gris);display:block;margin:12px 0 4px}
+#modal input,#modal select{width:100%;padding:10px;border:1px solid var(--borde);border-radius:8px;font-size:15px}
+#toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:#0f172a;color:#fff;padding:11px 18px;border-radius:10px;font-size:14px;display:none;z-index:99;box-shadow:0 8px 24px rgba(0,0,0,.3)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:640px){.grid2{grid-template-columns:1fr}table{font-size:13px}th,td{padding:7px 5px}}
+@media print{header.top,nav.tabs,#toast{display:none!important}.vista{display:none!important}.vista.act{display:block!important}}
+</style>
+</head>
+<body>
+
+<!-- ================= LOGIN ================= -->
+<div id="login">
+  <div class="caja-login">
+    <div class="logo">🏢</div>
+    <h1>ArriendOS</h1>
+    <p class="sub">Un producto de <b>PlataformaEDU</b> para propietarios</p>
+    <input id="li-user" value="carolina@inversionescr.co" autocomplete="username">
+    <input id="li-pass" type="password" value="demo1234" autocomplete="current-password">
+    <button class="btn" onclick="entrar()">Entrar</button>
+    <div class="nota-demo">🧪 <b>Demo con datos ficticios.</b> Propietaria de ejemplo: Carolina Reyes, con 2 sedes de oficinas y varios apartamentos. Todo lo que toques funciona como demostración; nada es real.</div>
+  </div>
+</div>
+
+<!-- ================= APP ================= -->
+<div id="app">
+  <header class="top">
+    <div class="marca">🏢 Arriend<span>OS</span></div>
+    <div class="duena"><b>Carolina Reyes</b><span>Inversiones CR · <span id="conteo">21 inmuebles</span></span></div>
+    <button class="btn sec chico" onclick="salir()">Salir</button>
+  </header>
+  <nav class="tabs" id="tabs">
+    <button data-v="panel" class="act" onclick="ver('panel')">📊 Panel</button>
+    <button data-v="inmuebles" onclick="ver('inmuebles')">🏠 Inmuebles</button>
+    <button data-v="arrend" onclick="ver('arrend')">👥 Arrendatarios</button>
+    <button data-v="cobro" onclick="ver('cobro')">💰 Cobro de noviembre</button>
+    <button data-v="contratos" onclick="ver('contratos')">📄 Contratos</button>
+    <button data-v="renta" onclick="ver('renta')">📈 Gastos y rentabilidad</button>
+  </nav>
+  <main>
+    <section class="vista act" id="v-panel"></section>
+    <section class="vista" id="v-inmuebles"></section>
+    <section class="vista" id="v-arrend"></section>
+    <section class="vista" id="v-cobro"></section>
+    <section class="vista" id="v-contratos"></section>
+    <section class="vista" id="v-renta"></section>
+  </main>
+</div>
+
+<div id="modal"><div class="hoja" id="modal-hoja"></div></div>
+<div id="toast"></div>
+
+<script>
+/* =================== DATOS FICTICIOS =================== */
+const IPC = 4.8; // % de referencia para la demo
+let DOC_TMP = null; // comprobante seleccionado en el formulario de pago
+const HOY = '2026-11-03';
+let SEDES = ['Sede Norte','Sede Centro','Apartamentos'];
+let INM = [
+ {id:'N-101',sede:'Sede Norte',tipo:'Oficina',dir:'Cl. 76 #52-30, Of. 101',canon:950000,arr:'Papelería El Lápiz Feliz',ini:'2026-02-01',fin:'2027-01-31',dia:5,pago:'pagado',gastos:120000},
+ {id:'N-102',sede:'Sede Norte',tipo:'Oficina',dir:'Cl. 76 #52-30, Of. 102',canon:950000,arr:'Dental Sonrisas SAS',ini:'2025-12-01',fin:'2026-11-30',dia:5,pago:'pendiente',gastos:120000},
+ {id:'N-103',sede:'Sede Norte',tipo:'Oficina',dir:'Cl. 76 #52-30, Of. 103',canon:1100000,arr:'Contadores Asociados JR',ini:'2026-06-01',fin:'2027-05-31',dia:10,pago:'pagado',gastos:120000},
+ {id:'N-104',sede:'Sede Norte',tipo:'Oficina',dir:'Cl. 76 #52-30, Of. 104',canon:1100000,arr:'',ini:'',fin:'',dia:0,pago:'disponible',gastos:120000},
+ {id:'N-105',sede:'Sede Norte',tipo:'Oficina',dir:'Cl. 76 #52-30, Of. 105',canon:880000,arr:'Estética Bella Piel',ini:'2026-01-15',fin:'2027-01-14',dia:15,pago:'mora',moraDias:19,gastos:120000},
+ {id:'N-201',sede:'Sede Norte',tipo:'Oficina',dir:'Cl. 76 #52-30, Of. 201',canon:1350000,arr:'Inmobiliaria Costa Azul',ini:'2025-11-20',fin:'2026-11-19',dia:1,pago:'pagado',gastos:120000},
+ {id:'N-202',sede:'Sede Norte',tipo:'Oficina',dir:'Cl. 76 #52-30, Of. 202',canon:1350000,arr:'Óptica Visión Clara',ini:'2026-03-01',fin:'2027-02-28',dia:5,pago:'pagado',gastos:120000},
+ {id:'N-203',sede:'Sede Norte',tipo:'Oficina',dir:'Cl. 76 #52-30, Of. 203',canon:1200000,arr:'Academia de Inglés SpeakUp',ini:'2026-08-01',fin:'2027-07-31',dia:10,pago:'pendiente',gastos:120000},
+ {id:'N-204',sede:'Sede Norte',tipo:'Oficina',dir:'Cl. 76 #52-30, Of. 204',canon:1200000,arr:'Veterinaria Huellitas',ini:'2026-04-01',fin:'2027-03-31',dia:5,pago:'pagado',gastos:120000},
+ {id:'N-205',sede:'Sede Norte',tipo:'Oficina',dir:'Cl. 76 #52-30, Of. 205',canon:1500000,arr:'Arquitectura Prisma SAS',ini:'2025-12-15',fin:'2026-12-14',dia:15,pago:'pagado',gastos:120000},
+ {id:'C-101',sede:'Sede Centro',tipo:'Oficina',dir:'Cra. 54 #72-15, Of. 101',canon:800000,arr:'Taller de Celulares FixYa',ini:'2026-05-01',fin:'2027-04-30',dia:5,pago:'mora',moraDias:29,gastos:95000},
+ {id:'C-102',sede:'Sede Centro',tipo:'Oficina',dir:'Cra. 54 #72-15, Of. 102',canon:800000,arr:'Seguros y Trámites LM',ini:'2026-01-01',fin:'2026-12-31',dia:5,pago:'pagado',gastos:95000},
+ {id:'C-103',sede:'Sede Centro',tipo:'Oficina',dir:'Cra. 54 #72-15, Of. 103',canon:920000,arr:'',ini:'',fin:'',dia:0,pago:'disponible',gastos:95000},
+ {id:'C-104',sede:'Sede Centro',tipo:'Oficina',dir:'Cra. 54 #72-15, Of. 104',canon:920000,arr:'Laboratorio Clínico Vida',ini:'2026-09-01',fin:'2027-08-31',dia:10,pago:'pendiente',gastos:95000},
+ {id:'C-105',sede:'Sede Centro',tipo:'Oficina',dir:'Cra. 54 #72-15, Of. 105',canon:760000,arr:'Agencia de Viajes Brisa',ini:'2026-07-01',fin:'2027-06-30',dia:15,pago:'pagado',gastos:95000},
+ {id:'C-201',sede:'Sede Centro',tipo:'Local',dir:'Cra. 54 #72-15, Local 1',canon:2100000,arr:'Café Aroma del Caribe',ini:'2025-11-01',fin:'2026-10-31',dia:1,pago:'pagado',gastos:150000},
+ {id:'A-301',sede:'Apartamentos',tipo:'Apartaestudio',dir:'Cl. 84 #51B-20, Ap. 301',canon:900000,arr:'Felipe Andrés Torres',ini:'2026-02-01',fin:'2027-01-31',dia:5,pago:'pagado',gastos:210000},
+ {id:'A-302',sede:'Apartamentos',tipo:'Apartamento',dir:'Cl. 84 #51B-20, Ap. 302',canon:1450000,arr:'Mariana Sofía López',ini:'2025-12-01',fin:'2026-11-30',dia:5,pago:'pendiente',gastos:380000},
+ {id:'A-401',sede:'Apartamentos',tipo:'Apartamento',dir:'Cl. 84 #51B-20, Ap. 401',canon:1450000,arr:'Carlos Eduardo Peña',ini:'2026-06-15',fin:'2027-06-14',dia:15,pago:'pagado',gastos:380000},
+ {id:'A-402',sede:'Apartamentos',tipo:'Apartaestudio',dir:'Cl. 84 #51B-20, Ap. 402',canon:900000,arr:'Valentina Ríos Castro',ini:'2026-10-01',fin:'2027-09-30',dia:30,pago:'pagado',gastos:210000},
+ {id:'A-501',sede:'Apartamentos',tipo:'Apartamento',dir:'Cl. 84 #51B-20, Ap. 501',canon:1600000,arr:'Jorge Iván Delgado',ini:'2026-01-20',fin:'2027-01-19',dia:20,pago:'pagado',gastos:380000}
+];
+let HIST = { /* meses pagados de los últimos 6 (J=jun…O=oct) para la ficha */
+ 'Papelería El Lápiz Feliz':[1,1,1,1,1],'Dental Sonrisas SAS':[1,1,1,1,1],'Contadores Asociados JR':[1,1,1,1,1],
+ 'Estética Bella Piel':[1,1,0,1,0],'Inmobiliaria Costa Azul':[1,1,1,1,1],'Óptica Visión Clara':[1,1,1,1,1],
+ 'Academia de Inglés SpeakUp':[0,0,1,1,1],'Veterinaria Huellitas':[1,1,1,1,1],'Arquitectura Prisma SAS':[1,1,1,1,1],
+ 'Taller de Celulares FixYa':[1,0,1,0,0],'Seguros y Trámites LM':[1,1,1,1,1],'Laboratorio Clínico Vida':[0,0,0,1,1],
+ 'Agencia de Viajes Brisa':[1,1,1,1,1],'Café Aroma del Caribe':[1,1,1,1,1],'Felipe Andrés Torres':[1,1,1,1,1],
+ 'Mariana Sofía López':[1,1,1,1,0],'Carlos Eduardo Peña':[1,1,1,1,1],'Valentina Ríos Castro':[0,0,0,0,1],'Jorge Iván Delgado':[1,1,1,1,1]
+};
+const TEL = {}; INM.forEach((m,i)=>{ if(m.arr) TEL[m.arr]='3'+String(100000000+ i*137913).slice(0,9); });
+
+/* =================== LÓGICA =================== */
+const $=id=>document.getElementById(id);
+const fmt=n=>'$'+Math.round(n).toLocaleString('es-CO');
+const ocupados=()=>INM.filter(m=>m.pago!=='disponible');
+const suma=(arr,f)=>arr.reduce((a,m)=>a+f(m),0);
+function pill(m){ if(m.pago==='pagado')return '<span class="pill v">Al día</span>';
+ if(m.pago==='pendiente')return '<span class="pill a">Pendiente</span>';
+ if(m.pago==='mora')return '<span class="pill r">En mora · '+m.moraDias+' días</span>';
+ return '<span class="pill g">Disponible</span>'; }
+function diasPara(fin){ if(!fin)return 9999; return Math.round((new Date(fin)-new Date(HOY))/86400000); }
+function entrar(){ $('login').style.display='none'; $('app').style.display='block'; renderTodo(); }
+function salir(){ $('app').style.display='none'; $('login').style.display='flex'; }
+function ver(v){ document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.toggle('act',b.dataset.v===v));
+ document.querySelectorAll('.vista').forEach(s=>s.classList.toggle('act',s.id==='v-'+v)); }
+function toast(t){ const el=$('toast'); el.textContent=t; el.style.display='block'; setTimeout(()=>el.style.display='none',2600); }
+function renderTodo(){ $('conteo').textContent=INM.length+' inmuebles'; rPanel(); rInmuebles(); rArrend(); rCobro(); rContratos(); rRenta(); }
+
+/* ---------- PANEL ---------- */
+function rPanel(){
+ const oc=ocupados(), rec=suma(oc.filter(m=>m.pago==='pagado'),m=>m.canon),
+ por=suma(oc.filter(m=>m.pago!=='pagado'),m=>m.canon),
+ mora=oc.filter(m=>m.pago==='mora'), total=suma(oc,m=>m.canon),
+ porcen=oc.length?Math.round(oc.length/INM.length*100):0;
+ const vencen=oc.filter(m=>diasPara(m.fin)<=45).sort((a,b)=>diasPara(a.fin)-diasPara(b.fin));
+ let alertas='';
+ mora.forEach(m=>{ alertas+='<div class="alerta roja">🔴 <b>'+m.arr+'</b> ('+m.id+') lleva <b>'+m.moraDias+' días de mora</b> — debe '+fmt(m.canon)+'. <a class="link" onclick="recordar(\''+m.id+'\')">Enviar recordatorio</a> · <a class="link" onclick="ficha(\''+m.id+'\')">Ver ficha</a></div>'; });
+ vencen.forEach(m=>{ const d=diasPara(m.fin); alertas+='<div class="alerta">🟠 El contrato de <b>'+m.arr+'</b> ('+m.id+') '+(d<0?'venció hace '+(-d)+' días':'vence en '+d+' días')+'. Con el IPC de referencia ('+IPC+' %) el nuevo canon sería <b>'+fmt(m.canon*(1+IPC/100))+'</b>. <a class="link" onclick="ver(\'contratos\')">Revisar</a></div>'; });
+ $('v-panel').innerHTML='<h2 class="tit">Panel de noviembre de 2026</h2><p class="desc">Así va tu cartera hoy, 3 de noviembre. Todo se actualiza solo cuando registras un pago.</p>'
+ +'<div class="kpis">'
+ +'<div class="kpi verde"><div class="n">'+fmt(rec)+'</div><div class="l">Recaudado en noviembre</div></div>'
+ +'<div class="kpi ambar"><div class="n">'+fmt(por)+'</div><div class="l">Por recaudar</div></div>'
+ +'<div class="kpi rojo"><div class="n">'+mora.length+'</div><div class="l">Arrendatarios en mora</div></div>'
+ +'<div class="kpi azul"><div class="n">'+porcen+' %</div><div class="l">Ocupación ('+oc.length+' de '+INM.length+')</div></div></div>'
+ +'<div class="barra" title="Recaudo del mes"><i style="width:'+(total?Math.round(rec/total*100):0)+'%"></i></div><p class="mut" style="margin:6px 0 16px">Recaudo del mes: '+fmt(rec)+' de '+fmt(total)+' ('+(total?Math.round(rec/total*100):0)+' %)</p>'
+ +(alertas||'<div class="alerta">✅ Sin alertas: nadie en mora y ningún contrato por vencer.</div>')
+ +'<h3 style="margin:14px 0 8px">Próximos pagos esperados</h3><table><tr><th>Día</th><th>Inmueble</th><th>Arrendatario</th><th>Canon</th><th>Estado</th></tr>'
+ + oc.filter(m=>m.pago!=='pagado').sort((a,b)=>a.dia-b.dia).map(m=>'<tr><td>'+m.dia+'</td><td>'+m.id+'</td><td>'+m.arr+'</td><td>'+fmt(m.canon)+'</td><td>'+pill(m)+'</td></tr>').join('')
+ +'</table>';
+}
+
+/* ---------- INMUEBLES ---------- */
+function rInmuebles(){
+ const fs=$('f-sede')?$('f-sede').value:'', fe=$('f-estado')?$('f-estado').value:'';
+ const lista=INM.filter(m=>(!fs||m.sede===fs)&&(!fe||m.pago===fe));
+ $('v-inmuebles').innerHTML='<h2 class="tit">Mis inmuebles</h2><p class="desc">Tus 21 unidades en 3 grupos. La cuota de administración y demás gastos de cada una están en «Gastos y rentabilidad».</p>'
+ +'<button class="btn chico" style="margin-bottom:12px" onclick="nuevoInmueble()">＋ Nuevo inmueble</button>'
+ +'<div class="filtros"><select id="f-sede" onchange="rInmuebles()"><option value="">Todas las sedes</option>'+SEDES.map(s=>'<option '+(fs===s?'selected':'')+'>'+s+'</option>').join('')+'</select>'
+ +'<select id="f-estado" onchange="rInmuebles()"><option value="">Todos los estados</option><option value="pagado" '+(fe==='pagado'?'selected':'')+'>Al día</option><option value="pendiente" '+(fe==='pendiente'?'selected':'')+'>Pendiente</option><option value="mora" '+(fe==='mora'?'selected':'')+'>En mora</option><option value="disponible" '+(fe==='disponible'?'selected':'')+'>Disponible</option></select></div>'
+ +'<table><tr><th>Código</th><th>Tipo</th><th>Dirección</th><th>Canon</th><th>Arrendatario</th><th>Estado</th><th></th></tr>'
+ + lista.map(m=>'<tr><td><b>'+m.id+'</b><div class="mut">'+m.sede+'</div></td><td>'+m.tipo+'</td><td>'+m.dir+'</td><td>'+fmt(m.canon)+'</td><td>'+(m.arr?'<a class="link" onclick="ficha(\''+m.id+'\')">'+m.arr+'</a>':'<span class="mut">Sin arrendar</span>')+'</td><td>'+pill(m)+'</td><td style="white-space:nowrap">'+(m.pago==='disponible'?'<a class="link" onclick="arrendar(\''+m.id+'\')">Arrendar</a> · ':'')+'<a class="link" onclick="editarInmueble(\''+m.id+'\')">Editar</a></td></tr>').join('')
+ +'</table><p class="mut" style="margin-top:10px">'+lista.length+' inmuebles · Canon total si todo estuviera ocupado: '+fmt(suma(INM,m=>m.canon))+'/mes</p>';
+}
+
+/* ---------- ARRENDATARIOS ---------- */
+function rArrend(){
+ const lista=ocupados();
+ $('v-arrend').innerHTML='<h2 class="tit">Arrendatarios</h2><p class="desc">Toca un nombre para ver su ficha: contrato, historial de pagos y documentos.</p>'
+ +'<table><tr><th>Arrendatario</th><th>Inmueble</th><th>Canon</th><th>Día de pago</th><th>Últimos 6 meses</th><th>Estado</th></tr>'
+ + lista.map(m=>{ const base=HIST[m.arr]||[]; const h=base.concat([m.pago==='pagado'?1:0]);
+   const puntos= base.length? h.map(x=>'<span title="'+(x?'Pagó':'No pagó')+'" style="display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:3px;background:'+(x?'#16a34a':'#dc2626')+'"></span>').join('') : '<span class="mut">Nuevo · sin historial</span>';
+   return '<tr><td><a class="link" onclick="ficha(\''+m.id+'\')">'+m.arr+'</a><div class="mut">📱 '+TEL[m.arr]+'</div></td><td>'+m.id+' · '+m.tipo+'</td><td>'+fmt(m.canon)+'</td><td>Día '+m.dia+'</td><td>'+puntos+'</td><td>'+pill(m)+'</td></tr>'; }).join('')
+ +'</table><p class="mut" style="margin-top:8px">🟢 pagó · 🔴 no pagó · Los puntos van de junio a noviembre, en orden.</p>';
+}
+function ficha(id){
+ const m=INM.find(x=>x.id===id); if(!m||!m.arr)return;
+ const base=HIST[m.arr]||[]; const h=base.concat([m.pago==='pagado'?1:0]);
+ const meses=['Jun','Jul','Ago','Sep','Oct','Nov'].slice(5-base.length);
+ $('modal-hoja').innerHTML='<button class="x" onclick="cerrar()">✕</button><h3>'+m.arr+'</h3><p class="mut">'+m.tipo+' '+m.id+' · '+m.dir+' ('+m.sede+')</p>'
+ +'<table style="margin-top:10px"><tr><td class="mut">Canon mensual</td><td><b>'+fmt(m.canon)+'</b></td></tr>'
+ +'<tr><td class="mut">Día de pago</td><td>Día '+m.dia+' de cada mes</td></tr>'
+ +'<tr><td class="mut">Contrato</td><td>'+m.ini+' → '+m.fin+' ('+(diasPara(m.fin)<0?'venció hace '+(-diasPara(m.fin))+' días':'vence en '+diasPara(m.fin)+' días')+')</td></tr>'
+ +'<tr><td class="mut">Estado de noviembre</td><td>'+pill(m)+'</td></tr>'
+ +(m.comprobante?'<tr><td class="mut">Comprobante</td><td>📎 '+m.comprobante.nombre+' · <a class="link" onclick="verDoc(\''+m.id+'\')">Ver</a></td></tr>':'')
+ +'<tr><td class="mut">Teléfono</td><td>📱 '+TEL[m.arr]+'</td></tr>'
+ +'<tr><td class="mut">Historial</td><td>'+meses.map((mm,i)=>mm+' '+(h[i]?'✅':'❌')).join(' · ')+'</td></tr></table>'
+ +'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px">'
+ +(m.pago!=='pagado'?'<button class="btn chico" onclick="abrirPago(\''+m.id+'\')">Registrar pago</button>':'')
+ +'<button class="btn sec chico" onclick="recordar(\''+m.id+'\')">📩 Enviar recordatorio</button>'
+ +'<button class="btn sec chico" onclick="pazYSalvo(\''+m.id+'\')">📄 Paz y salvo</button>'
+ +'<button class="btn sec chico" onclick="editarArr(\''+m.id+'\')">✏️ Editar datos</button>'
+ +'<button class="btn sec chico" style="color:var(--rojo);border-color:var(--rojo)" onclick="finalizar(\''+m.id+'\')">🚪 Finalizar contrato</button>'
+ +'<button class="btn sec chico" onclick="toast(\'📁 Demo: aquí irían el contrato, el inventario con fotos y los documentos del arrendatario.\')">📁 Documentos</button></div>';
+ $('modal').style.display='flex';
+}
+function cerrar(){ $('modal').style.display='none'; }
+function recordar(id){ const m=INM.find(x=>x.id===id); cerrar(); toast('📩 Recordatorio enviado a '+m.arr+' por WhatsApp y correo (demo).'); }
+
+/* ---------- COBRO ---------- */
+function rCobro(){
+ const oc=ocupados(), rec=suma(oc.filter(m=>m.pago==='pagado'),m=>m.canon);
+ $('v-cobro').innerHTML='<h2 class="tit">Cobro de noviembre de 2026</h2><p class="desc">El sistema generó estas cuentas el 1.º de noviembre. Registra los pagos como vayan llegando: el panel y la rentabilidad se actualizan solos.</p>'
+ +'<table><tr><th>Inmueble</th><th>Arrendatario</th><th>Día</th><th>Canon</th><th>Estado</th><th></th></tr>'
+ + oc.sort((a,b)=>a.dia-b.dia).map(m=>'<tr><td><b>'+m.id+'</b></td><td>'+m.arr+'</td><td>'+m.dia+'</td><td>'+fmt(m.canon)+'</td><td>'+pill(m)+'</td><td style="white-space:nowrap">'
+   +(m.pago!=='pagado'?'<a class="link" onclick="abrirPago(\''+m.id+'\')">Registrar pago</a> · ':'')
+   +'<a class="link" onclick="recibo(\''+m.id+'\')">Recibo</a>'+(m.comprobante?' · <a class="link" onclick="verDoc(\''+m.id+'\')">📎 Comprobante</a>':'')+'</td></tr>').join('')
+ +'</table><p style="margin-top:12px"><b>Recaudado: '+fmt(rec)+'</b> de '+fmt(suma(oc,m=>m.canon))+'</p>';
+}
+function abrirPago(id){
+ DOC_TMP=null;
+ const m=INM.find(x=>x.id===id);
+ $('modal-hoja').innerHTML='<button class="x" onclick="cerrar()">✕</button><h3>Registrar pago — '+m.id+'</h3><p class="mut">'+m.arr+' · Canon de noviembre: '+fmt(m.canon)+'</p>'
+ +'<label>Monto recibido</label><input id="p-monto" type="number" value="'+m.canon+'">'
+ +'<label>Medio de pago</label><select id="p-medio"><option>Transferencia / Nequi</option><option>PSE</option><option>Efectivo</option><option>Consignación</option></select>'
+ +'<label>Fecha</label><input id="p-fecha" type="date" value="'+HOY+'">'
+ +'<label>📎 Comprobante del pago (foto o PDF)</label><input id="p-doc" type="file" accept="image/*,.pdf" onchange="selDoc(this)">'
+ +'<div class="mut" id="p-doc-info" style="margin-top:4px">La foto de la transferencia o la consignación que te mandó el arrendatario. Queda guardada con este pago.</div>'
+ +'<button class="btn" style="margin-top:16px" onclick="guardarPago(\''+m.id+'\')">Guardar pago</button>'
+ +'<p class="mut" style="margin-top:8px">Si el monto es menor al canon, el saldo queda como abono y el inmueble sigue pendiente.</p>';
+ $('modal').style.display='flex';
+}
+function selDoc(inp){
+ const f=inp.files&&inp.files[0]; const info=$('p-doc-info');
+ if(!f){ DOC_TMP=null; return; }
+ if(f.type.indexOf('image/')===0){ const r=new FileReader(); r.onload=e=>{ DOC_TMP={nombre:f.name,url:e.target.result}; if(info) info.innerHTML='✅ <b>'+f.name+'</b> listo para adjuntar.'; }; r.readAsDataURL(f); }
+ else { DOC_TMP={nombre:f.name,url:null}; if(info) info.innerHTML='✅ <b>'+f.name+'</b> listo para adjuntar.'; }
+}
+function verDoc(id){
+ const m=INM.find(x=>x.id===id); if(!m||!m.comprobante) return;
+ const c=m.comprobante;
+ $('modal-hoja').innerHTML='<button class="x" onclick="cerrar()">✕</button><h3>📎 Comprobante de pago</h3><p class="mut">'+m.arr+' · '+m.id+' · Canon de noviembre de 2026 · '+fmt(m.canon)+'</p>'
+ +(c.url?'<img src="'+c.url+'" alt="Comprobante" style="width:100%;border:1px solid var(--borde);border-radius:10px;margin-top:12px">':'<div style="font-size:52px;text-align:center;margin:20px 0">📄</div>')
+ +'<p style="margin-top:10px"><b>'+c.nombre+'</b></p><p class="mut">En la versión real, el archivo queda guardado en la nube junto al pago: se puede ver y descargar cuando se necesite (cobro, paz y salvo o una discusión sobre el pago).</p>';
+ $('modal').style.display='flex';
+}
+function guardarPago(id){
+ const m=INM.find(x=>x.id===id); const monto=parseFloat($('p-monto').value)||0;
+ if(DOC_TMP){ m.comprobante={nombre:DOC_TMP.nombre,url:DOC_TMP.url}; DOC_TMP=null; }
+ if(monto>=m.canon){ m.pago='pagado'; m.moraDias=0; toast('✅ Pago completo de '+m.arr+' registrado. Recibo listo en Cobro.'); }
+ else if(monto>0){ m.pago='pendiente'; m.moraDias=0; toast('🟡 Abono de '+fmt(monto)+' registrado. Saldo: '+fmt(m.canon-monto)+'.'); }
+ else { toast('Escribe un monto válido.'); return; }
+ cerrar(); renderTodo();
+}
+function recibo(id){
+ const m=INM.find(x=>x.id===id);
+ $('modal-hoja').innerHTML='<button class="x" onclick="cerrar()">✕</button><div style="text-align:center"><div style="font-size:30px">🏢</div><h3>RECIBO DE ARRENDAMIENTO</h3><p class="mut">Inversiones CR · NIT 900.000.000-0 (demo)</p></div>'
+ +'<table style="margin-top:12px"><tr><td class="mut">Recibimos de</td><td><b>'+m.arr+'</b></td></tr>'
+ +'<tr><td class="mut">Inmueble</td><td>'+m.tipo+' '+m.id+' — '+m.dir+'</td></tr>'
+ +'<tr><td class="mut">Concepto</td><td>Canon de arrendamiento · Noviembre de 2026</td></tr>'
+ +'<tr><td class="mut">Valor</td><td><b>'+fmt(m.canon)+'</b></td></tr>'
+ +'<tr><td class="mut">Estado</td><td>'+(m.pago==='pagado'?'PAGADO ✅':'PENDIENTE ⏳')+'</td></tr>'
+ +(m.comprobante?'<tr><td class="mut">Comprobante</td><td>📎 '+m.comprobante.nombre+' · <a class="link" onclick="verDoc(\''+m.id+'\')">Ver</a></td></tr>':'')
+ +'</table>'
+ +'<button class="btn" style="margin-top:16px" onclick="window.print()">🖨️ Imprimir / guardar PDF</button>';
+ $('modal').style.display='flex';
+}
+function pazYSalvo(id){
+ const m=INM.find(x=>x.id===id); const alDia=m.pago==='pagado'&&!(HIST[m.arr]||[]).includes(0);
+ $('modal-hoja').innerHTML='<button class="x" onclick="cerrar()">✕</button><div style="text-align:center"><div style="font-size:30px">🏢</div><h3>CERTIFICADO DE PAZ Y SALVO</h3><p class="mut">Inversiones CR · Verificable con código QR (demo)</p></div>'
+ +'<p style="margin-top:14px;line-height:1.55">Certificamos que <b>'+m.arr+'</b>, arrendatario del inmueble '+m.tipo+' '+m.id+' ('+m.dir+'), '
+ +(alDia?'se encuentra <b>a paz y salvo</b> por concepto de cánones de arrendamiento a la fecha.':'<b>NO está a paz y salvo</b>: presenta saldo pendiente de noviembre de 2026 por '+fmt(m.canon)+'.')
+ +'</p><p class="mut" style="margin-top:10px">Expedido el 3 de noviembre de 2026 · Firma digital de la propietaria · Código de verificación DEMO-'+m.id+'-2026</p>'
+ +'<button class="btn" style="margin-top:14px" onclick="window.print()">🖨️ Imprimir / guardar PDF</button>';
+ $('modal').style.display='flex';
+}
+
+/* ---------- CONTRATOS ---------- */
+function rContratos(){
+ const lista=ocupados().slice().sort((a,b)=>diasPara(a.fin)-diasPara(b.fin));
+ $('v-contratos').innerHTML='<h2 class="tit">Contratos</h2><p class="desc">Vencimientos e incrementos. En vivienda, la ley (820 de 2003) solo permite subir hasta el IPC; en oficinas y locales manda lo pactado — la demo usa el IPC de referencia del '+IPC+' % para todos.</p>'
+ +'<table><tr><th>Inmueble</th><th>Arrendatario</th><th>Vigencia</th><th>Canon hoy</th><th>Con incremento</th><th></th></tr>'
+ + lista.map(m=>{ const d=diasPara(m.fin); const nuevo=Math.round(m.canon*(1+IPC/100));
+   return '<tr><td><b>'+m.id+'</b><div class="mut">'+m.tipo+'</div></td><td>'+m.arr+'</td><td>'+m.ini+' → '+m.fin+'<div>'+(d<0?'<span class="pill r">Venció hace '+(-d)+' días</span>':d<=45?'<span class="pill a">Vence en '+d+' días</span>':'<span class="pill g">Vence en '+d+' días</span>')+'</div></td><td>'+fmt(m.canon)+'</td><td><b>'+fmt(nuevo)+'</b><div class="mut">+'+fmt(nuevo-m.canon)+'</div></td><td>'+(d<=90?'<a class="link" onclick="toast(\'📄 Demo: incremento aplicado. El nuevo canon de '+m.arr+' queda en '+fmt(nuevo)+' desde la renovación y el sistema le avisa al arrendatario.\')">Aplicar</a>':'')+'</td></tr>'; }).join('')
+ +'</table>';
+}
+
+/* ---------- RENTABILIDAD ---------- */
+function rRenta(){
+ const oc=ocupados();
+ const ing=suma(oc.filter(m=>m.pago==='pagado'),m=>m.canon), gas=suma(INM,m=>m.gastos);
+ let filas=SEDES.map(s=>{ const del=INM.filter(m=>m.sede===s); const i=suma(del.filter(m=>m.pago==='pagado'),m=>m.canon), g=suma(del,m=>m.gastos);
+   return {s,i,g,n:i-g,max:Math.max(i,1)}; });
+ $('v-renta').innerHTML='<h2 class="tit">Gastos y rentabilidad — noviembre</h2><p class="desc">Lo que entró de verdad (pagos recibidos) menos los gastos de cada inmueble: administración del conjunto, predial y mantenimiento promedio.</p>'
+ +'<div class="kpis"><div class="kpi verde"><div class="n">'+fmt(ing)+'</div><div class="l">Ingresos recibidos</div></div>'
+ +'<div class="kpi rojo"><div class="n">'+fmt(gas)+'</div><div class="l">Gastos del mes</div></div>'
+ +'<div class="kpi azul"><div class="n">'+fmt(ing-gas)+'</div><div class="l">Neto del mes</div></div>'
+ +'<div class="kpi"><div class="n">'+fmt(ing*12)+'</div><div class="l">Proyección anual de ingresos</div></div></div>'
+ + filas.map(f=>'<div style="margin-bottom:14px"><b>'+f.s+'</b> — Ingresos '+fmt(f.i)+' · Gastos '+fmt(f.g)+' · <b>Neto '+fmt(f.n)+'</b><div class="barra" style="margin-top:5px"><i style="width:'+Math.max(4,Math.round(f.i/240000))+'%"></i></div></div>').join('')
+ +'<h3 style="margin:16px 0 8px">Detalle por inmueble</h3><table><tr><th>Inmueble</th><th>Canon</th><th>Recibido</th><th>Gastos</th><th>Neto si paga</th></tr>'
+ + INM.map(m=>'<tr><td><b>'+m.id+'</b> <span class="mut">'+m.tipo+'</span></td><td>'+fmt(m.canon)+'</td><td>'+(m.pago==='pagado'?fmt(m.canon):'$0')+'</td><td>'+fmt(m.gastos)+'</td><td><b>'+fmt(m.canon-m.gastos)+'</b></td></tr>').join('')
+ +'</table><p class="mut" style="margin-top:10px">📄 Al cierre del año, el sistema genera el <b>resumen anual de ingresos por arriendos</b> listo para tu contador o tu declaración de renta (demo).</p>';
+}
+/* ---------- EDICIÓN: nuevo / arrendar / editar / se va ---------- */
+function selSede(sel){ return SEDES.map(s=>'<option '+(s===sel?'selected':'')+'>'+s+'</option>').join(''); }
+function selTipo(sel){ return ['Oficina','Apartaestudio','Apartamento','Casa','Local','Habitación'].map(t=>'<option '+(t===sel?'selected':'')+'>'+t+'</option>').join(''); }
+function nuevoInmueble(){
+ $('modal-hoja').innerHTML='<button class="x" onclick="cerrar()">✕</button><h3>＋ Nuevo inmueble</h3><p class="mut">Queda creado como <b>disponible</b>; después lo arriendas desde la lista de inmuebles.</p>'
+ +'<label>Código (ej. N-301)</label><input id="n-id" placeholder="N-301">'
+ +'<label>Sede / grupo</label><select id="n-sede">'+selSede('Sede Norte')+'</select>'
+ +'<label>Tipo</label><select id="n-tipo">'+selTipo('Oficina')+'</select>'
+ +'<label>Dirección</label><input id="n-dir" placeholder="Ej. Cl. 76 #52-30, Of. 301">'
+ +'<label>Canon mensual ($)</label><input id="n-canon" type="number" placeholder="950000">'
+ +'<label>Gastos mensuales del inmueble ($)</label><input id="n-gastos" type="number" value="120000">'
+ +'<button class="btn" style="margin-top:16px" onclick="guardarInmueble()">Crear inmueble</button>';
+ $('modal').style.display='flex';
+}
+function guardarInmueble(){
+ let id=($('n-id').value||'').trim(); if(!id) id='NVO-'+(INM.length+1);
+ if(INM.some(m=>m.id===id)){ toast('Ya existe un inmueble con el código '+id+'.'); return; }
+ const canon=parseFloat($('n-canon').value)||0; if(canon<=0){ toast('Escribe el canon mensual.'); return; }
+ INM.push({id:id,sede:$('n-sede').value,tipo:$('n-tipo').value,dir:$('n-dir').value||'Sin dirección',canon:canon,arr:'',ini:'',fin:'',dia:0,pago:'disponible',gastos:parseFloat($('n-gastos').value)||0});
+ cerrar(); renderTodo(); toast('🏠 Inmueble '+id+' creado como disponible.');
+}
+function editarInmueble(id){
+ const m=INM.find(x=>x.id===id);
+ $('modal-hoja').innerHTML='<button class="x" onclick="cerrar()">✕</button><h3>✏️ Editar inmueble '+m.id+'</h3><p class="mut">Aquí cambias el canon, la dirección y los gastos de la unidad.</p>'
+ +'<label>Sede / grupo</label><select id="e-sede">'+selSede(m.sede)+'</select>'
+ +'<label>Tipo</label><select id="e-tipo">'+selTipo(m.tipo)+'</select>'
+ +'<label>Dirección</label><input id="e-dir" value="'+m.dir+'">'
+ +'<label>Canon mensual ($)</label><input id="e-canon" type="number" value="'+m.canon+'">'
+ +'<label>Gastos mensuales ($)</label><input id="e-gastos" type="number" value="'+m.gastos+'">'
+ +'<button class="btn" style="margin-top:16px" onclick="guardarEdInmueble(\''+m.id+'\')">Guardar cambios</button>';
+ $('modal').style.display='flex';
+}
+function guardarEdInmueble(id){
+ const m=INM.find(x=>x.id===id);
+ m.sede=$('e-sede').value; m.tipo=$('e-tipo').value; m.dir=$('e-dir').value||m.dir;
+ const c=parseFloat($('e-canon').value); if(c>0) m.canon=c;
+ m.gastos=parseFloat($('e-gastos').value)||0;
+ cerrar(); renderTodo(); toast('✏️ Inmueble '+id+' actualizado. Canon: '+fmt(m.canon)+'.');
+}
+function arrendar(id){
+ const m=INM.find(x=>x.id===id);
+ $('modal-hoja').innerHTML='<button class="x" onclick="cerrar()">✕</button><h3>🤝 Arrendar '+m.id+'</h3><p class="mut">'+m.tipo+' · '+m.dir+' · Canon '+fmt(m.canon)+'</p>'
+ +'<label>Nombre del arrendatario (cliente nuevo)</label><input id="a-nom" placeholder="Ej. Droguería La Salud">'
+ +'<label>Teléfono / WhatsApp</label><input id="a-tel" placeholder="3XX XXX XXXX">'
+ +'<label>Inicio del contrato</label><input id="a-ini" type="date" value="'+HOY+'">'
+ +'<label>Fin del contrato</label><input id="a-fin" type="date" value="2027-11-03">'
+ +'<label>Día de pago de cada mes</label><input id="a-dia" type="number" min="1" max="30" value="5">'
+ +'<button class="btn" style="margin-top:16px" onclick="guardarArriendo(\''+m.id+'\')">Crear contrato</button>';
+ $('modal').style.display='flex';
+}
+function guardarArriendo(id){
+ const m=INM.find(x=>x.id===id); const nom=($('a-nom').value||'').trim();
+ if(!nom){ toast('Escribe el nombre del arrendatario.'); return; }
+ m.arr=nom; TEL[nom]=($('a-tel').value||'').trim()||'—';
+ m.ini=$('a-ini').value||HOY; m.fin=$('a-fin').value||''; m.dia=parseInt($('a-dia').value)||5;
+ m.pago='pendiente'; m.moraDias=0; HIST[nom]=[];
+ cerrar(); renderTodo(); toast('🤝 '+nom+' ahora arrienda '+id+'. Su cuenta de este mes ya está en Cobro.');
+}
+function editarArr(id){
+ const m=INM.find(x=>x.id===id);
+ $('modal-hoja').innerHTML='<button class="x" onclick="cerrar()">✕</button><h3>✏️ Editar datos — '+m.arr+'</h3><p class="mut">Inmueble '+m.id+'. El canon también se puede ajustar aquí si se renegoció.</p>'
+ +'<label>Teléfono / WhatsApp</label><input id="d-tel" value="'+(TEL[m.arr]||'')+'">'
+ +'<label>Canon mensual ($)</label><input id="d-canon" type="number" value="'+m.canon+'">'
+ +'<label>Día de pago</label><input id="d-dia" type="number" min="1" max="30" value="'+m.dia+'">'
+ +'<label>Fin del contrato</label><input id="d-fin" type="date" value="'+m.fin+'">'
+ +'<button class="btn" style="margin-top:16px" onclick="guardarEdArr(\''+m.id+'\')">Guardar cambios</button>';
+ $('modal').style.display='flex';
+}
+function guardarEdArr(id){
+ const m=INM.find(x=>x.id===id);
+ TEL[m.arr]=($('d-tel').value||'').trim()||'—';
+ const c=parseFloat($('d-canon').value); if(c>0) m.canon=c;
+ m.dia=parseInt($('d-dia').value)||m.dia; if($('d-fin').value) m.fin=$('d-fin').value;
+ renderTodo(); ficha(id); toast('✏️ Datos de '+m.arr+' actualizados.');
+}
+function finalizar(id){
+ const m=INM.find(x=>x.id===id);
+ $('modal-hoja').innerHTML='<button class="x" onclick="cerrar()">✕</button><h3>🚪 Finalizar contrato</h3>'
+ +'<p style="line-height:1.55;margin-top:6px"><b>'+m.arr+'</b> se va del inmueble '+m.id+'. El contrato se cierra, su historial queda guardado y el inmueble pasa a <b>disponible</b> para arrendarlo de nuevo.</p>'
+ +(m.pago!=='pagado'?'<div class="alerta roja" style="margin-top:10px">⚠️ Ojo: tiene pendiente el canon de noviembre ('+fmt(m.canon)+'). Puedes cerrar igual; queda registrado como saldo por cobrar en el historial.</div>':'')
+ +'<button class="btn" style="margin-top:14px;background:var(--rojo)" onclick="confirmarFin(\''+m.id+'\')">Sí, finalizar contrato</button>'
+ +'<button class="btn sec" style="margin-top:8px" onclick="ficha(\''+m.id+'\')">Volver a la ficha</button>';
+ $('modal').style.display='flex';
+}
+function confirmarFin(id){
+ const m=INM.find(x=>x.id===id); const nom=m.arr;
+ m.arr=''; m.ini=''; m.fin=''; m.dia=0; m.pago='disponible'; m.moraDias=0;
+ cerrar(); renderTodo(); toast('🚪 Contrato de '+nom+' finalizado. '+id+' quedó disponible.');
+}
+renderTodo();
+</script>
+</body>
+</html>

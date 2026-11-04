@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ArriendOS — Control de arriendos para propietarios · PlataformaEDU</title>
+<meta name="description" content="ArriendOS: la plataforma para propietarios que arriendan habitaciones, apartamentos, oficinas y locales. Cobro mensual automático, contratos con incremento por IPC, control de mora, comprobantes y rentabilidad por inmueble.">
+<link rel="icon" type="image/png" href="../simbolo-web.png">
+<style>
+  :root{ --azul:#0792FE; --marino:#13213F; --turq:#14B8A6; --gris:#5A6B84; --fondo:#F5F8FC; }
+  *{ margin:0; padding:0; box-sizing:border-box; }
+  body{ font-family:'Segoe UI', system-ui, Arial, sans-serif; color:#1B2A44; background:#fff; line-height:1.55; }
+  .cont{ max-width:1120px; margin:0 auto; padding:0 20px; }
+  header{ position:sticky; top:0; z-index:50; background:rgba(255,255,255,.96); border-bottom:1px solid #E3EAF3; }
+  .nav{ display:flex; align-items:center; gap:14px; height:60px; }
+  .nav a{ color:var(--marino); text-decoration:none; font-weight:600; font-size:15px; }
+  .nav a:hover{ color:var(--azul); }
+  .nav .marca{ margin-left:auto; font-weight:800; color:var(--marino); font-size:17px; }
+  .nav .marca span{ color:var(--azul); }
+  .btn{ display:inline-block; background:linear-gradient(135deg,#0792FE,#0B6FD6); color:#fff !important; padding:11px 22px; border-radius:10px; font-weight:700; text-decoration:none; box-shadow:0 4px 14px rgba(7,146,254,.35); }
+  .btn.suave{ background:#fff; color:var(--marino) !important; box-shadow:0 4px 14px rgba(19,33,63,.18); }
+  .hero{ background:linear-gradient(150deg,#0D1830,#13213F 55%,#173058); color:#fff; padding:60px 0 66px; text-align:center; }
+  .hero .emoji{ font-size:56px; }
+  .hero h1{ font-size:clamp(26px,4.4vw,40px); line-height:1.2; margin:14px auto 12px; max-width:780px; }
+  .hero p{ color:#C9D8EF; font-size:clamp(16px,2.2vw,19px); max-width:700px; margin:0 auto 28px; }
+  .hero .ctas{ display:flex; gap:14px; justify-content:center; flex-wrap:wrap; }
+  .hero .mini{ margin-top:26px; color:#8FA8CC; font-size:13.5px; font-weight:600; letter-spacing:.3px; }
+  section{ padding:60px 0; }
+  section.gris{ background:var(--fondo); }
+  h2{ color:var(--marino); font-size:clamp(23px,3.4vw,31px); text-align:center; margin-bottom:10px; }
+  .sub{ color:var(--gris); text-align:center; max-width:680px; margin:0 auto 36px; font-size:16.5px; }
+  .grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:18px; }
+  .card{ background:#fff; border:1px solid #E3EAF3; border-radius:16px; padding:22px; box-shadow:0 2px 10px rgba(19,33,63,.05); }
+  .card .ic{ font-size:29px; margin-bottom:9px; }
+  .card h3{ color:var(--marino); font-size:17px; margin-bottom:6px; }
+  .card p{ color:var(--gris); font-size:14.5px; }
+  .pasos{ display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:18px; }
+  .paso{ background:#fff; border:1px solid #E3EAF3; border-radius:16px; padding:24px; }
+  .paso .n{ width:38px; height:38px; border-radius:50%; background:var(--azul); color:#fff; font-weight:800; display:flex; align-items:center; justify-content:center; font-size:18px; margin-bottom:12px; }
+  .paso h3{ color:var(--marino); margin-bottom:6px; }
+  .paso p{ color:var(--gris); font-size:15px; }
+  .precios{ display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:20px; align-items:stretch; }
+  .precio{ background:#fff; border:2px solid #E3EAF3; border-radius:18px; padding:28px 24px; text-align:center; display:flex; flex-direction:column; }
+  .precio.dest{ border-color:var(--azul); box-shadow:0 14px 30px rgba(7,146,254,.16); }
+  .precio .plan{ color:var(--gris); font-weight:700; text-transform:uppercase; font-size:13px; letter-spacing:.6px; }
+  .precio .valor{ color:var(--marino); font-size:34px; font-weight:800; margin:10px 0 2px; }
+  .precio .valor small{ font-size:15px; color:var(--gris); font-weight:600; }
+  .precio p{ color:var(--gris); font-size:15px; margin-top:8px; flex:1; }
+  .banda{ background:linear-gradient(150deg,#0D1830,#13213F 60%,#173058); color:#fff; border-radius:22px; padding:40px 30px; text-align:center; }
+  .banda h2{ color:#fff; }
+  .banda p{ color:#C9D8EF; max-width:620px; margin:0 auto 22px; }
+  footer{ border-top:1px solid #E3EAF3; padding:30px 0; text-align:center; color:var(--gris); font-size:14px; }
+  footer a{ color:var(--azul); text-decoration:none; font-weight:600; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="cont nav">
+    <a href="../">← PlataformaEDU</a>
+    <div class="marca">🏢 Arriend<span>OS</span></div>
+  </div>
+</header>
+
+<div class="hero">
+  <div class="cont">
+    <div class="emoji">🏢</div>
+    <h1>El control de tus arriendos, sin Excel ni cuadernos</h1>
+    <p>ArriendOS es para ti, que arriendas habitaciones, apartaestudios, apartamentos, oficinas o locales y te administras solo: la plataforma cobra, recuerda, guarda los comprobantes y te dice cuánto te produjo cada inmueble.</p>
+    <div class="ctas">
+      <a class="btn" href="demo/">Probar la demo en vivo</a>
+      <a class="btn suave" href="#precios">Ver los planes</a>
+    </div>
+    <div class="mini">DEMO CON DATOS FICTICIOS &nbsp;·&nbsp; FUNCIONA DESDE EL CELULAR &nbsp;·&nbsp; SIN INSTALAR NADA</div>
+  </div>
+</div>
+
+<section>
+  <div class="cont">
+    <h2>Todo lo que hoy haces de memoria, automático</h2>
+    <p class="sub">Deja de perseguir pagos por WhatsApp y de llevar las cuentas en la cabeza.</p>
+    <div class="grid">
+      <div class="card"><div class="ic">💰</div><h3>Cobro mensual automático</h3><p>El 1.º de cada mes el sistema genera la cuenta de cada inmueble. Registras pagos completos o abonos y el panel se actualiza solo.</p></div>
+      <div class="card"><div class="ic">⏰</div><h3>Recordatorios y mora</h3><p>Avisos automáticos antes del vencimiento, el día del pago y en mora. El sistema te dice quién debe, cuánto y desde hace cuántos días.</p></div>
+      <div class="card"><div class="ic">📄</div><h3>Contratos con incremento</h3><p>Alertas de vencimiento y renovación, con el nuevo canon calculado según el IPC (en vivienda, el tope que fija la Ley 820) o lo pactado en locales y oficinas.</p></div>
+      <div class="card"><div class="ic">📎</div><h3>Comprobantes guardados</h3><p>La foto de la transferencia o la consignación que te manda el arrendatario queda guardada con cada pago: nunca más se pierde en el chat.</p></div>
+      <div class="card"><div class="ic">🏅</div><h3>Recibos y paz y salvos</h3><p>Recibos en PDF y certificados de paz y salvo verificables con código QR, emitidos en segundos cuando el arrendatario los necesita.</p></div>
+      <div class="card"><div class="ic">📈</div><h3>Rentabilidad por inmueble</h3><p>Arriendos menos gastos (administración, predial, reparaciones): sabes cuánto te produce realmente cada unidad, y el resumen anual listo para tu contador.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="gris">
+  <div class="cont">
+    <h2>Así de simple es empezar</h2>
+    <p class="sub">Pensado para propietarios, no para contadores ni ingenieros.</p>
+    <div class="pasos">
+      <div class="paso"><div class="n">1</div><h3>Carga tus inmuebles</h3><p>Registras cada unidad con su canon y a su arrendatario con el contrato. Te acompañamos en la carga inicial.</p></div>
+      <div class="paso"><div class="n">2</div><h3>El sistema cobra por ti</h3><p>Cada mes genera las cuentas, manda los recordatorios y tú solo registras los pagos con su comprobante.</p></div>
+      <div class="paso"><div class="n">3</div><h3>Controla desde el celular</h3><p>Panel con lo recaudado, lo que falta y quién está en mora, más la rentabilidad de cada inmueble, donde estés.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="precios">
+  <div class="cont">
+    <h2>Planes según tus inmuebles</h2>
+    <p class="sub">Suscripción mensual por número de inmuebles, sin costo de montaje. Pago anual con <strong>2 meses gratis</strong>. Compara: una inmobiliaria te cobra el 8–10 % de cada canon por administrarte.</p>
+    <div class="precios">
+      <div class="precio">
+        <div class="plan">Básico</div>
+        <div class="valor">$49.900<small> / mes</small></div>
+        <p>Hasta <strong>10 inmuebles</strong>. Todas las funciones: cobro, contratos, comprobantes, recibos y rentabilidad.</p>
+      </div>
+      <div class="precio dest">
+        <div class="plan">Emprendedor</div>
+        <div class="valor">$99.900<small> / mes</small></div>
+        <p>Hasta <strong>30 inmuebles</strong>. Todas las funciones, para propietarios con varias sedes o edificios completos.</p>
+      </div>
+      <div class="precio">
+        <div class="plan">Pro</div>
+        <div class="valor">$189.900<small> / mes</small></div>
+        <p>Hasta <strong>75 inmuebles</strong>. Todas las funciones y acompañamiento prioritario.</p>
+      </div>
+    </div>
+    <p class="sub" style="margin-top:26px">¿Apenas vas a empezar? Escríbenos y pregunta por la <strong>condición de lanzamiento</strong> para los primeros clientes.</p>
+  </div>
+</section>
+
+<section style="padding-top:0">
+  <div class="cont">
+    <div class="banda">
+      <h2>Míralo funcionando</h2>
+      <p>La demo trae una propietaria de ejemplo con dos sedes de oficinas y varios apartamentos. Registra un pago, sube un comprobante, arrienda un inmueble libre y finaliza un contrato: todo se mueve como en la versión real.</p>
+      <a class="btn" href="demo/">Entrar a la demo de ArriendOS</a>
+      <p style="margin-top:18px;margin-bottom:0">¿Dudas? <a href="mailto:contacto@plataformaedu.app?subject=Quiero%20informaci%C3%B3n%20de%20ArriendOS" style="color:#7FC4FF;font-weight:700">contacto@plataformaedu.app</a></p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="cont">
+    <div><strong>ArriendOS</strong> es un producto de <a href="../">PlataformaEDU</a> · Barranquilla, Colombia</div>
+    <div style="margin-top:6px"><a href="../privacidad/">Política de privacidad</a></div>
+  </div>
+</footer>
+
+</body>
+</html>
