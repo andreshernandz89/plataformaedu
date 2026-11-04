@@ -71,6 +71,16 @@
   .hud i:nth-child(3){ bottom:12px; left:12px; border-right:none; border-top:none; border-bottom-left-radius:8px; }
   .hud i:nth-child(4){ bottom:12px; right:12px; border-left:none; border-top:none; border-bottom-right-radius:8px; }
   .kick-d{ color:#2DD4BF; font-size:12px; letter-spacing:3px; font-weight:700; margin-bottom:12px; }
+  .ventana{ max-width:760px; margin:0 auto; background:#fff; border:1px solid var(--linea); border-radius:16px; overflow:hidden; box-shadow:0 18px 40px rgba(14,27,51,.10); text-align:left; }
+  .barra{ display:flex; align-items:center; gap:7px; padding:10px 14px; border-bottom:1px solid var(--linea); background:rgba(245,248,252,.9); }
+  .barra i{ width:11px; height:11px; border-radius:50%; display:block; }
+  .barra .url{ margin-left:9px; font-family:ui-monospace, Consolas, monospace; font-size:12px; color:var(--gris); background:#fff; border:1px solid var(--linea); border-radius:7px; padding:3px 10px; }
+  .cuerpo{ padding:16px; display:grid; gap:9px; font-size:13.5px; }
+  .fila{ display:flex; align-items:center; gap:10px; background:rgba(245,248,252,.85); border:1px solid var(--linea); border-radius:10px; padding:9px 12px; }
+  .fila b{ color:var(--marino); }
+  .fila .der{ margin-left:auto; text-align:right; }
+  .ok{ color:#0B7A66; font-weight:700; }
+  .tarde{ color:#C2410C; font-weight:700; }
   footer{ position:relative; background:var(--marino); color:#B9C9E4; padding:36px 0 28px; text-align:center; }
   footer::before{ content:""; position:absolute; top:0; left:0; right:0; height:3px; background:var(--grad); }
   footer a{ color:#7FC4FF; text-decoration:none; font-weight:600; }
@@ -119,6 +129,24 @@
       <div class="card sube"><div class="ic">📝</div><h3>Notas del equipo en vivo</h3><p>Todo el equipo de dispatch escribe y ve las notas de cada carga en tiempo real, desde cualquier sede: se acabó el cambio de turno por mensajes sueltos.</p></div>
       <div class="card sube"><div class="ic">🗺️</div><h3>Rutas y documentos a un clic</h3><p>Cada carga abre su ruta en el programa de rastreo, su dirección en el mapa y su documento de confirmación (rate confirmation) sin salir del tablero.</p></div>
       <div class="card sube"><div class="ic">📊</div><h3>Filtros y exportación</h3><p>Filtra por dispatcher, por estado o por texto, y exporta a Excel exactamente la vista que tienes en pantalla, en el mismo orden.</p></div>
+    </div>
+  </div>
+</section>
+
+<section style="padding-top:0">
+  <div class="cont">
+    <div class="kick mono">// ASÍ SE VE</div>
+    <h2>El tablero, tal como lo ve tu equipo</h2>
+    <p class="sub">Una vista de ejemplo con datos ficticios: cada fila es una carga activa con su camión, su posición, las millas que faltan y su estado contra la cita.</p>
+    <div class="ventana">
+      <div class="barra"><i style="background:#F87171"></i><i style="background:#FBBF24"></i><i style="background:#34D399"></i><span class="url">Track &amp; Trace · Tablero en vivo</span></div>
+      <div class="cuerpo">
+        <div class="fila"><b>Trk 104</b> <span>Carga 0158XXX · Greenville, SC</span> <span class="der"><b>212 mi</b> · <span class="ok">A tiempo</span></span></div>
+        <div class="fila"><b>Trk 169</b> <span>Carga 0158XXX · Miami, FL</span> <span class="der"><b>38 mi</b> · <span class="ok">En ruta</span></span></div>
+        <div class="fila"><b>Trk 127</b> <span>Carga 0158XXX · Elm Creek, NE</span> <span class="der"><b>540 mi</b> · <span class="tarde">Revisar ETA</span></span></div>
+        <div class="fila"><b>Trk 90</b> <span>Carga 0158XXX · Galveston, TX</span> <span class="der ok">ON SITE · En su parada</span></div>
+        <div class="fila"><b>Trk 141</b> <span>Carga 0158XXX · Tampa, FL</span> <span class="der"><b>96 mi</b> · <span class="ok">A tiempo</span></span></div>
+      </div>
     </div>
   </div>
 </section>
