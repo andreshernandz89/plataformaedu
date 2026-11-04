@@ -7,35 +7,89 @@
 <meta name="description" content="Los productos de PlataformaEDU: plataforma de gestión para colegios, Track & Trace para empresas de transporte, ArriendOS para propietarios con inmuebles en arriendo y el Agente de WhatsApp con IA.">
 <link rel="icon" type="image/png" href="../simbolo-web.png">
 <style>
-  :root{ --azul:#0792FE; --marino:#13213F; --turq:#14B8A6; --gris:#5A6B84; --fondo:#F5F8FC; }
+  :root{ --fondo:#0A1122; --panel:rgba(255,255,255,.045); --borde:rgba(148,184,255,.16); --txt:#E8EEF9; --mut:#93A5C4; --azul:#2E9BFF; --turq:#2DD4BF; --viol:#A78BFA; --amb:#FBBF24; }
   *{ margin:0; padding:0; box-sizing:border-box; }
-  body{ font-family:'Segoe UI', system-ui, Arial, sans-serif; color:#1B2A44; background:#fff; line-height:1.55; }
-  .cont{ max-width:1120px; margin:0 auto; padding:0 20px; }
-  header{ position:sticky; top:0; z-index:50; background:rgba(255,255,255,.96); border-bottom:1px solid #E3EAF3; }
+  html{ scroll-behavior:smooth; }
+  body{ font-family:'Segoe UI', system-ui, Arial, sans-serif; color:var(--txt); line-height:1.6;
+    background:
+      radial-gradient(900px 480px at 85% -60px, rgba(46,155,255,.20), transparent 60%),
+      radial-gradient(760px 420px at -120px 34%, rgba(45,212,191,.12), transparent 60%),
+      radial-gradient(700px 500px at 110% 78%, rgba(167,139,250,.12), transparent 60%),
+      var(--fondo); }
+  .cont{ max-width:1140px; margin:0 auto; padding:0 20px; }
+  a{ color:var(--azul); }
+  header{ position:sticky; top:0; z-index:50; background:rgba(10,17,34,.82); backdrop-filter:blur(10px); border-bottom:1px solid var(--borde); }
   .nav{ display:flex; align-items:center; gap:14px; height:60px; }
-  .nav a{ color:var(--marino); text-decoration:none; font-weight:600; font-size:15px; }
+  .nav a{ color:var(--txt); text-decoration:none; font-weight:600; font-size:15px; }
   .nav a:hover{ color:var(--azul); }
-  .nav .marca{ margin-left:auto; font-weight:800; color:var(--marino); font-size:17px; }
+  .nav .marca{ margin-left:auto; font-weight:800; font-size:16.5px; letter-spacing:.2px; }
   .nav .marca span{ color:var(--azul); }
-  .btn{ display:inline-block; background:linear-gradient(135deg,#0792FE,#0B6FD6); color:#fff !important; padding:11px 22px; border-radius:10px; font-weight:700; text-decoration:none; box-shadow:0 4px 14px rgba(7,146,254,.35); }
-  .hero{ background:linear-gradient(150deg,#0D1830,#13213F 55%,#173058); color:#fff; padding:56px 0 60px; text-align:center; }
-  .hero h1{ font-size:clamp(27px,4.4vw,40px); line-height:1.2; margin:0 auto 12px; max-width:760px; }
-  .hero p{ color:#C9D8EF; font-size:clamp(16px,2.2vw,19px); max-width:700px; margin:0 auto; }
-  section{ padding:56px 0; }
-  .grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:18px; }
-  .card{ background:#fff; border:1px solid #E3EAF3; border-radius:16px; padding:24px; box-shadow:0 2px 10px rgba(19,33,63,.05); display:flex; flex-direction:column; }
-  .card .ic{ font-size:32px; margin-bottom:10px; }
-  .card h3{ color:var(--marino); font-size:18px; margin-bottom:7px; }
-  .card p{ color:var(--gris); font-size:15px; }
-  .card .links{ margin-top:auto; padding-top:14px; }
-  .card .links a{ color:var(--azul); font-weight:700; text-decoration:none; }
-  .card .links a:hover{ text-decoration:underline; }
-  .pill{ background:#FEF3C7; color:#92400E; font-weight:700; font-size:12.5px; padding:3px 10px; border-radius:99px; }
-  .banda{ background:linear-gradient(150deg,#0D1830,#13213F 60%,#173058); color:#fff; border-radius:22px; padding:40px 30px; text-align:center; }
-  .banda h2{ color:#fff; font-size:clamp(22px,3.4vw,29px); margin-bottom:10px; }
-  .banda p{ color:#C9D8EF; max-width:620px; margin:0 auto 22px; }
-  footer{ border-top:1px solid #E3EAF3; padding:30px 0; text-align:center; color:var(--gris); font-size:14px; }
-  footer a{ color:var(--azul); text-decoration:none; font-weight:600; }
+
+  .hero{ padding:74px 0 30px; text-align:center; }
+  .eyebrow{ display:inline-block; color:var(--turq); font-weight:700; font-size:13px; letter-spacing:2.2px; text-transform:uppercase; border:1px solid var(--borde); padding:6px 14px; border-radius:99px; background:rgba(45,212,191,.06); }
+  .hero h1{ font-size:clamp(30px,5.4vw,52px); line-height:1.13; letter-spacing:-.5px; margin:22px auto 16px; max-width:820px; }
+  .hero h1 em{ font-style:normal; background:linear-gradient(92deg,#2E9BFF,#2DD4BF); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .hero p{ color:var(--mut); font-size:clamp(16px,2.2vw,19px); max-width:680px; margin:0 auto 30px; }
+  .estado-global{ display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
+  .chip{ display:inline-flex; align-items:center; gap:8px; border:1px solid var(--borde); background:var(--panel); border-radius:99px; padding:7px 15px; font-size:14px; font-weight:600; color:var(--txt); }
+  .dot{ width:9px; height:9px; border-radius:50%; background:#34D399; box-shadow:0 0 10px #34D399; }
+  .dot.amb{ background:var(--amb); box-shadow:0 0 10px var(--amb); }
+
+  .prod{ padding:44px 0 10px; }
+  .panel{ display:flex; gap:34px; align-items:center; background:var(--panel); border:1px solid var(--borde); border-radius:26px; padding:38px; position:relative; overflow:hidden; }
+  .panel::before{ content:""; position:absolute; inset:0 0 auto 0; height:1px; background:linear-gradient(90deg, transparent, var(--ac, rgba(46,155,255,.55)), transparent); }
+  .panel.inv{ flex-direction:row-reverse; }
+  .info{ flex:1 1 46%; min-width:280px; }
+  .num{ font-size:15px; font-weight:800; letter-spacing:3px; color:var(--ac, var(--azul)); }
+  .info h2{ font-size:clamp(24px,3.4vw,33px); letter-spacing:-.4px; margin:8px 0 4px; display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+  .badge{ font-size:11.5px; font-weight:800; letter-spacing:1.2px; padding:4px 11px; border-radius:99px; text-transform:uppercase; }
+  .badge.prod{ background:rgba(52,211,153,.14); color:#34D399; border:1px solid rgba(52,211,153,.4); }
+  .badge.nuevo{ background:rgba(46,155,255,.14); color:#7FC4FF; border:1px solid rgba(46,155,255,.45); }
+  .badge.pronto{ background:rgba(251,191,36,.12); color:var(--amb); border:1px solid rgba(251,191,36,.4); }
+  .sector{ color:var(--mut); font-weight:600; font-size:14.5px; text-transform:uppercase; letter-spacing:1.4px; }
+  .info>p{ color:#C3D0E8; margin:14px 0 18px; font-size:16.5px; }
+  .feats{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:24px; }
+  .feats span{ font-size:13.5px; font-weight:600; color:var(--txt); border:1px solid var(--borde); background:rgba(255,255,255,.03); padding:5px 12px; border-radius:99px; }
+  .ctas{ display:flex; gap:12px; flex-wrap:wrap; }
+  .btn{ display:inline-block; background:linear-gradient(135deg,#0792FE,#0B6FD6); color:#fff !important; padding:11px 22px; border-radius:11px; font-weight:700; text-decoration:none; box-shadow:0 6px 20px rgba(7,146,254,.35); }
+  .btn.fant{ background:transparent; border:1px solid var(--borde); box-shadow:none; color:var(--txt) !important; }
+  .btn.fant:hover{ border-color:var(--azul); }
+
+  .vista{ flex:1 1 46%; min-width:280px; }
+  .ventana{ background:#0D1730; border:1px solid var(--borde); border-radius:16px; overflow:hidden; box-shadow:0 24px 50px rgba(0,0,0,.45); }
+  .barra{ display:flex; align-items:center; gap:7px; padding:11px 14px; border-bottom:1px solid var(--borde); background:rgba(255,255,255,.03); }
+  .barra i{ width:11px; height:11px; border-radius:50%; display:block; }
+  .barra .url{ margin-left:9px; font-size:12.5px; color:var(--mut); background:rgba(255,255,255,.05); border-radius:7px; padding:3px 10px; }
+  .cuerpo{ padding:16px; display:grid; gap:9px; font-size:13.5px; }
+  .fila{ display:flex; align-items:center; gap:10px; background:rgba(255,255,255,.035); border:1px solid rgba(148,184,255,.09); border-radius:10px; padding:9px 12px; }
+  .fila b{ color:#fff; }
+  .fila .der{ margin-left:auto; }
+  .ok{ color:#34D399; font-weight:700; }
+  .tarde{ color:#F87171; font-weight:700; }
+  .stat{ flex:1; text-align:center; background:rgba(255,255,255,.035); border:1px solid rgba(148,184,255,.09); border-radius:12px; padding:12px 6px; }
+  .stat b{ display:block; font-size:21px; color:#fff; }
+  .stat small{ color:var(--mut); font-size:12px; }
+  .progreso{ height:9px; border-radius:99px; background:rgba(255,255,255,.08); overflow:hidden; }
+  .progreso i{ display:block; height:100%; border-radius:99px; background:linear-gradient(90deg,#2E9BFF,#2DD4BF); }
+  .chat{ display:grid; gap:8px; }
+  .bur{ max-width:82%; padding:9px 13px; border-radius:14px; font-size:13.5px; }
+  .bur.cliente{ background:rgba(255,255,255,.07); justify-self:start; border-bottom-left-radius:4px; }
+  .bur.agente{ background:rgba(7,146,254,.22); border:1px solid rgba(46,155,255,.35); justify-self:end; border-bottom-right-radius:4px; }
+
+  .proceso{ padding:64px 0 8px; }
+  .proceso h2, .final h2{ text-align:center; font-size:clamp(23px,3.6vw,32px); letter-spacing:-.4px; }
+  .proceso .sub, .final .sub{ text-align:center; color:var(--mut); max-width:640px; margin:10px auto 34px; }
+  .pasos{ display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:16px; }
+  .paso{ border:1px solid var(--borde); background:var(--panel); border-radius:18px; padding:24px; }
+  .paso .n{ font-size:26px; font-weight:800; color:transparent; -webkit-text-stroke:1.4px var(--azul); letter-spacing:1px; }
+  .paso h3{ margin:10px 0 6px; font-size:17px; }
+  .paso p{ color:var(--mut); font-size:14.5px; }
+  .final{ padding:56px 0 70px; text-align:center; }
+  footer{ border-top:1px solid var(--borde); padding:30px 0; text-align:center; color:var(--mut); font-size:14px; }
+  footer a{ font-weight:600; text-decoration:none; }
+  .sube{ opacity:0; transform:translateY(16px); transition:opacity .6s ease, transform .6s ease; }
+  .sube.on{ opacity:1; transform:none; }
+  @media (max-width:880px){ .panel, .panel.inv{ flex-direction:column; padding:28px 22px; } .info, .vista{ min-width:0; width:100%; } }
 </style>
 </head>
 <body>
@@ -43,44 +97,153 @@
 <header>
   <div class="cont nav">
     <a href="../">← PlataformaEDU</a>
-    <div class="marca">Nuestros <span>productos</span></div>
+    <div class="marca">Plataforma<span>EDU</span> · Productos</div>
   </div>
 </header>
 
-<div class="hero">
-  <div class="cont">
-    <h1>Nuestros productos</h1>
-    <p>PlataformaEDU es una empresa de software: creamos plataformas que resuelven la operación diaria de empresas reales. Esto es lo que ya construimos.</p>
+<div class="hero cont">
+  <span class="eyebrow">Empresa de software · Barranquilla</span>
+  <h1>Productos que ya están <em>trabajando</em> para empresas reales</h1>
+  <p>No vendemos promesas: cada producto de esta página nació de una operación real y hoy se usa todos los días. Esto es lo que construimos.</p>
+  <div class="estado-global">
+    <span class="chip"><span class="dot"></span> 3 productos en producción</span>
+    <span class="chip"><span class="dot amb"></span> 1 en camino</span>
+    <span class="chip">Demos con datos de ejemplo, sin registro</span>
   </div>
 </div>
 
-<section>
-  <div class="cont">
-    <div class="grid">
-      <div class="card"><div class="ic">📚</div><h3>PlataformaEDU Colegios</h3><p>Gestión académica y administrativa completa para instituciones educativas: notas, boletines, pagos, matrícula en línea y comunicación con los padres.</p><div class="links"><a href="../demo/">Ver la demo →</a> &nbsp;·&nbsp; <a href="../#plataforma">Detalles</a></div></div>
-      <div class="card"><div class="ic">🚛</div><h3>Track &amp; Trace</h3><p>Tablero en vivo para empresas de transporte y logística: cada carga con su estado, GPS, millas y la hora estimada de llegada calculada con las horas reales del conductor.</p><div class="links"><a href="../trackandtrace/">Conocer Track &amp; Trace →</a></div></div>
-      <div class="card"><div class="ic">🏢</div><h3>ArriendOS</h3><p>Control de arrendatarios para propietarios que se auto-administran: cobro mensual, contratos con incremento, mora, comprobantes y la rentabilidad de cada inmueble.</p><div class="links"><a href="../arriendos/">Conocer ArriendOS →</a></div></div>
-      <div class="card"><div class="ic">💬</div><h3>Agente de WhatsApp con IA</h3><p>Un agente que atiende a tus clientes por WhatsApp las 24 horas: responde preguntas frecuentes, recibe pedidos y pasa la conversación a una persona cuando hace falta.</p><div class="links"><span class="pill">MUY PRONTO</span></div></div>
+<section class="prod cont" style="--ac:#2E9BFF">
+  <div class="panel sube">
+    <div class="info">
+      <div class="num">PRODUCTO 01</div>
+      <h2>📚 PlataformaEDU Colegios <span class="badge prod">En producción</span></h2>
+      <div class="sector">Educación</div>
+      <p>La gestión académica y administrativa completa de un colegio en una sola plataforma: notas, boletines, pagos, matrícula en línea y comunicación con los padres, con el escudo y los colores de cada institución.</p>
+      <div class="feats"><span>Notas y boletines</span><span>Pagos y cartera</span><span>Matrícula en línea</span><span>App de padres</span></div>
+      <div class="ctas">
+        <a class="btn" href="../demo/">Probar la demo</a>
+        <a class="btn fant" href="../#plataforma">Ver detalles</a>
+      </div>
     </div>
+    <div class="vista"><div class="ventana">
+      <div class="barra"><i style="background:#F87171"></i><i style="background:#FBBF24"></i><i style="background:#34D399"></i><span class="url">plataformaedu.app/demo</span></div>
+      <div class="cuerpo">
+        <div class="fila">📄 <span>Boletines del período 3</span> <span class="der ok">Generados ✓</span></div>
+        <div class="fila">🎓 <span>Matrícula en línea</span> <span class="der"><b>18</b> inscripciones nuevas</span></div>
+        <div class="fila">💳 <span>Pagos de pensiones del mes</span> <span class="der ok">Al día</span></div>
+        <div class="fila">📣 <span>Circular a padres de familia</span> <span class="der">Enviada a <b>126</b> familias</span></div>
+      </div>
+    </div></div>
   </div>
 </section>
 
-<section style="padding-top:0">
-  <div class="cont">
-    <div class="banda">
-      <h2>¿Ningún producto encaja con tu operación?</h2>
-      <p>También construimos software a la medida: cuéntanos tu proceso y lo convertimos en una plataforma propia, como hicimos con cada uno de estos productos.</p>
-      <a class="btn" href="../#amedida">Ver software a la medida</a>
+<section class="prod cont" style="--ac:#2DD4BF">
+  <div class="panel inv sube">
+    <div class="info">
+      <div class="num">PRODUCTO 02</div>
+      <h2>🚛 Track &amp; Trace <span class="badge prod">En producción</span></h2>
+      <div class="sector">Transporte y logística</div>
+      <p>El tablero en vivo del equipo de dispatch: cada carga con su próxima parada, su cita, el GPS del camión, las millas que faltan y la hora de llegada calculada con las horas legales que le quedan al conductor.</p>
+      <div class="feats"><span>GPS en tiempo real</span><span>ETA con horas del conductor</span><span>Alertas de tardanza</span><span>Notas del equipo en vivo</span></div>
+      <div class="ctas">
+        <a class="btn" href="../trackandtrace/">Conocer Track &amp; Trace</a>
+      </div>
     </div>
+    <div class="vista"><div class="ventana">
+      <div class="barra"><i style="background:#F87171"></i><i style="background:#FBBF24"></i><i style="background:#34D399"></i><span class="url">Tablero de dispatch · En vivo</span></div>
+      <div class="cuerpo">
+        <div class="fila"><b>Trk 104</b> <span>Greenville, SC</span> <span class="der"><b>212 mi</b> · <span class="ok">A tiempo</span></span></div>
+        <div class="fila"><b>Trk 169</b> <span>Miami, FL</span> <span class="der"><b>38 mi</b> · <span class="ok">En ruta</span></span></div>
+        <div class="fila"><b>Trk 127</b> <span>Elm Creek, NE</span> <span class="der"><b>540 mi</b> · <span class="tarde">Revisar ETA</span></span></div>
+        <div class="fila"><b>Trk 90</b> <span>Galveston, TX</span> <span class="der ok">ON SITE · En su parada</span></div>
+      </div>
+    </div></div>
   </div>
 </section>
+
+<section class="prod cont" style="--ac:#A78BFA">
+  <div class="panel sube">
+    <div class="info">
+      <div class="num">PRODUCTO 03</div>
+      <h2>🏢 ArriendOS <span class="badge nuevo">Nuevo</span></h2>
+      <div class="sector">Propietarios e inmuebles</div>
+      <p>El control de arrendatarios para propietarios que se auto-administran: cobro mensual, contratos con incremento, mora, comprobantes guardados y la rentabilidad real de cada habitación, apartamento, oficina o local.</p>
+      <div class="feats"><span>Cobro y recordatorios</span><span>Contratos con IPC</span><span>Paz y salvos con QR</span><span>Rentabilidad por inmueble</span></div>
+      <div class="ctas">
+        <a class="btn" href="../arriendos/">Conocer ArriendOS</a>
+        <a class="btn fant" href="../arriendos/demo/">Probar la demo</a>
+      </div>
+    </div>
+    <div class="vista"><div class="ventana">
+      <div class="barra"><i style="background:#F87171"></i><i style="background:#FBBF24"></i><i style="background:#34D399"></i><span class="url">ArriendOS · Panel del mes</span></div>
+      <div class="cuerpo">
+        <div style="display:flex;gap:9px">
+          <div class="stat"><b>$19,6 M</b><small>Recaudado del mes</small></div>
+          <div class="stat"><b>92%</b><small>Recaudo</small></div>
+          <div class="stat"><b>2</b><small>En mora</small></div>
+        </div>
+        <div class="fila">🏢 <span>Ocupación · 21 de 24 inmuebles</span> <span class="der"><b>87%</b></span></div>
+        <div class="progreso"><i style="width:87%"></i></div>
+        <div class="fila">📄 <span>Contratos por renovar este mes</span> <span class="der"><b>3</b> con incremento listo</span></div>
+      </div>
+    </div></div>
+  </div>
+</section>
+
+<section class="prod cont" style="--ac:#FBBF24">
+  <div class="panel inv sube">
+    <div class="info">
+      <div class="num">PRODUCTO 04</div>
+      <h2>💬 Agente de WhatsApp con IA <span class="badge pronto">Muy pronto</span></h2>
+      <div class="sector">Atención al cliente</div>
+      <p>Un agente que atiende a tus clientes por WhatsApp las 24 horas con la información de tu negocio: responde preguntas frecuentes, recibe pedidos y pasa la conversación a una persona cuando hace falta.</p>
+      <div class="feats"><span>Respuestas 24/7</span><span>Conoce tu negocio</span><span>Pasa a un humano</span><span>Para cualquier sector</span></div>
+      <div class="ctas">
+        <a class="btn fant" href="mailto:contacto@plataformaedu.app?subject=Av%C3%ADsenme%20del%20Agente%20de%20WhatsApp">Avísenme cuando salga</a>
+      </div>
+    </div>
+    <div class="vista"><div class="ventana">
+      <div class="barra"><i style="background:#F87171"></i><i style="background:#FBBF24"></i><i style="background:#34D399"></i><span class="url">WhatsApp de tu negocio</span></div>
+      <div class="cuerpo chat">
+        <div class="bur cliente">Hola, ¿a qué hora abren mañana? 🙂</div>
+        <div class="bur agente">¡Hola! Mañana abrimos de 8:00 a. m. a 6:00 p. m. ¿Quieres que te agende una cita?</div>
+        <div class="bur cliente">Sí, a las 10 por favor</div>
+        <div class="bur agente">Listo ✅ Cita agendada mañana a las 10:00 a. m. Te esperamos.</div>
+      </div>
+    </div></div>
+  </div>
+</section>
+
+<div class="proceso cont">
+  <h2>Y si ninguno encaja, lo construimos para ti</h2>
+  <p class="sub">Cada producto de esta página empezó así: como una necesidad de una empresa real. Nuestro proceso es claro desde el primer día.</p>
+  <div class="pasos">
+    <div class="paso"><div class="n">01</div><h3>Escuchamos</h3><p>Entendemos tu operación, tus clientes y lo que hoy te quita tiempo.</p></div>
+    <div class="paso"><div class="n">02</div><h3>Proponemos</h3><p>Una solución con alcance, precio y plazos por escrito, sin sorpresas.</p></div>
+    <div class="paso"><div class="n">03</div><h3>Construimos</h3><p>Entregas frecuentes que puedes probar, con tus datos protegidos.</p></div>
+    <div class="paso"><div class="n">04</div><h3>Acompañamos</h3><p>Soporte, mejoras y respaldo mientras tu negocio crece.</p></div>
+  </div>
+</div>
+
+<div class="final cont">
+  <h2>¿Tienes un proceso que te quita tiempo?</h2>
+  <p class="sub">Cuéntanos qué quieres mejorar y te decimos con franqueza si un producto nuestro te sirve o si necesitas algo a la medida.</p>
+  <a class="btn" href="../#amedida">Ver software a la medida</a>
+  &nbsp;
+  <a class="btn fant" href="mailto:contacto@plataformaedu.app">contacto@plataformaedu.app</a>
+</div>
 
 <footer>
   <div class="cont">
     <div><strong>PlataformaEDU</strong> · Barranquilla, Colombia</div>
-    <div style="margin-top:6px"><a href="../privacidad/">Política de privacidad</a> &nbsp;·&nbsp; <a href="mailto:contacto@plataformaedu.app">contacto@plataformaedu.app</a></div>
+    <div style="margin-top:6px"><a href="../privacidad/">Política de privacidad</a> &nbsp;·&nbsp; <a href="../">Volver a la plataforma de colegios</a></div>
   </div>
 </footer>
+
+<script>
+  const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('on'); io.unobserve(e.target); } }), { threshold: .12 });
+  document.querySelectorAll('.sube').forEach(el => io.observe(el));
+</script>
 
 </body>
 </html>
