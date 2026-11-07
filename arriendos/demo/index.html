@@ -101,6 +101,7 @@ tr:hover td{background:#f8fafc}
     <button data-v="cobro" onclick="ver('cobro')">💰 Cobro de noviembre</button>
     <button data-v="contratos" onclick="ver('contratos')">📄 Contratos</button>
     <button data-v="renta" onclick="ver('renta')">📈 Gastos y rentabilidad</button>
+    <button data-v="config" onclick="ver('config')">⚙️ Configuración</button>
   </nav>
   <main>
     <section class="vista act" id="v-panel"></section>
@@ -109,6 +110,7 @@ tr:hover td{background:#f8fafc}
     <section class="vista" id="v-cobro"></section>
     <section class="vista" id="v-contratos"></section>
     <section class="vista" id="v-renta"></section>
+    <section class="vista" id="v-config"></section>
   </main>
 </div>
 
@@ -118,6 +120,10 @@ tr:hover td{background:#f8fafc}
 <script>
 /* =================== DATOS FICTICIOS =================== */
 const IPC = 4.8; // % de referencia para la demo
+/* ---------- CONFIGURACIÓN DEL PROPIETARIO ---------- */
+let CONFIG = { banco:'Bancolombia', tipo:'Cuenta de ahorros', numero:'123-456789-01', titular:'Carolina Reyes', nequi:'300 123 4567', interesDia:0.1 };
+function interesMora(m){ return Math.round((m.canon||0) * (CONFIG.interesDia/100) * (m.moraDias||0)); }
+function datosPagoTxt(){ return CONFIG.tipo+' '+CONFIG.banco+' N.º '+CONFIG.numero+', a nombre de '+CONFIG.titular+' · Nequi '+CONFIG.nequi; }
 let DOC_TMP = null; // comprobante seleccionado en el formulario de pago
 const HOY = '2026-11-03';
 let SEDES = ['Sede Norte','Sede Centro','Apartamentos'];
@@ -169,7 +175,30 @@ function salir(){ $('app').style.display='none'; $('login').style.display='flex'
 function ver(v){ document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.toggle('act',b.dataset.v===v));
  document.querySelectorAll('.vista').forEach(s=>s.classList.toggle('act',s.id==='v-'+v)); }
 function toast(t){ const el=$('toast'); el.textContent=t; el.style.display='block'; setTimeout(()=>el.style.display='none',2600); }
-function renderTodo(){ $('conteo').textContent=INM.length+' inmuebles'; rPanel(); rInmuebles(); rArrend(); rCobro(); rContratos(); rRenta(); }
+function renderTodo(){ $('conteo').textContent=INM.length+' inmuebles'; rPanel(); rInmuebles(); rArrend(); rCobro(); rContratos(); rRenta(); rConfig(); }
+
+/* ---------- CONFIGURACIÓN ---------- */
+function rConfig(){
+ $('v-config').innerHTML='<h2 class="tit">Configuración</h2><p class="desc">Estos datos son los que salen en los correos de recordatorio, en los recibos y en el paz y salvo. El interés de mora se calcula solo, día a día, sobre el canon de cada inmueble.</p>'
+ +'<div style="background:#fff;border:1px solid var(--borde);border-radius:12px;padding:20px;max-width:660px"><h3 style="margin:0 0 6px">💳 Cuentas para recibir pagos</h3>'
+ +'<label>Banco</label><input id="c-banco" value="'+CONFIG.banco+'">'
+ +'<label>Tipo de cuenta</label><select id="c-tipo" style="width:100%;padding:11px 12px;border:1px solid var(--borde);border-radius:9px;font-size:15px"><option'+(CONFIG.tipo==='Cuenta de ahorros'?' selected':'')+'>Cuenta de ahorros</option><option'+(CONFIG.tipo==='Cuenta corriente'?' selected':'')+'>Cuenta corriente</option></select>'
+ +'<label>Número de cuenta</label><input id="c-numero" value="'+CONFIG.numero+'">'
+ +'<label>Titular de la cuenta</label><input id="c-titular" value="'+CONFIG.titular+'">'
+ +'<label>Nequi / llave</label><input id="c-nequi" value="'+CONFIG.nequi+'">'
+ +'<h3 style="margin:22px 0 6px">⏰ Interés de mora</h3>'
+ +'<label>Interés por cada día de mora (% del canon)</label><input id="c-interes" type="number" step="0.01" min="0" value="'+CONFIG.interesDia+'">'
+ +'<p class="mut" style="margin:4px 0 0">Ejemplo con tu interés actual: un canon de $1.000.000 con 10 días de mora genera <b>'+fmt(Math.round(1000000*(CONFIG.interesDia/100)*10))+'</b> de interés.</p>'
+ +'<button class="btn" style="margin-top:16px" onclick="guardarConfig()">Guardar configuración</button>'
+ +'<div class="alerta" style="margin-top:16px">📩 <b>Así salen tus datos de pago en los recordatorios:</b><br>'+datosPagoTxt()+'</div></div>';
+}
+function guardarConfig(){
+ CONFIG.banco=$('c-banco').value.trim()||CONFIG.banco; CONFIG.tipo=$('c-tipo').value;
+ CONFIG.numero=$('c-numero').value.trim()||CONFIG.numero; CONFIG.titular=$('c-titular').value.trim()||CONFIG.titular;
+ CONFIG.nequi=$('c-nequi').value.trim()||CONFIG.nequi;
+ const iv=parseFloat($('c-interes').value); CONFIG.interesDia=isNaN(iv)||iv<0?0:iv;
+ rConfig(); rPanel(); toast('✅ Configuración guardada. Los recordatorios y la mora ya usan los datos nuevos.');
+}
 
 /* ---------- PANEL ---------- */
 function rPanel(){
@@ -179,7 +208,7 @@ function rPanel(){
  porcen=oc.length?Math.round(oc.length/INM.length*100):0;
  const vencen=oc.filter(m=>diasPara(m.fin)<=45).sort((a,b)=>diasPara(a.fin)-diasPara(b.fin));
  let alertas='';
- mora.forEach(m=>{ alertas+='<div class="alerta roja">🔴 <b>'+m.arr+'</b> ('+m.id+') lleva <b>'+m.moraDias+' días de mora</b> — debe '+fmt(m.canon)+'. <a class="link" onclick="recordar(\''+m.id+'\')">Enviar recordatorio</a> · <a class="link" onclick="ficha(\''+m.id+'\')">Ver ficha</a></div>'; });
+ mora.forEach(m=>{ alertas+='<div class="alerta roja">🔴 <b>'+m.arr+'</b> ('+m.id+') lleva <b>'+m.moraDias+' días de mora</b> — debe '+fmt(m.canon)+' + interés de mora '+fmt(interesMora(m))+'. <a class="link" onclick="recordar(\''+m.id+'\')">Enviar recordatorio</a> · <a class="link" onclick="ficha(\''+m.id+'\')">Ver ficha</a></div>'; });
  vencen.forEach(m=>{ const d=diasPara(m.fin); alertas+='<div class="alerta">🟠 El contrato de <b>'+m.arr+'</b> ('+m.id+') '+(d<0?'venció hace '+(-d)+' días':'vence en '+d+' días')+'. Con el IPC de referencia ('+IPC+' %) el nuevo canon sería <b>'+fmt(m.canon*(1+IPC/100))+'</b>. <a class="link" onclick="ver(\'contratos\')">Revisar</a></div>'; });
  $('v-panel').innerHTML='<h2 class="tit">Panel de noviembre de 2026</h2><p class="desc">Así va tu cartera hoy, 3 de noviembre. Todo se actualiza solo cuando registras un pago.</p>'
  +'<div class="kpis">'
@@ -226,6 +255,7 @@ function ficha(id){
  +'<tr><td class="mut">Día de pago</td><td>Día '+m.dia+' de cada mes</td></tr>'
  +'<tr><td class="mut">Contrato</td><td>'+m.ini+' → '+m.fin+' ('+(diasPara(m.fin)<0?'venció hace '+(-diasPara(m.fin))+' días':'vence en '+diasPara(m.fin)+' días')+')</td></tr>'
  +'<tr><td class="mut">Estado de noviembre</td><td>'+pill(m)+'</td></tr>'
+ +(m.pago==='mora'?'<tr><td class="mut">Interés de mora</td><td><b>'+fmt(interesMora(m))+'</b> ('+m.moraDias+' días al '+CONFIG.interesDia+' % diario)</td></tr>':'')
  +(m.comprobante?'<tr><td class="mut">Comprobante</td><td>📎 '+m.comprobante.nombre+' · <a class="link" onclick="verDoc(\''+m.id+'\')">Ver</a></td></tr>':'')
  +'<tr><td class="mut">Teléfono</td><td>📱 '+TEL[m.arr]+'</td></tr>'
  +'<tr><td class="mut">Historial</td><td>'+meses.map((mm,i)=>mm+' '+(h[i]?'✅':'❌')).join(' · ')+'</td></tr></table>'
