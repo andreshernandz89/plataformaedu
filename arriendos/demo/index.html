@@ -16,9 +16,12 @@ button{font-family:inherit;cursor:pointer}
 .caja-login h1{font-size:21px;margin:8px 0 2px}
 .caja-login p.sub{color:var(--gris);font-size:13px;margin-bottom:20px}
 .caja-login input{width:100%;padding:11px 12px;border:1px solid var(--borde);border-radius:9px;margin-bottom:10px;font-size:15px}
-.btn{display:inline-block;background:var(--azul2);color:#fff;border:none;padding:11px 18px;border-radius:9px;font-size:15px;font-weight:600;width:100%}
-.btn:hover{background:var(--azul)}
-.btn.sec{background:#fff;color:var(--azul2);border:1px solid var(--azul2)}
+.btn{display:inline-block;background:var(--azul2);color:#fff;border:none;padding:12px 18px;border-radius:10px;font-size:15px;font-weight:600;width:100%;box-shadow:0 1px 3px rgba(15,23,42,.18);transition:background .15s,transform .05s,box-shadow .15s}
+.btn:hover{background:var(--azul);box-shadow:0 2px 6px rgba(15,23,42,.2)}
+.btn:active{transform:translateY(1px)}
+.btn.sec{background:#fff;color:var(--azul2);border:1.5px solid var(--azul2);box-shadow:none}
+.btn.sec:hover{background:var(--celeste)}
+button:focus-visible{outline:2px solid var(--azul2);outline-offset:2px}
 .btn.chico{width:auto;padding:7px 12px;font-size:13px}
 .nota-demo{margin-top:14px;background:#fef3c7;color:#92400e;border-radius:8px;padding:9px 11px;font-size:12.5px;text-align:left}
 /* ---------- App ---------- */
@@ -64,8 +67,16 @@ tr:hover td{background:#f8fafc}
 #modal .hoja{background:#fff;border-radius:14px;max-width:560px;width:100%;padding:22px}
 #modal h3{margin-bottom:6px}
 #modal .x{float:right;background:none;border:none;font-size:21px;color:var(--gris)}
-#modal label{font-size:13px;color:var(--gris);display:block;margin:12px 0 4px}
-#modal input,#modal select{width:100%;padding:10px;border:1px solid var(--borde);border-radius:8px;font-size:15px}
+/* Formularios (toda la app) */
+label{font-size:13px;font-weight:600;color:#334155;display:block;margin:14px 0 5px}
+.grid2 label{margin-top:0}
+input,select,textarea{width:100%;padding:11px 12px;border:1.5px solid var(--borde);border-radius:10px;font-size:15px;background:#fff;color:#0f172a;transition:border-color .15s,box-shadow .15s}
+input::placeholder{color:#94a3b8}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--azul2);box-shadow:0 0 0 3px rgba(37,99,235,.16)}
+select{appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path d='M1 1l5 5 5-5' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round'/></svg>");background-repeat:no-repeat;background-position:right 12px center;padding-right:36px;cursor:pointer}
+input[type=file]{padding:9px 12px;background:#f8fafc;cursor:pointer}
+input[type=file]::file-selector-button{font:inherit;font-weight:600;font-size:13.5px;color:var(--azul2);background:#fff;border:1.5px solid var(--azul2);border-radius:8px;padding:6px 12px;margin-right:10px;cursor:pointer}
+input[type=file]::file-selector-button:hover{background:var(--celeste)}
 #toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:#0f172a;color:#fff;padding:11px 18px;border-radius:10px;font-size:14px;display:none;z-index:99;box-shadow:0 8px 24px rgba(0,0,0,.3)}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 @media(max-width:640px){.grid2{grid-template-columns:1fr}table{font-size:13px}th,td{padding:7px 5px}}
@@ -194,22 +205,18 @@ function rConfig(){
  +'<div style="background:#fff;border:1px solid var(--borde);border-radius:12px;padding:20px;max-width:660px;margin-bottom:16px"><h3 style="margin:0 0 6px">🏢 Datos de tu negocio</h3>'
  +'<p class="mut" style="margin:0 0 8px">Este nombre y este logo son los que salen en tu panel, en tus recibos, en el paz y salvo y en los correos a tus arrendatarios.</p>'
  +'<div style="display:flex;gap:14px;align-items:center;margin:10px 0"><span id="cfg-logo">'+logoHTML(56)+'</span><span><label style="margin:0 0 4px">Logo de tu empresa (imagen)</label><input id="n-logo" type="file" accept="image/*" onchange="selLogo(this)" style="margin:0"><br><a class="link" style="color:var(--rojo)" onclick="quitarLogo()">Quitar logo</a></span></div>'
- +'<label>Nombre de la empresa o negocio</label><input id="n-empresa" value="'+CONFIG.negocio.empresa+'">'
- +'<label>Nombre del propietario o responsable</label><input id="n-responsable" value="'+CONFIG.negocio.responsable+'">'
- +'<label>NIT o cédula</label><input id="n-nit" value="'+CONFIG.negocio.nit+'">'
- +'<label>Teléfono de contacto</label><input id="n-tel" value="'+CONFIG.negocio.tel+'">'
- +'<label>Correo de contacto</label><input id="n-correo" value="'+CONFIG.negocio.correo+'">'
- +'<label>Dirección</label><input id="n-dir" value="'+CONFIG.negocio.dir+'">'
+ +'<div class="grid2"><span><label>Nombre de la empresa o negocio</label><input id="n-empresa" value="'+CONFIG.negocio.empresa+'"></span><span><label>Nombre del propietario o responsable</label><input id="n-responsable" value="'+CONFIG.negocio.responsable+'"></span></div>'
+ +'<div class="grid2"><span><label>NIT o cédula</label><input id="n-nit" value="'+CONFIG.negocio.nit+'"></span><span><label>Teléfono de contacto</label><input id="n-tel" value="'+CONFIG.negocio.tel+'"></span></div>'
+ +'<div class="grid2"><span><label>Correo de contacto</label><input id="n-correo" value="'+CONFIG.negocio.correo+'"></span><span><label>Dirección</label><input id="n-dir" value="'+CONFIG.negocio.dir+'"></span></div>'
  +'</div>'
  +'<div style="background:#fff;border:1px solid var(--borde);border-radius:12px;padding:20px;max-width:660px"><h3 style="margin:0 0 6px">💳 Medios para recibir pagos</h3>'
  +'<p class="mut" style="margin:0 0 8px">Agrega todas las cuentas y medios que uses: son los que salen en los recordatorios de pago y en los recibos.</p>'
  +(CONFIG.pagos.length? '<table>'+CONFIG.pagos.map((p,i)=>'<tr><td>'+pagoLinea(p)+'</td><td style="text-align:right;white-space:nowrap"><a class="link" style="color:var(--rojo)" onclick="quitarPago('+i+')">Quitar</a></td></tr>').join('')+'</table>' : '<p class="mut">Aún no hay medios de pago registrados.</p>')
- +'<label>Tipo de medio</label><select id="p-tipo" style="width:100%;padding:11px 12px;border:1px solid var(--borde);border-radius:9px;font-size:15px"><option>Cuenta de ahorros</option><option>Cuenta corriente</option><option>Nequi</option><option>Daviplata</option><option>Llave Bre-B</option><option>PSE</option><option>Otro</option></select>'
- +'<label>Banco (si aplica)</label><input id="p-banco" placeholder="Ej.: Bancolombia, Davivienda, Banco de Bogotá">'
+ +'<div class="grid2"><span><label>Tipo de medio</label><select id="p-tipo"><option>Cuenta de ahorros</option><option>Cuenta corriente</option><option>Nequi</option><option>Daviplata</option><option>Llave Bre-B</option><option>PSE</option><option>Otro</option></select></span><span><label>Banco (si aplica)</label><input id="p-banco" placeholder="Ej.: Bancolombia, Davivienda"></span></div>'
  +'<label>Detalle: número de cuenta o celular, y el titular</label><input id="p-detalle" placeholder="Ej.: N.º 123-456789-01, a nombre de Carolina Reyes">'
- +'<button class="btn sec chico" onclick="agregarPago()">＋ Agregar medio de pago</button>'
+ +'<button class="btn sec chico" style="margin-top:12px" onclick="agregarPago()">＋ Agregar medio de pago</button>'
  +'<h3 style="margin:22px 0 6px">⏰ Interés de mora</h3>'
- +'<label>¿Cómo se cobra el interés por cada día de mora?</label><select id="c-modo" style="width:100%;padding:11px 12px;border:1px solid var(--borde);border-radius:9px;font-size:15px" onchange="CONFIG.modoInteres=this.value;rConfig()"><option value="porcentaje"'+(CONFIG.modoInteres==='porcentaje'?' selected':'')+'>Porcentaje del canon</option><option value="fijo"'+(CONFIG.modoInteres==='fijo'?' selected':'')+'>Valor fijo por día</option></select>'
+ +'<label>¿Cómo se cobra el interés por cada día de mora?</label><select id="c-modo" onchange="CONFIG.modoInteres=this.value;rConfig()"><option value="porcentaje"'+(CONFIG.modoInteres==='porcentaje'?' selected':'')+'>Porcentaje del canon</option><option value="fijo"'+(CONFIG.modoInteres==='fijo'?' selected':'')+'>Valor fijo por día</option></select>'
  +(CONFIG.modoInteres==='fijo'
    ? '<label>Valor fijo por cada día de mora ($)</label><input id="c-valor" type="number" step="100" min="0" value="'+CONFIG.valorDia+'">'
    : '<label>Interés por cada día de mora (% del canon)</label><input id="c-interes" type="number" step="0.01" min="0" value="'+CONFIG.interesDia+'">')
@@ -313,7 +320,7 @@ function documentos(id){
  $('modal-hoja').innerHTML='<button class="x" onclick="cerrar()">✕</button><h3>📁 Documentos de '+m.arr+'</h3><p class="mut">'+m.tipo+' '+m.id+' · '+m.dir+'</p>'
  +(m.docs.length? '<table style="margin-top:12px"><tr><th>Documento</th><th>Archivo</th><th></th></tr>'+m.docs.map((d,i)=>'<tr><td>'+d.tipo+'</td><td>📎 '+d.nombre+'</td><td style="white-space:nowrap"><a class="link" onclick="verDocArr(\''+id+'\','+i+')">Ver</a> · <a class="link" style="color:var(--rojo)" onclick="quitarDoc(\''+id+'\','+i+')">Quitar</a></td></tr>').join('')+'</table>' : '<p class="mut" style="margin-top:12px">Todavía no hay documentos adjuntos. El primero debería ser el contrato firmado.</p>')
  +'<h4 style="margin:18px 0 4px">Adjuntar un documento</h4>'
- +'<label>Tipo de documento</label><select id="d-tipo" style="width:100%;padding:11px 12px;border:1px solid var(--borde);border-radius:9px;font-size:15px"><option>Contrato firmado</option><option>Acta de inventario</option><option>Documento del arrendatario</option><option>Otro</option></select>'
+ +'<label>Tipo de documento</label><select id="d-tipo"><option>Contrato firmado</option><option>Acta de inventario</option><option>Documento del arrendatario</option><option>Otro</option></select>'
  +'<label>Archivo (PDF o foto)</label><input id="d-file" type="file" accept="image/*,.pdf" onchange="selDocAdj(this)"><div id="d-info" class="mut"></div>'
  +'<div style="display:flex;gap:8px;margin-top:14px"><button class="btn chico" onclick="adjuntarDoc(\''+id+'\')">📎 Adjuntar</button><button class="btn sec chico" onclick="ficha(\''+id+'\')">Volver a la ficha</button></div>'
  +'<p class="mut" style="margin-top:12px">En la versión real los archivos quedan guardados en la nube, en la carpeta del arrendatario, y el contrato también se consulta desde el módulo de Contratos.</p>';
