@@ -91,7 +91,7 @@ tr:hover td{background:#f8fafc}
 <div id="app">
   <header class="top">
     <div class="marca"><svg viewBox="0 3 84 80" width="36" height="34" style="vertical-align:-8px;margin-right:7px" aria-label="Logo ArriendOS" role="img"><defs><linearGradient id="aOSgS" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#0792FE"/><stop offset="1" stop-color="#0792FE"/></linearGradient></defs><path d="M6 50 L46 10 L72 34 Q78 40 78 48 V76 H66 V42 Q66 36 60 36 H52 Q46 36 46 42 V76 H34 V52 Q34 46 28 46 H22 Q16 46 16 52 V76" fill="none" stroke="url(#aOSgS)" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/><rect x="52" y="47" width="8" height="8" rx="2" fill="#0792FE"/><rect x="52" y="59" width="8" height="8" rx="2" fill="#0792FE"/><rect x="68" y="47" width="8" height="8" rx="2" fill="#0792FE"/><rect x="68" y="59" width="8" height="8" rx="2" fill="#0792FE"/><circle cx="30" cy="62" r="2.8" fill="#0792FE"/></svg>Arriend<span>OS</span></div>
-    <div class="duena"><b>Carolina Reyes</b><span>Inversiones CR · <span id="conteo">21 inmuebles</span></span></div>
+    <div class="duena" style="display:flex;align-items:center;gap:10px"><span id="neg-logo"></span><span><b id="neg-resp">Carolina Reyes</b><br><span id="neg-emp">Inversiones CR</span> · <span id="conteo">21 inmuebles</span></span></div>
     <button class="btn sec chico" onclick="salir()">Salir</button>
   </header>
   <nav class="tabs" id="tabs">
@@ -125,11 +125,14 @@ let CONFIG = { pagos:[
   {tipo:'Cuenta de ahorros', banco:'Bancolombia', detalle:'N.º 123-456789-01, a nombre de Carolina Reyes'},
   {tipo:'Nequi', banco:'', detalle:'300 123 4567'}
  ],
- modoInteres:'porcentaje', interesDia:0.1, valorDia:2000 };
+ modoInteres:'porcentaje', interesDia:0.1, valorDia:2000,
+ negocio:{ empresa:'Inversiones CR', responsable:'Carolina Reyes', nit:'900.000.000-0', tel:'(605) 123 4567', correo:'contacto@inversionescr.co', dir:'Cl. 76 #52-30, Barranquilla', logo:null } };
 function interesMora(m){ const d=m.moraDias||0; return CONFIG.modoInteres==='fijo' ? Math.round(CONFIG.valorDia*d) : Math.round((m.canon||0) * (CONFIG.interesDia/100) * d); }
 function interesTxt(m){ return CONFIG.modoInteres==='fijo' ? (m.moraDias+' días a '+fmt(CONFIG.valorDia)+' por día') : (m.moraDias+' días al '+CONFIG.interesDia+' % diario'); }
 function pagoLinea(p){ return p.tipo+(p.banco?' '+p.banco:'')+' — '+p.detalle; }
 function datosPagoTxt(){ return CONFIG.pagos.map(pagoLinea).join(' · '); }
+function logoHTML(px){ const n=CONFIG.negocio; return n.logo ? '<img src="'+n.logo+'" alt="Logo" style="width:'+px+'px;height:'+px+'px;object-fit:contain;border-radius:8px">' : '<span style="display:inline-flex;width:'+px+'px;height:'+px+'px;border-radius:8px;background:#13213F;color:#fff;align-items:center;justify-content:center;font-weight:800;font-size:'+Math.round(px*0.5)+'px;vertical-align:middle">'+(n.empresa||'A').trim().charAt(0).toUpperCase()+'</span>'; }
+function aplicarNegocio(){ const b=$('neg-resp'), e=$('neg-emp'), l=$('neg-logo'); if(b) b.textContent=CONFIG.negocio.responsable; if(e) e.textContent=CONFIG.negocio.empresa; if(l) l.innerHTML=logoHTML(38); }
 let DOC_TMP = null; // comprobante seleccionado en el formulario de pago
 const HOY = '2026-11-03';
 let SEDES = ['Sede Norte','Sede Centro','Apartamentos'];
@@ -183,11 +186,21 @@ function salir(){ $('app').style.display='none'; $('login').style.display='flex'
 function ver(v){ document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.toggle('act',b.dataset.v===v));
  document.querySelectorAll('.vista').forEach(s=>s.classList.toggle('act',s.id==='v-'+v)); }
 function toast(t){ const el=$('toast'); el.textContent=t; el.style.display='block'; setTimeout(()=>el.style.display='none',2600); }
-function renderTodo(){ $('conteo').textContent=INM.length+' inmuebles'; rPanel(); rInmuebles(); rArrend(); rCobro(); rContratos(); rRenta(); rConfig(); }
+function renderTodo(){ $('conteo').textContent=INM.length+' inmuebles'; aplicarNegocio(); rPanel(); rInmuebles(); rArrend(); rCobro(); rContratos(); rRenta(); rConfig(); }
 
 /* ---------- CONFIGURACIÓN ---------- */
 function rConfig(){
  $('v-config').innerHTML='<h2 class="tit">Configuración</h2><p class="desc">Estos datos son los que salen en los correos de recordatorio, en los recibos y en el paz y salvo. El interés de mora se calcula solo, día a día, sobre el canon de cada inmueble.</p>'
+ +'<div style="background:#fff;border:1px solid var(--borde);border-radius:12px;padding:20px;max-width:660px;margin-bottom:16px"><h3 style="margin:0 0 6px">🏢 Datos de tu negocio</h3>'
+ +'<p class="mut" style="margin:0 0 8px">Este nombre y este logo son los que salen en tu panel, en tus recibos, en el paz y salvo y en los correos a tus arrendatarios.</p>'
+ +'<div style="display:flex;gap:14px;align-items:center;margin:10px 0"><span id="cfg-logo">'+logoHTML(56)+'</span><span><label style="margin:0 0 4px">Logo de tu empresa (imagen)</label><input id="n-logo" type="file" accept="image/*" onchange="selLogo(this)" style="margin:0"><br><a class="link" style="color:var(--rojo)" onclick="quitarLogo()">Quitar logo</a></span></div>'
+ +'<label>Nombre de la empresa o negocio</label><input id="n-empresa" value="'+CONFIG.negocio.empresa+'">'
+ +'<label>Nombre del propietario o responsable</label><input id="n-responsable" value="'+CONFIG.negocio.responsable+'">'
+ +'<label>NIT o cédula</label><input id="n-nit" value="'+CONFIG.negocio.nit+'">'
+ +'<label>Teléfono de contacto</label><input id="n-tel" value="'+CONFIG.negocio.tel+'">'
+ +'<label>Correo de contacto</label><input id="n-correo" value="'+CONFIG.negocio.correo+'">'
+ +'<label>Dirección</label><input id="n-dir" value="'+CONFIG.negocio.dir+'">'
+ +'</div>'
  +'<div style="background:#fff;border:1px solid var(--borde);border-radius:12px;padding:20px;max-width:660px"><h3 style="margin:0 0 6px">💳 Medios para recibir pagos</h3>'
  +'<p class="mut" style="margin:0 0 8px">Agrega todas las cuentas y medios que uses: son los que salen en los recordatorios de pago y en los recibos.</p>'
  +(CONFIG.pagos.length? '<table>'+CONFIG.pagos.map((p,i)=>'<tr><td>'+pagoLinea(p)+'</td><td style="text-align:right;white-space:nowrap"><a class="link" style="color:var(--rojo)" onclick="quitarPago('+i+')">Quitar</a></td></tr>').join('')+'</table>' : '<p class="mut">Aún no hay medios de pago registrados.</p>')
@@ -205,11 +218,17 @@ function rConfig(){
  +'<div class="alerta" style="margin-top:16px">📩 <b>Así salen tus datos de pago en los recordatorios:</b><br>'+datosPagoTxt()+'</div></div>';
 }
 function guardarConfig(){
+ const N=CONFIG.negocio;
+ N.empresa=$('n-empresa').value.trim()||N.empresa; N.responsable=$('n-responsable').value.trim()||N.responsable;
+ N.nit=$('n-nit').value.trim(); N.tel=$('n-tel').value.trim(); N.correo=$('n-correo').value.trim(); N.dir=$('n-dir').value.trim();
+ aplicarNegocio();
  CONFIG.modoInteres=$('c-modo').value;
  if(CONFIG.modoInteres==='fijo'){ const vv=parseFloat($('c-valor').value); CONFIG.valorDia=isNaN(vv)||vv<0?0:vv; }
  else { const iv=parseFloat($('c-interes').value); CONFIG.interesDia=isNaN(iv)||iv<0?0:iv; }
  rConfig(); rPanel(); toast('✅ Configuración guardada. Los recordatorios y la mora ya usan los datos nuevos.');
 }
+function selLogo(inp){ const fl=inp.files&&inp.files[0]; if(!fl) return; const r=new FileReader(); r.onload=e=>{ CONFIG.negocio.logo=e.target.result; aplicarNegocio(); const c=$('cfg-logo'); if(c) c.innerHTML=logoHTML(56); toast('✅ Logo cargado: ya se ve en tu panel, tus recibos y el paz y salvo.'); }; r.readAsDataURL(fl); }
+function quitarLogo(){ CONFIG.negocio.logo=null; aplicarNegocio(); rConfig(); toast('Logo retirado.'); }
 function agregarPago(){
  const det=$('p-detalle').value.trim(); if(!det){ toast('Escribe el detalle del medio de pago (número y titular).'); return; }
  CONFIG.pagos.push({tipo:$('p-tipo').value,banco:$('p-banco').value.trim(),detalle:det});
@@ -371,7 +390,7 @@ function guardarPago(id){
 }
 function recibo(id){
  const m=INM.find(x=>x.id===id);
- $('modal-hoja').innerHTML='<button class="x" onclick="cerrar()">✕</button><div style="text-align:center"><div style="font-size:30px">🏢</div><h3>RECIBO DE ARRENDAMIENTO</h3><p class="mut">Inversiones CR · NIT 900.000.000-0 (demo)</p></div>'
+ $('modal-hoja').innerHTML='<button class="x" onclick="cerrar()">✕</button><div style="text-align:center">'+logoHTML(54)+'<h3>RECIBO DE ARRENDAMIENTO</h3><p class="mut">'+CONFIG.negocio.empresa+' · NIT '+CONFIG.negocio.nit+'</p></div>'
  +'<table style="margin-top:12px"><tr><td class="mut">Recibimos de</td><td><b>'+m.arr+'</b></td></tr>'
  +'<tr><td class="mut">Inmueble</td><td>'+m.tipo+' '+m.id+' — '+m.dir+'</td></tr>'
  +'<tr><td class="mut">Concepto</td><td>Canon de arrendamiento · Noviembre de 2026</td></tr>'
@@ -384,7 +403,7 @@ function recibo(id){
 }
 function pazYSalvo(id){
  const m=INM.find(x=>x.id===id); const alDia=m.pago==='pagado'&&!(HIST[m.arr]||[]).includes(0);
- $('modal-hoja').innerHTML='<button class="x" onclick="cerrar()">✕</button><div style="text-align:center"><div style="font-size:30px">🏢</div><h3>CERTIFICADO DE PAZ Y SALVO</h3><p class="mut">Inversiones CR · Verificable con código QR (demo)</p></div>'
+ $('modal-hoja').innerHTML='<button class="x" onclick="cerrar()">✕</button><div style="text-align:center">'+logoHTML(54)+'<h3>CERTIFICADO DE PAZ Y SALVO</h3><p class="mut">'+CONFIG.negocio.empresa+' · Verificable con código QR (demo)</p></div>'
  +'<p style="margin-top:14px;line-height:1.55">Certificamos que <b>'+m.arr+'</b>, arrendatario del inmueble '+m.tipo+' '+m.id+' ('+m.dir+'), '
  +(alDia?'se encuentra <b>a paz y salvo</b> por concepto de cánones de arrendamiento a la fecha.':'<b>NO está a paz y salvo</b>: presenta saldo pendiente de noviembre de 2026 por '+fmt(m.canon)+'.')
  +'</p><p class="mut" style="margin-top:10px">Expedido el 3 de noviembre de 2026 · Firma digital de la propietaria · Código de verificación DEMO-'+m.id+'-2026</p>'
