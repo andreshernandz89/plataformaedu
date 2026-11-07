@@ -121,9 +121,15 @@ tr:hover td{background:#f8fafc}
 /* =================== DATOS FICTICIOS =================== */
 const IPC = 4.8; // % de referencia para la demo
 /* ---------- CONFIGURACIÓN DEL PROPIETARIO ---------- */
-let CONFIG = { banco:'Bancolombia', tipo:'Cuenta de ahorros', numero:'123-456789-01', titular:'Carolina Reyes', nequi:'300 123 4567', interesDia:0.1 };
-function interesMora(m){ return Math.round((m.canon||0) * (CONFIG.interesDia/100) * (m.moraDias||0)); }
-function datosPagoTxt(){ return CONFIG.tipo+' '+CONFIG.banco+' N.º '+CONFIG.numero+', a nombre de '+CONFIG.titular+' · Nequi '+CONFIG.nequi; }
+let CONFIG = { pagos:[
+  {tipo:'Cuenta de ahorros', banco:'Bancolombia', detalle:'N.º 123-456789-01, a nombre de Carolina Reyes'},
+  {tipo:'Nequi', banco:'', detalle:'300 123 4567'}
+ ],
+ modoInteres:'porcentaje', interesDia:0.1, valorDia:2000 };
+function interesMora(m){ const d=m.moraDias||0; return CONFIG.modoInteres==='fijo' ? Math.round(CONFIG.valorDia*d) : Math.round((m.canon||0) * (CONFIG.interesDia/100) * d); }
+function interesTxt(m){ return CONFIG.modoInteres==='fijo' ? (m.moraDias+' días a '+fmt(CONFIG.valorDia)+' por día') : (m.moraDias+' días al '+CONFIG.interesDia+' % diario'); }
+function pagoLinea(p){ return p.tipo+(p.banco?' '+p.banco:'')+' — '+p.detalle; }
+function datosPagoTxt(){ return CONFIG.pagos.map(pagoLinea).join(' · '); }
 let DOC_TMP = null; // comprobante seleccionado en el formulario de pago
 const HOY = '2026-11-03';
 let SEDES = ['Sede Norte','Sede Centro','Apartamentos'];
@@ -182,25 +188,34 @@ function renderTodo(){ $('conteo').textContent=INM.length+' inmuebles'; rPanel()
 /* ---------- CONFIGURACIÓN ---------- */
 function rConfig(){
  $('v-config').innerHTML='<h2 class="tit">Configuración</h2><p class="desc">Estos datos son los que salen en los correos de recordatorio, en los recibos y en el paz y salvo. El interés de mora se calcula solo, día a día, sobre el canon de cada inmueble.</p>'
- +'<div style="background:#fff;border:1px solid var(--borde);border-radius:12px;padding:20px;max-width:660px"><h3 style="margin:0 0 6px">💳 Cuentas para recibir pagos</h3>'
- +'<label>Banco</label><input id="c-banco" value="'+CONFIG.banco+'">'
- +'<label>Tipo de cuenta</label><select id="c-tipo" style="width:100%;padding:11px 12px;border:1px solid var(--borde);border-radius:9px;font-size:15px"><option'+(CONFIG.tipo==='Cuenta de ahorros'?' selected':'')+'>Cuenta de ahorros</option><option'+(CONFIG.tipo==='Cuenta corriente'?' selected':'')+'>Cuenta corriente</option></select>'
- +'<label>Número de cuenta</label><input id="c-numero" value="'+CONFIG.numero+'">'
- +'<label>Titular de la cuenta</label><input id="c-titular" value="'+CONFIG.titular+'">'
- +'<label>Nequi / llave</label><input id="c-nequi" value="'+CONFIG.nequi+'">'
+ +'<div style="background:#fff;border:1px solid var(--borde);border-radius:12px;padding:20px;max-width:660px"><h3 style="margin:0 0 6px">💳 Medios para recibir pagos</h3>'
+ +'<p class="mut" style="margin:0 0 8px">Agrega todas las cuentas y medios que uses: son los que salen en los recordatorios de pago y en los recibos.</p>'
+ +(CONFIG.pagos.length? '<table>'+CONFIG.pagos.map((p,i)=>'<tr><td>'+pagoLinea(p)+'</td><td style="text-align:right;white-space:nowrap"><a class="link" style="color:var(--rojo)" onclick="quitarPago('+i+')">Quitar</a></td></tr>').join('')+'</table>' : '<p class="mut">Aún no hay medios de pago registrados.</p>')
+ +'<label>Tipo de medio</label><select id="p-tipo" style="width:100%;padding:11px 12px;border:1px solid var(--borde);border-radius:9px;font-size:15px"><option>Cuenta de ahorros</option><option>Cuenta corriente</option><option>Nequi</option><option>Daviplata</option><option>Llave Bre-B</option><option>PSE</option><option>Otro</option></select>'
+ +'<label>Banco (si aplica)</label><input id="p-banco" placeholder="Ej.: Bancolombia, Davivienda, Banco de Bogotá">'
+ +'<label>Detalle: número de cuenta o celular, y el titular</label><input id="p-detalle" placeholder="Ej.: N.º 123-456789-01, a nombre de Carolina Reyes">'
+ +'<button class="btn sec chico" onclick="agregarPago()">＋ Agregar medio de pago</button>'
  +'<h3 style="margin:22px 0 6px">⏰ Interés de mora</h3>'
- +'<label>Interés por cada día de mora (% del canon)</label><input id="c-interes" type="number" step="0.01" min="0" value="'+CONFIG.interesDia+'">'
- +'<p class="mut" style="margin:4px 0 0">Ejemplo con tu interés actual: un canon de $1.000.000 con 10 días de mora genera <b>'+fmt(Math.round(1000000*(CONFIG.interesDia/100)*10))+'</b> de interés.</p>'
+ +'<label>¿Cómo se cobra el interés por cada día de mora?</label><select id="c-modo" style="width:100%;padding:11px 12px;border:1px solid var(--borde);border-radius:9px;font-size:15px" onchange="CONFIG.modoInteres=this.value;rConfig()"><option value="porcentaje"'+(CONFIG.modoInteres==='porcentaje'?' selected':'')+'>Porcentaje del canon</option><option value="fijo"'+(CONFIG.modoInteres==='fijo'?' selected':'')+'>Valor fijo por día</option></select>'
+ +(CONFIG.modoInteres==='fijo'
+   ? '<label>Valor fijo por cada día de mora ($)</label><input id="c-valor" type="number" step="100" min="0" value="'+CONFIG.valorDia+'">'
+   : '<label>Interés por cada día de mora (% del canon)</label><input id="c-interes" type="number" step="0.01" min="0" value="'+CONFIG.interesDia+'">')
+ +'<p class="mut" style="margin:4px 0 0">Ejemplo con tu configuración actual: '+(CONFIG.modoInteres==='fijo' ? '10 días de mora generan <b>'+fmt(Math.round(CONFIG.valorDia*10))+'</b> de interés, para cualquier inmueble.' : 'un canon de $1.000.000 con 10 días de mora genera <b>'+fmt(Math.round(1000000*(CONFIG.interesDia/100)*10))+'</b> de interés.')+'</p>'
  +'<button class="btn" style="margin-top:16px" onclick="guardarConfig()">Guardar configuración</button>'
  +'<div class="alerta" style="margin-top:16px">📩 <b>Así salen tus datos de pago en los recordatorios:</b><br>'+datosPagoTxt()+'</div></div>';
 }
 function guardarConfig(){
- CONFIG.banco=$('c-banco').value.trim()||CONFIG.banco; CONFIG.tipo=$('c-tipo').value;
- CONFIG.numero=$('c-numero').value.trim()||CONFIG.numero; CONFIG.titular=$('c-titular').value.trim()||CONFIG.titular;
- CONFIG.nequi=$('c-nequi').value.trim()||CONFIG.nequi;
- const iv=parseFloat($('c-interes').value); CONFIG.interesDia=isNaN(iv)||iv<0?0:iv;
+ CONFIG.modoInteres=$('c-modo').value;
+ if(CONFIG.modoInteres==='fijo'){ const vv=parseFloat($('c-valor').value); CONFIG.valorDia=isNaN(vv)||vv<0?0:vv; }
+ else { const iv=parseFloat($('c-interes').value); CONFIG.interesDia=isNaN(iv)||iv<0?0:iv; }
  rConfig(); rPanel(); toast('✅ Configuración guardada. Los recordatorios y la mora ya usan los datos nuevos.');
 }
+function agregarPago(){
+ const det=$('p-detalle').value.trim(); if(!det){ toast('Escribe el detalle del medio de pago (número y titular).'); return; }
+ CONFIG.pagos.push({tipo:$('p-tipo').value,banco:$('p-banco').value.trim(),detalle:det});
+ rConfig(); toast('✅ Medio de pago agregado.');
+}
+function quitarPago(i){ CONFIG.pagos.splice(i,1); rConfig(); toast('Medio de pago retirado.'); }
 
 /* ---------- PANEL ---------- */
 function rPanel(){
@@ -257,7 +272,7 @@ function ficha(id){
  +'<tr><td class="mut">Día de pago</td><td>Día '+m.dia+' de cada mes</td></tr>'
  +'<tr><td class="mut">Contrato</td><td>'+m.ini+' → '+m.fin+' ('+(diasPara(m.fin)<0?'venció hace '+(-diasPara(m.fin))+' días':'vence en '+diasPara(m.fin)+' días')+')</td></tr>'
  +'<tr><td class="mut">Estado de noviembre</td><td>'+pill(m)+'</td></tr>'
- +(m.pago==='mora'?'<tr><td class="mut">Interés de mora</td><td><b>'+fmt(interesMora(m))+'</b> ('+m.moraDias+' días al '+CONFIG.interesDia+' % diario)</td></tr>':'')
+ +(m.pago==='mora'?'<tr><td class="mut">Interés de mora</td><td><b>'+fmt(interesMora(m))+'</b> ('+interesTxt(m)+')</td></tr>':'')
  +(m.comprobante?'<tr><td class="mut">Comprobante</td><td>📎 '+m.comprobante.nombre+' · <a class="link" onclick="verDoc(\''+m.id+'\')">Ver</a></td></tr>':'')
  +'<tr><td class="mut">Teléfono</td><td>📱 '+TEL[m.arr]+'</td></tr>'
  +'<tr><td class="mut">Historial</td><td>'+meses.map((mm,i)=>mm+' '+(h[i]?'✅':'❌')).join(' · ')+'</td></tr></table>'
