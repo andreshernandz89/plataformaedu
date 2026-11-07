@@ -159,6 +159,8 @@ let HIST = { /* meses pagados de los últimos 6 (J=jun…O=oct) para la ficha */
  'Mariana Sofía López':[1,1,1,1,0],'Carlos Eduardo Peña':[1,1,1,1,1],'Valentina Ríos Castro':[0,0,0,0,1],'Jorge Iván Delgado':[1,1,1,1,1]
 };
 const TEL = {}; INM.forEach((m,i)=>{ if(m.arr) TEL[m.arr]='3'+String(100000000+ i*137913).slice(0,9); });
+INM[0].docs=[{tipo:'Contrato firmado',nombre:'Contrato N-101 — Papelería El Lápiz Feliz.pdf',url:null}];
+let DOC_ADJ=null; // documento elegido en el panel de Documentos
 
 /* =================== LÓGICA =================== */
 const $=id=>document.getElementById(id);
@@ -265,11 +267,47 @@ function ficha(id){
  +'<button class="btn sec chico" onclick="pazYSalvo(\''+m.id+'\')">📄 Paz y salvo</button>'
  +'<button class="btn sec chico" onclick="editarArr(\''+m.id+'\')">✏️ Editar datos</button>'
  +'<button class="btn sec chico" style="color:var(--rojo);border-color:var(--rojo)" onclick="finalizar(\''+m.id+'\')">🚪 Finalizar contrato</button>'
- +'<button class="btn sec chico" onclick="toast(\'📁 Demo: aquí irían el contrato, el inventario con fotos y los documentos del arrendatario.\')">📁 Documentos</button></div>';
+ +'<button class="btn sec chico" onclick="documentos(\''+m.id+'\')">📁 Documentos</button></div>';
  $('modal').style.display='flex';
 }
 function cerrar(){ $('modal').style.display='none'; }
 function recordar(id){ const m=INM.find(x=>x.id===id); cerrar(); toast('📩 Recordatorio enviado a '+m.arr+' por WhatsApp y correo (demo).'); }
+
+/* ---------- DOCUMENTOS DEL ARRENDATARIO ---------- */
+function documentos(id){
+ const m=INM.find(x=>x.id===id); if(!m) return; m.docs=m.docs||[]; DOC_ADJ=null;
+ $('modal-hoja').innerHTML='<button class="x" onclick="cerrar()">✕</button><h3>📁 Documentos de '+m.arr+'</h3><p class="mut">'+m.tipo+' '+m.id+' · '+m.dir+'</p>'
+ +(m.docs.length? '<table style="margin-top:12px"><tr><th>Documento</th><th>Archivo</th><th></th></tr>'+m.docs.map((d,i)=>'<tr><td>'+d.tipo+'</td><td>📎 '+d.nombre+'</td><td style="white-space:nowrap"><a class="link" onclick="verDocArr(\''+id+'\','+i+')">Ver</a> · <a class="link" style="color:var(--rojo)" onclick="quitarDoc(\''+id+'\','+i+')">Quitar</a></td></tr>').join('')+'</table>' : '<p class="mut" style="margin-top:12px">Todavía no hay documentos adjuntos. El primero debería ser el contrato firmado.</p>')
+ +'<h4 style="margin:18px 0 4px">Adjuntar un documento</h4>'
+ +'<label>Tipo de documento</label><select id="d-tipo" style="width:100%;padding:11px 12px;border:1px solid var(--borde);border-radius:9px;font-size:15px"><option>Contrato firmado</option><option>Acta de inventario</option><option>Documento del arrendatario</option><option>Otro</option></select>'
+ +'<label>Archivo (PDF o foto)</label><input id="d-file" type="file" accept="image/*,.pdf" onchange="selDocAdj(this)"><div id="d-info" class="mut"></div>'
+ +'<div style="display:flex;gap:8px;margin-top:14px"><button class="btn chico" onclick="adjuntarDoc(\''+id+'\')">📎 Adjuntar</button><button class="btn sec chico" onclick="ficha(\''+id+'\')">Volver a la ficha</button></div>'
+ +'<p class="mut" style="margin-top:12px">En la versión real los archivos quedan guardados en la nube, en la carpeta del arrendatario, y el contrato también se consulta desde el módulo de Contratos.</p>';
+ $('modal').style.display='flex';
+}
+function selDocAdj(inp){
+ const f=inp.files&&inp.files[0]; const info=$('d-info');
+ if(!f){ DOC_ADJ=null; return; }
+ if(f.type.indexOf('image/')===0){ const r=new FileReader(); r.onload=e=>{ DOC_ADJ={nombre:f.name,url:e.target.result}; if(info) info.innerHTML='✅ <b>'+f.name+'</b> listo para adjuntar.'; }; r.readAsDataURL(f); }
+ else { DOC_ADJ={nombre:f.name,url:null}; if(info) info.innerHTML='✅ <b>'+f.name+'</b> listo para adjuntar.'; }
+}
+function adjuntarDoc(id){
+ const m=INM.find(x=>x.id===id); if(!m) return;
+ if(!DOC_ADJ){ toast('Primero elige un archivo.'); return; }
+ m.docs=m.docs||[]; m.docs.push({tipo:$('d-tipo').value,nombre:DOC_ADJ.nombre,url:DOC_ADJ.url}); DOC_ADJ=null;
+ rContratos(); documentos(id); toast('📎 Documento adjunto a '+m.arr+'.');
+}
+function verDocArr(id,i){
+ const m=INM.find(x=>x.id===id); const d=(m.docs||[])[i]; if(!d) return;
+ $('modal-hoja').innerHTML='<button class="x" onclick="cerrar()">✕</button><h3>📎 '+d.tipo+'</h3><p class="mut">'+m.arr+' · '+m.id+'</p>'
+ +(d.url?'<img src="'+d.url+'" alt="Documento" style="width:100%;border:1px solid var(--borde);border-radius:10px;margin-top:12px">':'<div style="font-size:52px;text-align:center;margin:20px 0">📄</div>')
+ +'<p style="margin-top:10px"><b>'+d.nombre+'</b></p><p class="mut">En la versión real el archivo se puede ver y descargar cuando se necesite.</p>'
+ +'<button class="btn sec chico" onclick="documentos(\''+id+'\')">Volver a documentos</button>';
+ $('modal').style.display='flex';
+}
+function quitarDoc(id,i){
+ const m=INM.find(x=>x.id===id); if(!m||!m.docs) return; m.docs.splice(i,1); rContratos(); documentos(id); toast('Documento retirado (demo).');
+}
 
 /* ---------- COBRO ---------- */
 function rCobro(){
@@ -343,9 +381,9 @@ function pazYSalvo(id){
 function rContratos(){
  const lista=ocupados().slice().sort((a,b)=>diasPara(a.fin)-diasPara(b.fin));
  $('v-contratos').innerHTML='<h2 class="tit">Contratos</h2><p class="desc">Vencimientos e incrementos. En vivienda, la ley (820 de 2003) solo permite subir hasta el IPC; en oficinas y locales manda lo pactado — la demo usa el IPC de referencia del '+IPC+' % para todos.</p>'
- +'<table><tr><th>Inmueble</th><th>Arrendatario</th><th>Vigencia</th><th>Canon hoy</th><th>Con incremento</th><th></th></tr>'
+ +'<table><tr><th>Inmueble</th><th>Arrendatario</th><th>Vigencia</th><th>Canon hoy</th><th>Con incremento</th><th>Contrato</th><th></th></tr>'
  + lista.map(m=>{ const d=diasPara(m.fin); const nuevo=Math.round(m.canon*(1+IPC/100));
-   return '<tr><td><b>'+m.id+'</b><div class="mut">'+m.tipo+'</div></td><td>'+m.arr+'</td><td>'+m.ini+' → '+m.fin+'<div>'+(d<0?'<span class="pill r">Venció hace '+(-d)+' días</span>':d<=45?'<span class="pill a">Vence en '+d+' días</span>':'<span class="pill g">Vence en '+d+' días</span>')+'</div></td><td>'+fmt(m.canon)+'</td><td><b>'+fmt(nuevo)+'</b><div class="mut">+'+fmt(nuevo-m.canon)+'</div></td><td>'+(d<=90?'<a class="link" onclick="toast(\'📄 Demo: incremento aplicado. El nuevo canon de '+m.arr+' queda en '+fmt(nuevo)+' desde la renovación y el sistema le avisa al arrendatario.\')">Aplicar</a>':'')+'</td></tr>'; }).join('')
+   return '<tr><td><b>'+m.id+'</b><div class="mut">'+m.tipo+'</div></td><td>'+m.arr+'</td><td>'+m.ini+' → '+m.fin+'<div>'+(d<0?'<span class="pill r">Venció hace '+(-d)+' días</span>':d<=45?'<span class="pill a">Vence en '+d+' días</span>':'<span class="pill g">Vence en '+d+' días</span>')+'</div></td><td>'+fmt(m.canon)+'</td><td><b>'+fmt(nuevo)+'</b><div class="mut">+'+fmt(nuevo-m.canon)+'</div></td>'+'<td>'+((m.docs||[]).findIndex(x=>x.tipo==='Contrato firmado')>=0?'<a class="link" onclick="verDocArr(\''+m.id+'\','+(m.docs||[]).findIndex(x=>x.tipo==='Contrato firmado')+')">📎 Ver contrato</a>':'<a class="link" onclick="documentos(\''+m.id+'\')">📎 Adjuntar</a>')+'</td><td>'+(d<=90?'<a class="link" onclick="toast(\'📄 Demo: incremento aplicado. El nuevo canon de '+m.arr+' queda en '+fmt(nuevo)+' desde la renovación y el sistema le avisa al arrendatario.\')">Aplicar</a>':'')+'</td></tr>'; }).join('')
  +'</table>';
 }
 
