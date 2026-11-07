@@ -142,6 +142,7 @@ function interesMora(m){ const d=m.moraDias||0; return CONFIG.modoInteres==='fij
 function interesTxt(m){ return CONFIG.modoInteres==='fijo' ? (m.moraDias+' días a '+fmt(CONFIG.valorDia)+' por día') : (m.moraDias+' días al '+CONFIG.interesDia+' % diario'); }
 function pagoLinea(p){ return p.tipo+(p.banco?' '+p.banco:'')+' — '+p.detalle; }
 function datosPagoTxt(){ return CONFIG.pagos.map(pagoLinea).join(' · '); }
+function datosPagoLista(){ return CONFIG.pagos.map(p=>'• '+pagoLinea(p)).join('<br>'); }
 function logoHTML(px){ const n=CONFIG.negocio; return n.logo ? '<img src="'+n.logo+'" alt="Logo" style="width:'+px+'px;height:'+px+'px;object-fit:contain;border-radius:8px">' : '<span style="display:inline-flex;width:'+px+'px;height:'+px+'px;border-radius:8px;background:#13213F;color:#fff;align-items:center;justify-content:center;font-weight:800;font-size:'+Math.round(px*0.5)+'px;vertical-align:middle">'+(n.empresa||'A').trim().charAt(0).toUpperCase()+'</span>'; }
 function aplicarNegocio(){ const b=$('neg-resp'), e=$('neg-emp'), l=$('neg-logo'); if(b) b.textContent=CONFIG.negocio.responsable; if(e) e.textContent=CONFIG.negocio.empresa; if(l) l.innerHTML=logoHTML(38); }
 let DOC_TMP = null; // comprobante seleccionado en el formulario de pago
@@ -222,7 +223,7 @@ function rConfig(){
    : '<label>Interés por cada día de mora (% del canon)</label><input id="c-interes" type="number" step="0.01" min="0" value="'+CONFIG.interesDia+'">')
  +'<p class="mut" style="margin:4px 0 0">Ejemplo con tu configuración actual: '+(CONFIG.modoInteres==='fijo' ? '10 días de mora generan <b>'+fmt(Math.round(CONFIG.valorDia*10))+'</b> de interés, para cualquier inmueble.' : 'un canon de $1.000.000 con 10 días de mora genera <b>'+fmt(Math.round(1000000*(CONFIG.interesDia/100)*10))+'</b> de interés.')+'</p>'
  +'<button class="btn" style="margin-top:16px" onclick="guardarConfig()">Guardar configuración</button>'
- +'<div class="alerta" style="margin-top:16px">📩 <b>Así salen tus datos de pago en los recordatorios:</b><br>'+datosPagoTxt()+'</div></div>';
+ +'<div class="alerta" style="margin-top:16px">📩 <b>Así salen tus datos de pago en los recordatorios:</b><br>'+datosPagoLista()+'</div></div>';
 }
 function guardarConfig(){
  const N=CONFIG.negocio;
