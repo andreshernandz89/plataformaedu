@@ -161,6 +161,8 @@ a.gps-mark.on { cursor: pointer; box-shadow: inset 0 0 0 1px rgba(255,255,255,.3
 a.gps-mark.on:hover { filter: brightness(1.12); box-shadow: inset 0 0 0 1px rgba(255,255,255,.55), 0 0 0 2px rgba(15,122,79,.35); }
 a.gps-mark.on:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; filter: brightness(1.12); }
 .av-tag { flex: 0 0 auto; font-size: 10px; font-weight: 600; opacity: .65; white-space: nowrap; }
+.fuel-mark { flex: 0 0 auto; display: inline-flex; align-items: center; font-size: 11px; font-weight: 700; color: var(--dim); white-space: nowrap; }
+.fuel-mark.low { color: var(--danger); }
 
 .load-cell { grid-area: load; display: flex; align-items: flex-end; flex-direction: column; gap: 1px; min-width: 0; color: var(--dim); text-align: right; font-size: 10px; }
 .load-cell > span:last-child { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -713,8 +715,18 @@ function esAvalanche(s){
   const u=truckLocationUrl(s);
   return !!(u&&u.indexOf("/o/7011081/")>=0);
 }
+function fuelMarkHtml(s, nowMs){
+  const g=(s&&s.gps&&typeof s.gps==="object")?s.gps:null;
+  if(!g || g.fuel==null || !g.fuelTs) return "";
+  const t=new Date(g.fuelTs);
+  if(isNaN(t) || nowMs-t.getTime() > 7*24*3600*1000) return "";
+  const v=Math.round(Number(g.fuel));
+  if(isNaN(v) || v<0 || v>100) return "";
+  return '<span class="fuel-mark'+(v<=20?" low":"")+'" title="Fuel level '+v+'% · updated '+esc(fmtAge(nowMs-t.getTime()))+' ago">⛽ '+v+'%</span>';
+}
 function gpsMarkHtml(s, nowMs){
   const av=esAvalanche(s)?'<span class="av-tag">(Avalanche)</span>':"";
+  const fuel=fuelMarkHtml(s, nowMs);
   const on=gpsActive(s, nowMs);
   const raw=stopGpsRaw(s);
   const t=raw?new Date(raw):null;
@@ -726,11 +738,11 @@ function gpsMarkHtml(s, nowMs){
     const url=truckLocationUrl(s);
     if(url){
       return '<a class="gps-mark on" href="'+esc(url)+'" target="_blank" rel="noopener"'+
-        ' title="'+esc(title+" · view truck location in Samsara (opens in a new window)")+'" aria-label="View truck '+esc(s.truck)+' live location in Samsara (opens in a new window)">gps on</a>'+av;
+        ' title="'+esc(title+" · view truck location in Samsara (opens in a new window)")+'" aria-label="View truck '+esc(s.truck)+' live location in Samsara (opens in a new window)">gps on</a>'+fuel+av;
     }
-    return '<span class="gps-mark on" title="'+esc(title)+'">gps on</span>'+av;
+    return '<span class="gps-mark on" title="'+esc(title)+'">gps on</span>'+fuel+av;
   }
-  return '<span class="gps-mark off" title="'+esc(title)+'">gps off</span>'+av;
+  return '<span class="gps-mark off" title="'+esc(title)+'">gps off</span>'+fuel+av;
 }
 
 /* ===== arrival / departure pills ===== */
