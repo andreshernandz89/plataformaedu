@@ -922,6 +922,9 @@
   let refMsgsActivo = null;
 
   const esFin = c => !!(c && c.finalizada);
+  /* Una conversación sin mensajes no se lista: son cascarones que se creaban
+     solos cuando un cliente entraba a su plataforma (sin escribir nada). */
+  const tieneMensajes = c => !!(c && (c.ultimoMensaje || (c.mensajes && Object.keys(c.mensajes).length)));
   function escucharChats(){
     if (escuchandoChats) return; escuchandoChats = true;
     refChats.on("value", snap => { chats = snap.val() || {}; pintarChats(); });
@@ -938,7 +941,7 @@
     const out = [];
     Object.keys(chatsPlat).forEach(inst => {
       const por = chatsPlat[inst] || {};
-      Object.keys(por).forEach(uid => out.push({ inst: inst, id: uid, c: por[uid] || {} }));
+      Object.keys(por).forEach(uid => { const c = por[uid] || {}; if (tieneMensajes(c)) out.push({ inst: inst, id: uid, c: c }); });
     });
     return out.sort((a, b) => (b.c.ultimoMensaje || 0) - (a.c.ultimoMensaje || 0));
   }
@@ -969,7 +972,7 @@
     </button>`;
   }
   function pintarChats(){
-    const webAct = Object.keys(chats).filter(id => !esFin(chats[id]));
+    const webAct = Object.keys(chats).filter(id => !esFin(chats[id]) && tieneMensajes(chats[id]));
     const platAct = listaPlat().filter(x => !esFin(x.c));
     const slWeb = webAct.reduce((n, id) => n + Number(chats[id].noLeidos || 0), 0);
     const slPlat = platAct.reduce((n, x) => n + Number(x.c.noLeidos || 0), 0);
