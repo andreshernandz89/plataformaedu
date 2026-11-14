@@ -1731,6 +1731,9 @@ function paintRecent(snap){
   var rows = [];
   snap.forEach(function(ch){ var v = ch.val() || {}; v._k = ch.key; rows.push(v); });
   rows.sort(function(a, b){ return (b.ts || 0) - (a.ts || 0); });
+  // Andres 2026-11-14: el registro solo se muestra por 24 horas.
+  var corte24h = Date.now() - 24 * 3600 * 1000;
+  rows = rows.filter(function(v){ return !v.ts || v.ts >= corte24h; });
   if (!rows.length){ box.innerHTML = "&mdash;"; return; }
   box.innerHTML = rows.map(function(v){
     var when = v.ts ? new Date(v.ts).toLocaleString("en-US", { timeZone: "America/New_York", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" }) : "";
@@ -1742,7 +1745,7 @@ var recentStarted = false;
 function startRecent(){
   if (recentStarted) return; recentStarted = true;
   var db = faxDb(); if (!db) return;
-  db.ref("faxLog").orderByChild("ts").limitToLast(6).on("value", paintRecent);
+  db.ref("faxLog").orderByChild("ts").limitToLast(20).on("value", paintRecent);
 }
 function openFax(){
   el("fax-overlay").hidden = false;
