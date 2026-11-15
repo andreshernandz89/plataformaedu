@@ -139,6 +139,8 @@
   .chat-tab.on{ background:var(--marino); color:#fff; border-color:var(--marino); }
 
   .online{ font-weight:700; color:#0B7A6E; font-size:13px; white-space:nowrap; }
+  .salud{ font-weight:700; font-size:12.5px; white-space:nowrap; background:#EEF3FA; color:#13213F; border-radius:999px; padding:3px 9px; }
+  .salud:empty{ display:none; }
   .chat-tools{ display:flex; justify-content:flex-end; padding:8px 12px; border-bottom:1px solid var(--borde); background:#fff; }
   .btn-fin{ background:#fff; border:1.5px solid #D92D20; color:#D92D20; border-radius:9px; padding:7px 14px; font-family:inherit; font-size:13.5px; font-weight:700; cursor:pointer; }
   .btn-fin.reactivar{ border-color:#0792FE; color:#0B7A6E; }
@@ -558,6 +560,7 @@
           <div class="nombre">${esc(c.institucion || "Sin nombre")}</div>
           <span class="chip ${esc((c.estado||"ACTIVA").replace(" ","-"))}">${esc(c.estado || "ACTIVA")}</span>
           <span class="online" id="onl-${id}"></span>
+          <span class="salud" id="sal-${id}"></span>
           <div class="spacer"></div>
           ${c.pagina ? `<a class="btn-pagina" href="${esc(c.pagina)}" target="_blank" rel="noopener">🌐 Página</a>` : ""}
           <button class="btn-vermas" data-ver="${id}">▸ Ver más</button>
@@ -571,7 +574,8 @@
             <div><div class="k">Valor mensual</div><div class="v">${fmtCOP(c.valorMes)}</div></div>
             <div><div class="k">Próximo pago</div><div class="v${claseVence}">${fechaLegible(c.proximoPago)}${textoVence}</div></div>
             <div><div class="k">Estudiantes</div><div class="v">${c.estudiantes ?? "—"}</div></div>
-            <div><div class="k">Último acceso</div><div class="v">${fechaLegible(c.ultimoAcceso)}</div></div>
+            <div><div class="k">Última actividad</div><div class="v" id="act-${id}">—</div></div>
+            <div><div class="k">Último chat</div><div class="v" id="cht-${id}">—</div></div>
             <div><div class="k">En línea ahora</div><div class="v" id="onl-det-${id}">—</div></div>
           </div>
           ${mods.length ? `<div class="mods"><div class="k">Módulos activos (${mods.length})</div>${mods.map(m => `<span class="mod">${esc(m)}</span>`).join("")}</div>` : ""}
@@ -797,6 +801,60 @@
       if (det) det.textContent = !c.instId ? "— (sin ID de instancia)" :
         (lista.length ? lista.map(n => n.nombre + (n.rol ? ` (${n.rol})` : "")).join(", ") : "—");
     });
+    pintarSalud();
+  }
+
+  /* ---------- Salud del cliente: última actividad y último chat ---------- */
+  function ultimoChatDe(instId){
+    if (!instId) return 0;
+    const por = chatsPlat[instId] || {};
+    let mx = 0;
+    Object.values(por).forEach(c => { if (tieneMensajes(c)) mx = Math.max(mx, Number(c.ultimoMensaje || 0)); });
+    return mx;
+  }
+  function fechaDeTs(ts){
+    if (!ts) return "—";
+    return new Date(ts).toLocaleDateString("es-CO", {day:"numeric", month:"short", year:"numeric"});
+  }
+  function haceTxt(ts){
+    if (!ts) return "";
+    const dias = Math.floor((Date.now() - ts) / 86400000);
+    if (dias <= 0) return "hoy";
+    if (dias === 1) return "ayer";
+    if (dias < 30) return "hace " + dias + " d";
+    const meses = Math.floor(dias / 30);
+    return "hace " + meses + (meses === 1 ? " mes" : " meses");
+  }
+  function actividadDe(c){
+    /* Mejor señal de actividad: la presencia persistente que la plataforma
+       del cliente guarda en presencia/<inst>/_actividad, su último chat de
+       soporte, o el último acceso registrado a mano; gana lo más reciente. */
+    let ts = 0;
+    if (c.instId) {
+      const act = (presencia[c.instId] || {})._actividad;
+      if (act && Number(act.ts)) ts = Math.max(ts, Number(act.ts));
+      ts = Math.max(ts, ultimoChatDe(c.instId));
+    }
+    if (c.ultimoAcceso) { const t = new Date(c.ultimoAcceso + "T00:00:00").getTime(); if (t) ts = Math.max(ts, t); }
+    return ts;
+  }
+  function pintarSalud(){
+    Object.keys(clientes).forEach(id => {
+      const c = clientes[id] || {};
+      const ts = actividadDe(c);
+      const chip = document.getElementById("sal-" + id);
+      if (chip) {
+        if (!ts) chip.textContent = "";
+        else {
+          const dias = Math.floor((Date.now() - ts) / 86400000);
+          chip.textContent = dias <= 7 ? "🟢 Activo" : dias <= 30 ? "🟡 Poco activo" : "🔴 Frío";
+        }
+      }
+      const act = document.getElementById("act-" + id);
+      if (act) act.textContent = ts ? fechaDeTs(ts) + " (" + haceTxt(ts) + ")" : "Sin registro";
+      const cht = document.getElementById("cht-" + id);
+      if (cht) { const tc = c.instId ? ultimoChatDe(c.instId) : 0; cht.textContent = tc ? fechaDeTs(tc) + " (" + haceTxt(tc) + ")" : "—"; }
+    });
   }
 
   /* ---------- Módulo Perfiles (equipo de trabajo) ---------- */
@@ -928,7 +986,7 @@
   function escucharChats(){
     if (escuchandoChats) return; escuchandoChats = true;
     refChats.on("value", snap => { chats = snap.val() || {}; pintarChats(); });
-    refChatsPlat.on("value", snap => { chatsPlat = snap.val() || {}; pintarChats(); });
+    refChatsPlat.on("value", snap => { chatsPlat = snap.val() || {}; pintarChats(); pintarSalud(); });
   }
   function horaChat(ts){
     if (!ts) return "";
