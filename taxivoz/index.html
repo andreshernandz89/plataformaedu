@@ -107,19 +107,37 @@
       .phrase:active { background: var(--surface-2); }
 
       /* ---------- cualquier pantalla: celular, tablet y computador ---------- */
+      /* En el celular todo se ve GRANDE: es la pantalla principal de uso
+         (el conductor la mira de reojo y toca sin mirar con precisión). */
       @media (max-width: 480px) {
-        .app-name { font-size: 1.1rem; }
-        .brandbar { flex-wrap: wrap; }
-        .logo-mark { width: 46px; }
-        .live-card { padding: 14px 16px; }
-        .auto-main { padding: 20px 12px 18px; border-radius: 18px; }
-        .auto-main .mic { width: 60px; height: 60px; }
+        .wrap { padding-left: 14px; padding-right: 14px; }
+        .brandbar { flex-wrap: wrap; gap: 12px; margin-bottom: 16px; }
+        .logo-mark { width: 66px; }
+        .app-name { font-size: 1.55rem; }
+        .status-pill { font-size: 1.05rem; padding: 10px 16px; }
+        .status-dot { width: 12px; height: 12px; }
+        .alert { font-size: 1.05rem; padding: 14px 16px; }
+        .live-card { padding: 18px; }
+        .live-card .who { font-size: 0.95rem; }
+        .live-card .original { font-size: 1.2rem; }
+        .live-card .translated { font-size: 1.75rem; }
+        .live-card .interim { font-size: 1.05rem; }
+        .replay-btn { width: 60px; height: 60px; }
+        .replay-btn svg { width: 28px; height: 28px; }
+        .auto-main { padding: 28px 14px 24px; border-radius: 20px; }
+        .auto-main .mic { width: 84px; height: 84px; }
+        .auto-main .mic svg { width: 40px; height: 40px; }
+        .auto-main .big { font-size: 1.9rem; }
+        .auto-main .sub { font-size: 1.05rem; }
+        .typebox { padding: 14px; }
+        .typebox input[type="text"] { font-size: 17px; min-height: 56px; padding: 12px 14px; }
+        .typebox .go { flex: 1 1 100%; min-height: 56px; font-size: 1.1rem; }
+        section.block h2 { font-size: 1.5rem; }
+        .lang-switch button { min-height: 52px; padding: 0 22px; font-size: 1.05rem; }
         .phrase-grid { grid-template-columns: 1fr; }
-        .typebox .go { flex: 1 1 100%; }
-      }
-      @media (max-width: 360px) {
-        .status-pill { font-size: 0.85rem; padding: 6px 10px; }
-        .replay-btn { width: 48px; height: 48px; }
+        .phrase { font-size: 1.15rem; min-height: 68px; padding: 18px; }
+        .brand-credit { font-size: 1rem; }
+        .brand-credit img { width: 28px; }
       }
       @media (min-width: 481px) and (max-width: 900px) {
         .phrase-grid { grid-template-columns: repeat(2, 1fr); }
