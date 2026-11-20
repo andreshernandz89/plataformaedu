@@ -1103,7 +1103,7 @@ function render(){
         t:"P", type:"PICK UP", load:String(nl.load), sosId:(nl.sosId==null?"":nl.sosId),
         appt:nl.appt||null, parada:nl.parada||"", addr:nl.parada||"",
         st:nl.st||"", broker:nl.broker||"", ref:nl.ref||"", route:(nl.route||""),
-        miles:(nl.miles!=null?nl.miles:null), eta:null, isLate:false, hos:null, hosRisk:false,
+        miles:(nl.miles!=null?nl.miles:null), eta:null, isLate:false, hos:(s.hos||null), hosRisk:false,
         arrivedTs:null, departedTs:null, signedBy:"",
         stopIndex:nl.stopIndex||null, stopCount:nl.stopCount||null,
         isLastStop:false, nextLoad:null,
