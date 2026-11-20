@@ -868,11 +868,7 @@ function hosRiskFlag(s){
   if(typeof v==="string"){ const t=v.trim().toLowerCase(); return t!==""&&t!=="false"&&t!=="0"; }
   return false;
 }
-function etaTooltipHtml(s){
-  const safeId = "e-"+String(s.id).replace(/[^a-zA-Z0-9_-]/g,"-");
-  const e=s.eta?new Date(s.eta):null;
-  const validEta=e&&!isNaN(e.getTime());
-  const late=isLateStop(s);
+function hosLineHtml(s){
   const hos=(s.hos&&typeof s.hos==="object")?s.hos:null;
   const hasHos=hos&&(hos.driveMin!=null||hos.shiftMin!=null||hos.cycleMin!=null);
   let hosLine="";
@@ -882,11 +878,18 @@ function etaTooltipHtml(s){
   if(hosRiskFlag(s)){
     hosLine+=(hosLine?" · ":"")+'<span class="hos-risk-inline" title="The miles left don\'t fit the driver\'s legal hours.">HOS RISK</span>';
   }
+  return hosLine?'<span class="eta-hos-line">'+hosLine+'</span>':"";
+}
+function etaTooltipHtml(s){
+  const safeId = "e-"+String(s.id).replace(/[^a-zA-Z0-9_-]/g,"-");
+  const e=s.eta?new Date(s.eta):null;
+  const validEta=e&&!isNaN(e.getTime());
+  const late=isLateStop(s);
   return '<span class="eta-anchor"><button type="button" class="eta-value" aria-describedby="'+safeId+'" aria-label="'+(late?"Late ":"")+'ETA for truck '+esc(s.truck)+'">'+
     (validEta?esc((fmtEtaD.format(e)!==fmtEtaD.format(NOW_ETA)?fmtEtaD.format(e)+" \u00b7 ":"")+fmtEtaT.format(e)):"—")+'</button>'+
     '<span class="eta-tooltip" id="'+safeId+'" role="tooltip"><strong>'+(validEta?(late?"Projected after appointment":"Projected on time"):"ETA unavailable")+'</strong>'+
     '<span>'+(validEta?esc(fmtEtaD.format(e))+" · evaluated "+esc(fmtUpd.format(NOW_ETA))+" ET":"Awaiting current GPS and miles data.")+'</span></span></span>'+
-    (hosLine?'<span class="eta-hos-line">'+hosLine+'</span>':"");
+    hosLineHtml(s);
 }
 
 /* ===== route icon ===== */
@@ -959,7 +962,7 @@ function rowHtml(s, nowMs){
     '<div class="load-cell"><span class="load-line">'+loadHtml+routeHtml+'</span>'+nextLoadHtml(s)+'<span>'+esc(brokerRefLine(s))+'</span>'+actionsHtml+'</div>'+
     '<div class="st-cell"><span class="mobile-label">ST&nbsp;</span><span class="st-code">'+esc(s.st||"—")+'</span></div>'+
     '<div class="appointment-cell"><span class="mobile-label">Appointment</span><strong>'+esc(fmtAppt(new Date(s.appt)))+'</strong></div>'+
-    '<div class="time-cell'+(late?" late":"")+'">'+(arrivalState(s)==="onsite"?"":'<span class="mobile-label">ETA</span><span class="eta-label">'+etaTooltipHtml(s)+'</span>')+'</div>'+
+    '<div class="time-cell'+(late?" late":"")+'">'+(arrivalState(s)==="onsite"?hosLineHtml(s):'<span class="mobile-label">ETA</span><span class="eta-label">'+etaTooltipHtml(s)+'</span>')+'</div>'+
     '<div class="miles-cell"><span class="mobile-label">Miles</span><span class="miles-wrap"><strong>'+(s.miles==null?"—":esc(fmtNum(s.miles)))+'</strong>'+
       routeIconHtml(s)+((s.stopIndex&&s.stopCount)?'<span class="stop-count">Stop '+s.stopIndex+'/'+s.stopCount+'</span>':"")+'</span></div>'+
     '<div class="place-cell"><span>'+esc(s.parada||s.addr||"Address unavailable")+'</span>'+(s.prevDlvry?'<span class="prev-dlvry-pill">ON PREVIOUS DLVRY</span>':arrivalPillHtml(s)+gpsAtStopPillHtml(s,nowMs)+verifyBtnHtml(s))+'</div>'+
