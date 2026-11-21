@@ -364,7 +364,8 @@ a.next-load { font-size: 12px; font-weight: 700; }
           <button class="clear-toggle" id="latealert-toggle" type="button" aria-pressed="true" title="Alert on this page when a truck's ETA turns late. Click to cycle: sound, visual only, off.">&#128276; Late alerts</button>
           <button class="clear-toggle" id="clear-filters" type="button">Clear filters</button>
           
-          <button class="clear-toggle fax-open-btn" id="fax-open" type="button" title="Send a fax from afterhoursmgr@prointermodal.com"><svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true" style="vertical-align:-2px;margin-right:4px" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>Fax</button></span>
+          <button class="clear-toggle fax-open-btn" id="fax-open" type="button" title="Send a fax from afterhoursmgr@prointermodal.com"><svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true" style="vertical-align:-2px;margin-right:4px" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>Fax</button>
+          <button class="clear-toggle" id="out-open" type="button" title="Yard Control from PRO TRUCK LIST (read only)">OUTBOUND</button></span>
         </div>
         <div class="filter-row">
           <label class="search-box">
@@ -1684,6 +1685,21 @@ initFirebase();
 .fax-recent-title{font-size:12px;font-weight:700;color:var(--dim);margin-bottom:4px}
 #fax-recent-list{font-size:12px;color:var(--dim);line-height:1.65}
 #fax-recent-list b{color:var(--text)}
+#out-overlay{position:fixed;inset:0;z-index:999998;background:rgba(6,17,28,.5);display:flex;align-items:flex-start;justify-content:center;padding:4vh 14px 14px;box-sizing:border-box}
+#out-overlay[hidden]{display:none}
+.out-card{background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:14px;width:min(1180px,97vw);max-height:92vh;display:flex;flex-direction:column;padding:16px 18px;box-shadow:0 18px 50px rgba(0,0,0,.35);font-size:13.5px;box-sizing:border-box}
+.out-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.out-head strong{font-size:16px;margin-right:auto}
+#out-close{border:0;background:transparent;color:var(--dim);font-size:16px;cursor:pointer;padding:2px 6px}
+#out-close:hover{color:var(--text)}
+#out-day{padding:6px 8px;border:1.5px solid #c9d4e2;border-radius:8px;font-size:13.5px;background:#fff;color:#12233d;font-family:inherit}
+.out-updated{color:var(--dim);font-size:12px;margin:8px 0 0}
+.out-tablewrap{overflow:auto;margin-top:10px;border:1px solid var(--border);border-radius:8px}
+table.out-table{border-collapse:collapse;width:100%;font-size:12.5px}
+table.out-table th{position:sticky;top:0;background:#13213f;color:#fff;text-align:left;padding:6px 8px;white-space:nowrap;z-index:1}
+table.out-table td{padding:5px 8px;border-top:1px solid var(--border);vertical-align:top}
+table.out-table td.c-trk{font-weight:700;white-space:nowrap}
+table.out-table td.c-yarda{min-width:180px}
 </style>
 <div id="fax-overlay" hidden>
   <div class="fax-card" role="dialog" aria-label="Send fax">
@@ -1701,6 +1717,17 @@ initFirebase();
     <div id="fax-status" class="fax-status" aria-live="polite"></div>
     <div class="fax-actions"><button type="button" id="fax-send">Send fax</button></div>
     <div class="fax-recent"><div class="fax-recent-title">Recent faxes</div><div id="fax-recent-list">&mdash;</div></div>
+  </div>
+</div>
+<div id="out-overlay" hidden>
+  <div class="out-card" role="dialog" aria-label="Outbound - Yard Control">
+    <div class="out-head"><strong>OUTBOUND &middot; Yard Control</strong>
+      <select id="out-day" aria-label="Day"></select>
+      <span class="out-updated" id="out-updated"></span>
+      <button type="button" id="out-close" aria-label="Close">&#10005;</button>
+    </div>
+    <div class="out-tablewrap"><table class="out-table"><thead id="out-thead"></thead><tbody id="out-tbody"></tbody></table></div>
+    <p class="out-updated">Read only &middot; Source: PRO TRUCK LIST (Google Sheets) &middot; syncs every 10 min</p>
   </div>
 </div>
 <script>
@@ -1826,5 +1853,76 @@ document.addEventListener("DOMContentLoaded", function(){
 })();
 </script>
 
+<script>
+/* OUTBOUND (2026-11-20): ventana de solo lectura con la pestaña YARD CONTROL
+   del Google Sheet PRO TRUCK LIST, sincronizada a Firebase /outbound
+   por sync_outbound.py cada 10 min. La pagina nunca escribe en ese nodo. */
+(function(){
+"use strict";
+function el(id){ return document.getElementById(id); }
+function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }
+var DATA=null, listening=false;
+function labelDate(label){
+  var m = String(label||"").match(/(\d{1,2})-(\d{1,2})-(\d{4})/);
+  if (!m) return null;
+  return new Date(+m[3], +m[1]-1, +m[2]);
+}
+function defaultIdx(days){
+  var now = new Date(new Date().toLocaleString("en-US",{timeZone:"America/New_York"}));
+  var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  var idx = 0;
+  for (var i=0;i<days.length;i++){
+    var d = labelDate(days[i].label);
+    if (d && d <= today) idx = i;
+  }
+  return idx;
+}
+function fmtUpd(ts){
+  if (!ts) return "";
+  var d = new Date(ts);
+  return "Updated " + d.toLocaleString("en-US",{timeZone:"America/New_York",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"}) + " ET";
+}
+function fillDays(){
+  var sel = el("out-day"); if (!sel) return;
+  var days = (DATA && DATA.days) || [];
+  sel.innerHTML = days.map(function(d,i){ return '<option value="' + i + '">' + esc(d.label) + '</option>'; }).join("");
+  sel.value = String(defaultIdx(days));
+}
+function render(){
+  if (!DATA) return;
+  var days = DATA.days || [];
+  var sel = el("out-day");
+  var cur = parseInt(sel && sel.value ? sel.value : "0", 10);
+  if (isNaN(cur) || cur >= days.length) cur = 0;
+  el("out-thead").innerHTML = "<tr>" + (DATA.headers||[]).map(function(h){ return "<th>" + esc(h) + "</th>"; }).join("") + "</tr>";
+  var d = days[cur] || {rows:[]};
+  el("out-tbody").innerHTML = d.rows.map(function(r){
+    return "<tr>" + r.map(function(c,i){ return '<td class="' + (i===3 ? "c-trk" : (i===1 ? "c-yarda" : "")) + '">' + esc(c) + "</td>"; }).join("") + "</tr>";
+  }).join("");
+  el("out-updated").textContent = fmtUpd(DATA.updatedTs);
+}
+function openOut(){
+  el("out-overlay").hidden = false;
+  if (!listening){
+    listening = true;
+    try {
+      firebase.database().ref("outbound").on("value", function(snap){
+        DATA = snap.val();
+        if (DATA){ if (!el("out-day").options.length) fillDays(); render(); }
+        else { el("out-updated").textContent = "No data yet."; }
+      });
+    } catch(e){ el("out-updated").textContent = "Could not load data."; }
+  }
+}
+function closeOut(){ el("out-overlay").hidden = true; }
+document.addEventListener("DOMContentLoaded", function(){
+  el("out-open").addEventListener("click", openOut);
+  el("out-close").addEventListener("click", closeOut);
+  el("out-overlay").addEventListener("click", function(ev){ if (ev.target === el("out-overlay")) closeOut(); });
+  el("out-day").addEventListener("change", render);
+  document.addEventListener("keydown", function(ev){ if (ev.key === "Escape" && !el("out-overlay").hidden) closeOut(); });
+});
+})();
+</script>
 </body>
 </html>
