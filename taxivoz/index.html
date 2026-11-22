@@ -241,7 +241,7 @@
            Whisper. Vacía = motor de voz del navegador, exactamente como
            siempre. Al pegar aquí la URL /exec del puente se activa solo
            el modo Groq manos libres (ver puente-taxivoz.gs). */
-        var PUENTE_TAXIVOZ_URL = "";
+        var PUENTE_TAXIVOZ_URL = "https://script.google.com/macros/s/AKfycbz3DHHMiZgVqncuVPDWYJE6pM9WNKfytHtv0_fnxmzH27mGmndkLarR7i3ZG1A1a1UDsw/exec";
         var $ = function (id) { return document.getElementById(id); };
         var statusPill = $("statusPill"), statusText = $("statusText");
         var btnStart = $("btnStart"), btnStartLabel = $("btnStartLabel"), btnStartSub = $("btnStartSub");
@@ -672,6 +672,9 @@
             var texto = (res.texto || "").trim();
             if (res.noSpeech || !texto) { gBusy = false; groqReadyStatus(); return; } // sin voz clara: se descarta en silencio
             var from = (res.idiomaDetectado || "").toLowerCase().split("-")[0] || "es";
+            // Whisper devuelve el nombre completo («spanish», «english»…): se normaliza al código.
+            var NOMBRES_IDIOMA = { spanish: "es", english: "en", portuguese: "pt", french: "fr", german: "de", italian: "it" };
+            if (NOMBRES_IDIOMA[from]) from = NOMBRES_IDIOMA[from];
             var to = from === "es" ? "en" : "es"; // es→en · en→es · otro idioma→es
             setStatus("Traduciendo…", "");
             translateFixed(texto, from, to).then(function (t) {
