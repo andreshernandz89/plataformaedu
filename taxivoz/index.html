@@ -237,6 +237,11 @@
     <script>
       (function () {
         "use strict";
+        /* URL del puente Taxivoz (Apps Script) que transcribe con Groq
+           Whisper. Vacía = motor de voz del navegador, exactamente como
+           siempre. Al pegar aquí la URL /exec del puente se activa solo
+           el modo Groq manos libres (ver puente-taxivoz.gs). */
+        var PUENTE_TAXIVOZ_URL = "";
         var $ = function (id) { return document.getElementById(id); };
         var statusPill = $("statusPill"), statusText = $("statusText");
         var btnStart = $("btnStart"), btnStartLabel = $("btnStartLabel"), btnStartSub = $("btnStartSub");
@@ -538,7 +543,196 @@
           try { recog.start(); } catch (e) { listening = false; retrySoon(true); }
         }
 
+        /* ============================================================
+           MODO GROQ — MANOS LIBRES Y CONTINUO (un taxista no puede
+           estar hundiendo botones): si hay URL del puente Taxivoz y el
+           navegador puede grabar audio, el botón Iniciar ya no usa el
+           reconocimiento del navegador. Se pide el micrófono una vez y
+           un detector de voz (VAD) con umbral adaptativo al ruido del
+           carro corta la conversación en frases: cuando la voz para
+           ~1,4 s, la frase se envía a Groq Whisper (puente), que
+           detecta el idioma solo, y la traducción suena como siempre.
+           Mientras la voz suena o se procesa una frase, la captura se
+           pausa: el micrófono nunca se escucha a sí mismo. Los ruidos
+           sin voz clara se descartan EN SILENCIO. Sin URL del puente,
+           nada de esto existe y la página se comporta como siempre.
+           ============================================================ */
+        var groqSupported = !!(
+          navigator.mediaDevices && navigator.mediaDevices.getUserMedia &&
+          window.MediaRecorder && (window.AudioContext || window.webkitAudioContext)
+        );
+        var groqMode = !!(PUENTE_TAXIVOZ_URL && groqSupported);
+        var gActive = false, gBusy = false, gFailCount = 0;
+        var gStream = null, gCtx = null, gAnalyser = null, gSource = null, gBuf = null;
+        var gRecorder = null, gChunks = [], gRecMime = "";
+        var gSegOpen = false, gStopping = false, gDiscardSeg = false;
+        var gSegStart = 0, gVoiceMs = 0, gSilenceMs = 0;
+        var gNoiseFloor = 0.012, gVadTimer = null;
+
+        function pickGroqMime() {
+          var candidates = ["audio/webm;codecs=opus", "audio/webm", "audio/mp4", "audio/ogg;codecs=opus", ""];
+          for (var i = 0; i < candidates.length; i++) {
+            if (!candidates[i]) return "";
+            try { if (MediaRecorder.isTypeSupported(candidates[i])) return candidates[i]; } catch (e) {}
+          }
+          return "";
+        }
+        function synthBusy() {
+          if (!synth) return false;
+          try { return !!(synth.speaking || synth.pending); } catch (e) { return false; }
+        }
+        function groqRms() {
+          if (!gAnalyser) return 0;
+          if (!gBuf) gBuf = new Uint8Array(gAnalyser.fftSize);
+          gAnalyser.getByteTimeDomainData(gBuf);
+          var sum = 0;
+          for (var i = 0; i < gBuf.length; i++) { var v = (gBuf[i] - 128) / 128; sum += v * v; }
+          return Math.sqrt(sum / gBuf.length);
+        }
+        function startSegment(now) {
+          try {
+            gChunks = [];
+            gRecorder = gRecMime ? new MediaRecorder(gStream, { mimeType: gRecMime }) : new MediaRecorder(gStream);
+            gRecorder.ondataavailable = function (ev) { if (ev.data && ev.data.size) gChunks.push(ev.data); };
+            gRecorder.onstop = onSegmentStopped;
+            gSegStart = now; gVoiceMs = 0; gSilenceMs = 0; gDiscardSeg = false; gStopping = false;
+            gRecorder.start();
+            gSegOpen = true;
+          } catch (e) { gRecorder = null; gSegOpen = false; }
+        }
+        function stopSegment() {
+          if (gRecorder && gSegOpen && !gStopping) {
+            gStopping = true;
+            try { gRecorder.stop(); } catch (e) { gSegOpen = false; gStopping = false; gRecorder = null; }
+          }
+        }
+        function onSegmentStopped() {
+          var tipo = (gRecorder && gRecorder.mimeType) || gRecMime || "audio/webm";
+          gRecorder = null; gSegOpen = false; gStopping = false;
+          var chunks = gChunks; gChunks = [];
+          if (gDiscardSeg || !gActive) return;
+          var dur = Date.now() - gSegStart;
+          // Segmento válido: mínimo ~0,8 s de voz real sobre el ruido.
+          if (gVoiceMs < 800 || dur < 900) return; // ruido o frase muy corta: se descarta en silencio
+          var blob = new Blob(chunks, { type: tipo });
+          if (blob.size < 2000) return;
+          processGroqSegment(blob);
+        }
+        function vadTick() {
+          if (!gActive) return;
+          if (gCtx && gCtx.state === "suspended") { try { gCtx.resume(); } catch (e) {} }
+          if (gBusy) return; // procesando o hablando: captura en pausa
+          if (synthBusy()) { // la voz de la traducción nunca se graba a sí misma
+            if (gSegOpen) { gDiscardSeg = true; stopSegment(); }
+            return;
+          }
+          var rms = groqRms();
+          var now = Date.now();
+          var threshold = Math.max(0.025, gNoiseFloor * 3); // umbral adaptativo al ruido ambiente
+          if (!gSegOpen) {
+            if (rms > threshold) { startSegment(now); gVoiceMs = 100; }
+            else {
+              gNoiseFloor = gNoiseFloor * 0.92 + rms * 0.08;
+              if (gNoiseFloor < 0.004) gNoiseFloor = 0.004;
+              if (gNoiseFloor > 0.08) gNoiseFloor = 0.08;
+            }
+          } else {
+            if (rms > threshold) { gVoiceMs += 100; gSilenceMs = 0; }
+            else {
+              gSilenceMs += 100;
+              if (gSilenceMs >= 1400 || now - gSegStart >= 30000) stopSegment();
+            }
+          }
+        }
+        function blobToBase64(blob) {
+          return new Promise(function (resolve, reject) {
+            var fr = new FileReader();
+            fr.onload = function () {
+              var s = String(fr.result || "");
+              var i = s.indexOf(",");
+              resolve(i >= 0 ? s.slice(i + 1) : s);
+            };
+            fr.onerror = function () { reject(new Error("audio")); };
+            fr.readAsDataURL(blob);
+          });
+        }
+        function groqReadyStatus() { if (gActive) setStatus("Escuchando…", "listening"); }
+        function processGroqSegment(blob) {
+          gBusy = true;
+          setStatus("Entendiendo…", "");
+          blobToBase64(blob).then(function (b64) {
+            return fetch(PUENTE_TAXIVOZ_URL, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ accion: "transcribir", idioma: "auto", audio: b64, mime: blob.type || gRecMime })
+            }).then(function (r) { if (!r.ok) throw new Error("http " + r.status); return r.json(); });
+          }).then(function (res) {
+            if (!res || !res.ok) throw new Error("puente");
+            gFailCount = 0;
+            var texto = (res.texto || "").trim();
+            if (res.noSpeech || !texto) { gBusy = false; groqReadyStatus(); return; } // sin voz clara: se descarta en silencio
+            var from = (res.idiomaDetectado || "").toLowerCase().split("-")[0] || "es";
+            var to = from === "es" ? "en" : "es"; // es→en · en→es · otro idioma→es
+            setStatus("Traduciendo…", "");
+            translateFixed(texto, from, to).then(function (t) {
+              showExchange(from, to, texto, t);
+              speak(t, to, function () { gBusy = false; groqReadyStatus(); });
+            }).catch(function () { gBusy = false; groqReadyStatus(); });
+          }).catch(function () {
+            gBusy = false;
+            gFailCount++;
+            if (gFailCount >= 3) { // solo se avisa si el puente entero está fallando
+              gFailCount = 0;
+              showAlert("Sin conexión con el servicio de voz. Revisa el internet; el modo escribir y las frases rápidas siguen funcionando.");
+            }
+            groqReadyStatus();
+          });
+        }
+        function startGroqConversation() {
+          unlockSpeech(); // dentro del toque: desbloquea la voz automática
+          hideAlert();
+          if (synthBusy()) { try { synth.cancel(); } catch (e) {} }
+          setStatus("Pidiendo micrófono…", "");
+          navigator.mediaDevices.getUserMedia({ audio: true }).then(function (stream) {
+            gStream = stream;
+            var AC = window.AudioContext || window.webkitAudioContext;
+            gCtx = new AC();
+            if (gCtx.resume) gCtx.resume();
+            gSource = gCtx.createMediaStreamSource(stream);
+            gAnalyser = gCtx.createAnalyser();
+            gAnalyser.fftSize = 2048;
+            gSource.connect(gAnalyser);
+            gRecMime = pickGroqMime();
+            gActive = true; gBusy = false; gFailCount = 0; gNoiseFloor = 0.012;
+            btnStart.classList.add("is-on");
+            btnStartLabel.textContent = "⏹ Detener";
+            liveCard.hidden = false;
+            liveWho.textContent = "Escuchando · ES / EN";
+            liveOriginal.textContent = ""; liveTranslated.textContent = "";
+            liveInterim.textContent = "Escuchando…";
+            setStatus("Escuchando…", "listening");
+            clearInterval(gVadTimer);
+            gVadTimer = setInterval(vadTick, 100);
+          }).catch(function () {
+            setStatus("Listo", "");
+            showAlert("Permite el micrófono en tu navegador y vuelve a tocar Iniciar.");
+          });
+        }
+        function stopGroqConversation() {
+          gActive = false; gBusy = false;
+          clearInterval(gVadTimer); gVadTimer = null;
+          if (gRecorder) { gDiscardSeg = true; try { gRecorder.stop(); } catch (e) {} gRecorder = null; }
+          gSegOpen = false; gStopping = false; gChunks = [];
+          if (gStream) { try { gStream.getTracks().forEach(function (t) { t.stop(); }); } catch (e) {} gStream = null; }
+          if (gCtx) { try { gCtx.close(); } catch (e) {} gCtx = null; gAnalyser = null; gSource = null; gBuf = null; }
+          if (synth) { try { synth.cancel(); } catch (e) {} }
+          btnStart.classList.remove("is-on");
+          btnStartLabel.textContent = "▶ Iniciar";
+          setStatus("Listo", "");
+        }
+
         btnStart.addEventListener("click", function () {
+          if (groqMode) { if (gActive) stopGroqConversation(); else startGroqConversation(); return; }
           if (!SpeechRec) {
             // Sin reconocimiento de voz: el botón grande lleva al recuadro
             // de escribir, que traduce y reproduce igual que el micrófono.
@@ -551,7 +745,11 @@
           if (conversationActive) stopConversation(); else startConversation();
         });
 
-        if (!SpeechRec) {
+        if (groqMode) {
+          // Modo Groq activo: no depende del reconocimiento del navegador.
+          btnStartSub.textContent = "Motor de voz mejorado · manos libres · detecta el idioma solo";
+          if (!synth) showAlert("Este navegador no reproduce voz: las traducciones se muestran en pantalla.");
+        } else if (!SpeechRec) {
           // Respaldo para navegadores sin reconocimiento de voz (Firefox y
           // otros): escribir + frases rápidas, y la traducción se reproduce
           // en voz alta si el navegador tiene síntesis de voz.
@@ -610,6 +808,7 @@
             b.addEventListener("click", function () {
               unlockSpeech();
               if (conversationActive) stopConversation();
+              if (gActive) stopGroqConversation();
               speak(pair[1], to, function () { setStatus(SpeechRec ? "Listo" : "Modo escribir", ""); });
               showExchange(from, to, pair[0], pair[1]);
             });
