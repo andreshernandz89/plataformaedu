@@ -638,7 +638,13 @@ a.btn{ text-decoration:none; }
 
   <!-- CONFIGURACIÓN -->
   <section id="tab-config" class="tab">
-    <div class="card">
+    <div class="seg" id="cfg-subnav" style="margin-bottom:14px">
+      <button type="button" data-cfg-grupo-btn="cuenta" class="on">Cuenta</button>
+      <button type="button" data-cfg-grupo-btn="dinero">Mi dinero</button>
+      <button type="button" data-cfg-grupo-btn="organizar">Organizar</button>
+      <button type="button" data-cfg-grupo-btn="datos">Datos</button>
+    </div>
+    <div class="card" data-cfg-grupo="cuenta">
       <h2>Perfil</h2>
       <div class="row" style="justify-content:flex-start">
         <span id="cfg-avatar"></span>
@@ -653,22 +659,22 @@ a.btn{ text-decoration:none; }
       <div id="cfg-clave-box"></div>
     </div>
 
-    <div class="card">
+    <div class="card" data-cfg-grupo="cuenta">
       <h2>Mi cuenta</h2>
       <div id="cfg-cuenta"></div>
     </div>
 
-    <div class="card">
+    <div class="card" data-cfg-grupo="cuenta">
       <h2>Suscripción</h2>
       <div id="cfg-suscripcion"></div>
     </div>
 
-    <div class="card">
+    <div class="card" data-cfg-grupo="cuenta">
       <h2>Modo Equipo</h2>
       <div id="cfg-equipo"></div>
     </div>
 
-    <div class="card">
+    <div class="card" data-cfg-grupo="dinero">
       <h2>Tu salario y frecuencia de pago</h2>
       <label>¿Cada cuánto te pagan?</label>
       <div class="seg" id="cf-frec">
@@ -687,7 +693,7 @@ a.btn{ text-decoration:none; }
       <button class="btn sec" id="cf-guardar" type="button">Guardar salario</button>
     </div>
 
-    <div class="card">
+    <div class="card" data-cfg-grupo="dinero">
       <h2>Gastos fijos</h2>
       <div id="lista-fijos-edit"></div>
       <label>Agregar gasto fijo</label>
@@ -699,14 +705,14 @@ a.btn{ text-decoration:none; }
       </div>
     </div>
 
-    <div class="card">
+    <div class="card" data-cfg-grupo="dinero">
       <h2>Presupuestos por categoría</h2>
       <div id="lista-pres-edit"></div>
       <div style="height:12px"></div>
       <button class="btn sec" id="pres-guardar" type="button">Guardar presupuestos</button>
     </div>
 
-    <div class="card">
+    <div class="card" data-cfg-grupo="dinero">
       <h2>Preferencias</h2>
       <div class="dato-fila"><span class="mut">Moneda base</span><b>Peso colombiano (COP)</b></div>
       <div class="dato-fila"><span class="mut">Otras monedas</span><b id="cfg-pref-monedas">—</b></div>
@@ -714,7 +720,7 @@ a.btn{ text-decoration:none; }
       <p class="mut" style="margin-top:8px">Tu moneda base es el peso colombiano (COP). Si manejas dinero en otra moneda, agrégala con su tasa de cambio en la tarjeta «Monedas» de este panel: las cuentas en esa moneda se convierten solas a pesos en tus totales. La frecuencia de pago es una ventaja propia de MiPlatapp: si te pagan por semana o por quincena, la app calcula sola tu equivalente mensual.</p>
     </div>
 
-    <div class="card">
+    <div class="card" data-cfg-grupo="dinero">
       <h2>Monedas</h2>
       <p class="mut">Tu moneda base es el <b>Peso colombiano (COP)</b>. Agrega otras monedas con su tasa de cambio escrita por ti (cuántos pesos vale 1 unidad); las cuentas en esa moneda muestran su saldo y su equivalente en pesos.</p>
       <div id="lista-monedas"></div>
@@ -728,7 +734,7 @@ a.btn{ text-decoration:none; }
       <div id="mn-msg"></div>
     </div>
 
-    <div class="card">
+    <div class="card" data-cfg-grupo="organizar">
       <h2>Categorías</h2>
       <p class="mut">Cada categoría tiene su ícono y su color: se ven en tus movimientos, presupuestos y estadísticas. Las tuyas se pueden editar y eliminar; las de la app solo cambian de color e ícono.</p>
       <div id="lista-categorias"></div>
@@ -747,7 +753,7 @@ a.btn{ text-decoration:none; }
       <div id="cat-msg"></div>
     </div>
 
-    <div class="card">
+    <div class="card" data-cfg-grupo="organizar">
       <h2>Reglas automáticas</h2>
       <p class="mut">Si la nota de un movimiento contiene alguna de las palabras clave, la app le pone la categoría y la etiqueta de la regla. Vale para movimientos nuevos y para los que importes.</p>
       <div id="lista-reglas"></div>
@@ -773,7 +779,7 @@ a.btn{ text-decoration:none; }
       <div id="rg-msg"></div>
     </div>
 
-    <div class="card">
+    <div class="card" data-cfg-grupo="datos">
       <h2>Datos personales y privacidad</h2>
       <h3>Documentos</h3>
       <a class="btn sec" href="https://plataformaedu.app/privacidad/" target="_blank" rel="noopener">Política de privacidad</a>
@@ -800,7 +806,7 @@ a.btn{ text-decoration:none; }
       <button class="btn sec" id="btn-ejemplo" type="button">Ver con datos de ejemplo</button>
     </div>
 
-    <div class="card">
+    <div class="card" data-cfg-grupo="datos">
       <h2>Zona de peligro</h2>
       <button class="btn rojo" id="btn-borrar-datos" type="button">Borrar todos mis datos</button>
       <p class="mut" style="margin-top:8px">Borra tus datos de tu cuenta (nube) y de este dispositivo. Tu cuenta sigue existiendo y la app vuelve al paso a paso inicial.</p>
@@ -3396,6 +3402,26 @@ $("menu-sesion").addEventListener("click", function(){
 $("btn-ir-config").addEventListener("click", function(){ irATab("config"); });
 
 /* ============ Panel de Configuración ============ */
+/* Submenús de Configuración: las tarjetas se agrupan en Cuenta, Mi dinero,
+   Organizar y Datos para que el panel no sea una sola lista interminable. */
+var cfgGrupoActivo = "cuenta";
+function aplicarCfgGrupo(){
+  document.querySelectorAll("#cfg-subnav [data-cfg-grupo-btn]").forEach(function(b){
+    b.classList.toggle("on", b.getAttribute("data-cfg-grupo-btn") === cfgGrupoActivo);
+  });
+  document.querySelectorAll('#tab-config .card[data-cfg-grupo]').forEach(function(c){
+    c.classList.toggle("oculto", c.getAttribute("data-cfg-grupo") !== cfgGrupoActivo);
+  });
+}
+var cfgSubnavEl = $("cfg-subnav");
+if(cfgSubnavEl) cfgSubnavEl.addEventListener("click", function(e){
+  var b = e.target.closest("[data-cfg-grupo-btn]"); if(!b) return;
+  cfgGrupoActivo = b.getAttribute("data-cfg-grupo-btn");
+  aplicarCfgGrupo();
+  window.scrollTo(0, 0);
+});
+aplicarCfgGrupo();
+
 function renderConfig(){
   if(!$("cfg-avatar")) return;
   var av = $("cfg-avatar");
