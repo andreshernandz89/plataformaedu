@@ -2039,8 +2039,25 @@ $("btn-borrar-datos").addEventListener("click", function(){
     ]);
 });
 function ejecutarBorradoDatos(){
-  var terminar = function(){ try{ localStorage.removeItem(LS); localStorage.removeItem(LS_INVITADO); localStorage.removeItem(LS_DUENNO); }catch(e){} location.reload(); };
-  if(usuarioActual && fbDb){ fbDb.ref("miplatapp/usuarios/" + usuarioActual.uid).remove().then(terminar).catch(terminar); }
+  /* Igual que al eliminar la cuenta: primero se bloquea la sincronización
+     y se cancela cualquier subida pendiente, para que nada recree el nodo
+     tras borrarlo; y si el borrado en la nube falla, NO se limpia el
+     dispositivo ni se declara el borrado: se avisa y se ofrece reintentar. */
+  syncBloqueada = true;
+  clearTimeout(syncTimer);
+  var terminar = function(){ limpiezaTotalDispositivo(); location.reload(); };
+  if(usuarioActual && fbDb){
+    fbDb.ref("miplatapp/usuarios/" + usuarioActual.uid).remove()
+      .then(terminar)
+      .catch(function(){
+        mostrarModalDatos("No se pudieron borrar los datos",
+          "Algo falló al borrar tus datos de la nube: no se borró nada. Revisa tu conexión e inténtalo de nuevo.",
+          [
+            { texto:"Reintentar", clase:"btn rojo", fn:ejecutarBorradoDatos },
+            { texto:"Cancelar", clase:"btn sec", fn:function(){ syncBloqueada = false; } }
+          ]);
+      });
+  }
   else terminar();
 }
 $("btn-ejemplo").addEventListener("click", function(){
@@ -2443,6 +2460,18 @@ var FB_CONFIG = {"apiKey": "AIzaSyAwR5Y6af4CBl_gv0iVNPpeJdtwWU1vF1g", "authDomai
 var LS_INVITADO = LS + "_invitado";
 var LS_DUENNO = LS + "_duenno";
 function marcarDuenno(uid){ try{ localStorage.setItem(LS_DUENNO, uid || "invitado"); }catch(e){} }
+/* Limpieza total del dispositivo: estado principal, respaldo de invitado,
+   marca de dueño y cualquier clave local de la app. Solo se usa en las
+   acciones explícitas del dueño: «Eliminar mi cuenta» y «Borrar todos mis
+   datos». Los inicios/cierres de sesión normales NUNCA la llaman. */
+function limpiezaTotalDispositivo(){
+  try{
+    var claves = [];
+    for(var i = 0; i < localStorage.length; i++){ var k = localStorage.key(i); if(k && k.indexOf(LS) === 0) claves.push(k); }
+    claves.forEach(function(k){ localStorage.removeItem(k); });
+    localStorage.removeItem(LS); localStorage.removeItem(LS_INVITADO); localStorage.removeItem(LS_DUENNO);
+  }catch(e){}
+}
 function estadoTieneDatos(e){ return !!(e && (e.onboarded || (e.movimientos && e.movimientos.length) || (e.cuentas && e.cuentas.length) || (e.metas && e.metas.length) || (e.fijos && e.fijos.length) || (e.deudas && e.deudas.length) || (e.config && e.config.salario > 0))); }
 var usuarioActual = null, fbAuth = null, fbDb = null, cargandoNube = false, syncTimer = null, syncBloqueada = false;
 var cuentaRecienEliminada = false;
@@ -2508,7 +2537,7 @@ function programarSyncNube(){
   syncTimer = setTimeout(subirNube, 800);
 }
 function subirNube(){
-  if(!usuarioActual || !fbDb) return;
+  if(!usuarioActual || !fbDb || syncBloqueada) return;
   fbDb.ref("miplatapp/usuarios/" + usuarioActual.uid).set({ datosJson: JSON.stringify(S), actualizadoEn: Date.now() })
     .then(function(){ var el = $("sync-estado"); if(el) el.textContent = "Datos sincronizados con tu cuenta"; pintarSyncInd("ok"); })
     .catch(function(){ var el = $("sync-estado"); if(el) el.textContent = "Sin sincronización: revisa tu conexión"; pintarSyncInd("error"); });
@@ -2581,22 +2610,36 @@ if(fbAuth){
       usuarioActual = null;
       if(venia){
         cerrarModalDatos();
-        try{
-          var g = localStorage.getItem(LS_INVITADO);
-          S = g ? Object.assign(estadoVacio(), JSON.parse(g)) : estadoVacio();
-          if(!S.pagos || typeof S.pagos !== "object") S.pagos = {};
-          if(!Array.isArray(S.deudas)) S.deudas = [];
-          if(typeof S.nombre !== "string") S.nombre = "";
-          S.novedades = (S.novedades === true);
-          asegurarCampos(S);
-          S.config = normalizarCfg(S.config);
-          localStorage.removeItem(LS_INVITADO);
-        }catch(e){ S = estadoVacio(); }
-        marcarDuenno("invitado");
-        guardarLocal();
-        $("onboarding").classList.add("oculto");
-        mostrarPuerta();
-        if(cuentaRecienEliminada){ cuentaRecienEliminada = false; accesoOk("Tu cuenta y todos tus datos fueron eliminados."); }
+        if(cuentaRecienEliminada){
+          /* La salida es por ELIMINACIÓN de la cuenta, no un cierre de sesión
+             normal: NO se restaura el respaldo del invitado ni se guarda
+             estado alguno. Limpieza total del dispositivo para que al volver
+             a entrar (mismo correo o Google) la cuenta empiece en cero. */
+          cuentaRecienEliminada = false;
+          syncBloqueada = true;
+          clearTimeout(syncTimer);
+          limpiezaTotalDispositivo();
+          S = estadoVacio();
+          $("onboarding").classList.add("oculto");
+          mostrarPuerta();
+          accesoOk("Tu cuenta y todos tus datos fueron eliminados.");
+        } else {
+          try{
+            var g = localStorage.getItem(LS_INVITADO);
+            S = g ? Object.assign(estadoVacio(), JSON.parse(g)) : estadoVacio();
+            if(!S.pagos || typeof S.pagos !== "object") S.pagos = {};
+            if(!Array.isArray(S.deudas)) S.deudas = [];
+            if(typeof S.nombre !== "string") S.nombre = "";
+            S.novedades = (S.novedades === true);
+            asegurarCampos(S);
+            S.config = normalizarCfg(S.config);
+            localStorage.removeItem(LS_INVITADO);
+          }catch(e){ S = estadoVacio(); }
+          marcarDuenno("invitado");
+          guardarLocal();
+          $("onboarding").classList.add("oculto");
+          mostrarPuerta();
+        }
         renderTodo();
       }
       renderCuenta();
@@ -2835,17 +2878,32 @@ function confirmarEliminarCuenta(){
 function ejecutarEliminarCuenta(){
   if(!usuarioActual) return;
   var user = usuarioActual;
+  /* Primero se bloquea la sincronización y se cancela cualquier subida
+     pendiente: nada puede recrear el nodo mientras se elimina la cuenta. */
+  syncBloqueada = true;
+  clearTimeout(syncTimer);
   cuentaRecienEliminada = true;
-  var nodo = fbDb ? fbDb.ref("miplatapp/usuarios/" + user.uid).remove().catch(function(){}) : Promise.resolve();
-  nodo.then(function(){ return user.delete(); })
-    .then(function(){ /* onAuthStateChanged muestra la puerta con el aviso */ })
+  var borrarNodo = fbDb ? fbDb.ref("miplatapp/usuarios/" + user.uid).remove() : Promise.resolve();
+  borrarNodo.then(function(){ return user.delete(); })
+    .then(function(){
+      /* Borrado confirmado en la nube y en Auth: limpieza total del
+         dispositivo (estado, respaldo de invitado y marca de dueño),
+         para que ningún dato resucite al volver a entrar. */
+      limpiezaTotalDispositivo();
+      /* onAuthStateChanged muestra la puerta con el aviso */
+    })
     .catch(function(err){
       cuentaRecienEliminada = false;
       if(err && err.code === "auth/requires-recent-login"){ pedirReautenticacion(); }
       else {
+        /* Si el nodo no se pudo borrar, el usuario de Auth NO se borra:
+           la cuenta sigue activa y se ofrece reintentar. */
         mostrarModalDatos("No se pudo eliminar la cuenta",
-          "Algo falló al eliminar tu cuenta. Revisa tu conexión e inténtalo de nuevo en unos minutos.",
-          [ { texto:"Entendido", clase:"btn", fn:function(){} } ]);
+          "Algo falló al eliminar tu cuenta: sigue activa y tus datos están a salvo. Revisa tu conexión e inténtalo de nuevo.",
+          [
+            { texto:"Reintentar", clase:"btn rojo", fn:ejecutarEliminarCuenta },
+            { texto:"Cancelar", clase:"btn sec", fn:function(){ syncBloqueada = false; } }
+          ]);
       }
     });
 }
