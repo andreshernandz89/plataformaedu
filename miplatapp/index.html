@@ -2556,7 +2556,8 @@ var usuarioActual = null, fbAuth = null, fbDb = null, cargandoNube = false, sync
 var cuentaRecienEliminada = false;
 /* Modo Equipo: datos compartidos entre varios usuarios registrados.
    equipoActual = { id, nombre, creadoPor, codigo, miembros } o null (personal). */
-var equipoActual = null, equipoDatosRef = null, ultimoTsPropio = 0, ultimoEditLocal = 0;
+var equipoActual = null, equipoDatosRef = null, equipoMiembrosRef = null, ultimoTsPropio = 0, ultimoEditLocal = 0;
+var MAX_MIEMBROS_EQUIPO = 5; /* Máximo de personas por equipo (regla de Andres, 2026-11-24). */
 try{
   if(window.firebase && FB_CONFIG && FB_CONFIG.apiKey){
     firebase.initializeApp(FB_CONFIG);
@@ -2677,6 +2678,25 @@ function escucharDatosEquipo(){
 }
 function desescucharDatosEquipo(){
   if(equipoDatosRef){ try{ equipoDatosRef.off(); }catch(e){} equipoDatosRef = null; }
+  if(equipoMiembrosRef){ try{ equipoMiembrosRef.off(); }catch(e){} equipoMiembrosRef = null; }
+}
+function escucharMiembrosEquipo(){
+  if(!equipoActual || !fbDb || !usuarioActual) return;
+  equipoMiembrosRef = fbDb.ref("miplatapp/equipos/" + equipoActual.id + "/miembros");
+  equipoMiembrosRef.on("value", function(snap){
+    if(!equipoActual || !usuarioActual) return;
+    var miembros = snap.val() || {};
+    if(!miembros[usuarioActual.uid]){
+      volverAEspacioPersonal("Ya no haces parte de este equipo. Volviste a tu espacio personal.");
+      return;
+    }
+    equipoActual.miembros = miembros;
+    /* El creador mantiene fresco el contador público de cupos de la invitación. */
+    if(equipoActual.creadoPor === usuarioActual.uid && equipoActual.codigo){
+      fbDb.ref("miplatapp/invitaciones/" + equipoActual.codigo).update({ miembrosCount: Object.keys(miembros).length }).catch(function(){});
+    }
+    renderEquipo();
+  });
 }
 function entrarEnEquipo(id, datosEquipo){
   equipoActual = {
@@ -2687,6 +2707,7 @@ function entrarEnEquipo(id, datosEquipo){
     miembros: datosEquipo.miembros || {}
   };
   escucharDatosEquipo();
+  escucharMiembrosEquipo();
 }
 function salirDeEquipoLocal(){
   desescucharDatosEquipo();
@@ -2748,7 +2769,7 @@ function crearEquipo(nombre, btn, msgEl){
   var equipo = { nombre: nombre, creadoPor: uid, creadoEn: Date.now(), codigo: codigo, miembros: miembros,
     datos: { datosJson: JSON.stringify(S), actualizadoEn: Date.now(), porUid: uid } };
   fbDb.ref("miplatapp/equipos/" + id).set(equipo)
-    .then(function(){ return fbDb.ref("miplatapp/invitaciones/" + codigo).set({ equipoId: id, nombreEquipo: nombre, creadoPor: uid }); })
+    .then(function(){ return fbDb.ref("miplatapp/invitaciones/" + codigo).set({ equipoId: id, nombreEquipo: nombre, creadoPor: uid, miembrosCount: 1 }); })
     .then(function(){ return fbDb.ref("miplatapp/usuarios/" + uid).update({ equipoId: id }); })
     .then(function(){
       cerrarModalDatos();
@@ -2771,6 +2792,7 @@ function unirseAEquipo(codigo){
   fbDb.ref("miplatapp/invitaciones/" + codigo).once("value").then(function(snap){
     var inv = snap.val();
     if(!inv || !inv.equipoId){ if(msg) msg.innerHTML = '<div class="aviso">Ese código no corresponde a ningún equipo. Revísalo e inténtalo de nuevo.</div>'; return; }
+    if(inv.miembrosCount && inv.miembrosCount >= MAX_MIEMBROS_EQUIPO){ if(msg) msg.innerHTML = '<div class="aviso">Este equipo ya está completo: tiene el máximo de ' + MAX_MIEMBROS_EQUIPO + ' personas.</div>'; return; }
     mostrarModalDatos("Unirte a un equipo",
       "Vas a entrar al equipo «" + (inv.nombreEquipo || "Mi equipo") + "». Desde ese momento verás y editarás los datos del equipo. Tus datos personales quedan guardados en tu espacio personal y vuelven cuando salgas del equipo.",
       [
@@ -2783,6 +2805,14 @@ function unirseAEquipo(codigo){
               .then(function(snapEq){
                 var eq = snapEq.val();
                 if(!eq){ if(msg) msg.innerHTML = '<div class="aviso">No se pudo cargar el equipo.</div>'; return; }
+                if(eq.miembros && Object.keys(eq.miembros).length > MAX_MIEMBROS_EQUIPO){
+                  /* Verificación con el conteo real: si el equipo se llenó, se revierte el ingreso. */
+                  var uidR = usuarioActual.uid;
+                  fbDb.ref("miplatapp/equipos/" + inv.equipoId + "/miembros/" + uidR).remove().catch(function(){});
+                  fbDb.ref("miplatapp/usuarios/" + uidR).update({ equipoId: null }).catch(function(){});
+                  if(msg) msg.innerHTML = '<div class="aviso">Este equipo ya está completo: tiene el máximo de ' + MAX_MIEMBROS_EQUIPO + ' personas.</div>';
+                  return;
+                }
                 syncBloqueada = true;
                 entrarEnEquipo(inv.equipoId, eq);
                 if(eq.datos && eq.datos.datosJson){
@@ -2882,7 +2912,7 @@ function renderEquipo(){
   }).join("");
   box.innerHTML = '<div class="dato-fila"><span class="mut">Equipo activo</span><b>' + esc(equipoActual.nombre) + '</b></div>'
     + '<p class="mut" style="margin-top:6px">Estás en Modo Equipo: todo lo que registres se comparte con los miembros y se sincroniza en vivo.</p>'
-    + '<div class="divisor"></div><h3 style="margin:0 0 6px">Miembros</h3>' + lista
+    + '<div class="divisor"></div><h3 style="margin:0 0 6px">Miembros (' + Object.keys(equipoActual.miembros || {}).length + '/' + MAX_MIEMBROS_EQUIPO + ')</h3>' + lista
     + '<div class="divisor"></div>'
     + '<label>Código de invitación</label>'
     + '<div class="fila-edit" style="grid-template-columns:1fr 120px"><input type="text" readonly value="' + esc(equipoActual.codigo || "") + '" id="eq-codigo-vista" /><button class="btn sec" id="eq-copiar" type="button">Copiar</button></div>'
