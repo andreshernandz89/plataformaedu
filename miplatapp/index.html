@@ -204,6 +204,76 @@ footer{ text-align:center; color:#7E93B4; font-size:12px; padding:8px 0 4px; }
   #tab-inicio > .card:nth-of-type(8){ grid-column:1 / -1; }
   .pc-trend-svg, .pc-donut-svg{ width:100%; height:auto; display:block; }
 }
+
+/* ===== Menú de cuenta, panel de configuración y modales ===== */
+.top-flex{ width:100%; }
+.cuenta-menu-wrap{ position:relative; margin-left:auto; flex:none; }
+.btn-cuenta{ background:rgba(255,255,255,.06); border:1px solid rgba(127,194,255,.35); width:46px; height:46px; border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center; padding:0; box-shadow:0 0 14px rgba(7,146,254,.25); }
+.avatar-menu{ width:40px; height:40px; }
+.avatar-inicial{ border-radius:50%; background:linear-gradient(135deg, var(--azul), #0A5CB8 60%, var(--marino)); color:#fff; font-weight:800; display:inline-flex; align-items:center; justify-content:center; flex:none; border:2px solid rgba(127,194,255,.65); box-shadow:0 0 14px rgba(7,146,254,.35); }
+span.avatar-inicial.avatar-menu{ width:40px; height:40px; font-size:17px; }
+span.avatar-inicial.avatar-grande{ width:64px; height:64px; font-size:27px; }
+img.avatar-grande{ width:64px; height:64px; border-radius:50%; border:2px solid rgba(127,194,255,.65); box-shadow:0 0 14px rgba(7,146,254,.35); display:block; flex:none; }
+.menu-cuenta{ position:absolute; right:0; top:calc(100% + 10px); width:266px; background:linear-gradient(165deg, rgba(29,47,79,.97), rgba(15,27,48,.97)); border:1px solid rgba(127,194,255,.35); border-radius:18px; padding:10px; z-index:60; box-shadow:0 22px 48px rgba(1,6,16,.6), 0 0 30px rgba(7,146,254,.12); backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px); }
+.menu-cab{ padding:8px 10px 10px; border-bottom:1px solid rgba(120,175,240,.16); margin-bottom:6px; font-size:15px; }
+.menu-cab .mut{ font-size:12.5px; }
+.menu-cuenta > button{ display:flex; align-items:center; gap:11px; width:100%; background:none; border:none; color:var(--texto); font-size:14.5px; font-weight:600; padding:11px 10px; border-radius:12px; cursor:pointer; text-align:left; font-family:inherit; }
+.menu-cuenta > button:hover, .menu-cuenta > button:active{ background:rgba(7,146,254,.16); }
+.menu-cuenta > button svg{ width:20px; height:20px; flex:none; color:#7FC2FF; }
+.dato-fila{ display:flex; justify-content:space-between; align-items:center; gap:12px; padding:7px 0; border-bottom:1px solid rgba(120,175,240,.12); font-size:14px; }
+.dato-fila:last-of-type{ border-bottom:none; }
+.switch-fila{ display:flex; align-items:center; justify-content:space-between; gap:14px; }
+.switch{ position:relative; width:50px; height:28px; flex:none; display:inline-block; }
+.switch input{ opacity:0; width:0; height:0; position:absolute; }
+.switch .pista{ position:absolute; inset:0; border-radius:999px; background:rgba(255,255,255,.14); border:1px solid rgba(120,175,240,.3); transition:background .2s; cursor:pointer; }
+.switch .pista::after{ content:""; position:absolute; top:3px; left:3px; width:20px; height:20px; border-radius:50%; background:#C9D9EF; transition:transform .2s, background .2s; }
+.switch input:checked + .pista{ background:var(--azul); }
+.switch input:checked + .pista::after{ transform:translateX(22px); background:#fff; }
+.modal-fondo{ position:fixed; inset:0; z-index:90; background:rgba(3,8,18,.74); backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px); display:flex; align-items:center; justify-content:center; padding:18px; }
+.modal-caja{ width:100%; max-width:440px; max-height:88vh; overflow-y:auto; background:linear-gradient(165deg, rgba(33,54,90,.96), rgba(15,27,48,.97)); border:1px solid rgba(127,194,255,.38); border-radius:24px; padding:22px 19px; box-shadow:0 26px 60px rgba(1,6,16,.65), 0 0 34px rgba(7,146,254,.12); }
+.modal-caja h2{ font-size:18px; font-weight:800; }
+a.btn{ text-decoration:none; }
+
+/* ===== Ampliación: chips de categoría, selectores de color/ícono, filtros, panel interactivo ===== */
+.chip-cat{ display:inline-flex; align-items:center; gap:7px; font-weight:700; }
+.cat-ico{ width:26px; height:26px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; color:#fff; flex:none; box-shadow:0 2px 8px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.25); }
+.cat-ico svg{ display:block; }
+.swatches{ display:flex; flex-wrap:wrap; gap:8px; margin:4px 0 2px; }
+.swatches button{ width:34px; height:34px; border-radius:50%; border:2px solid transparent; cursor:pointer; padding:0; box-shadow:inset 0 1px 0 rgba(255,255,255,.3), 0 2px 8px rgba(0,0,0,.3); }
+.swatches button.on{ border-color:#fff; box-shadow:0 0 0 3px rgba(7,146,254,.55); }
+.icogrid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(44px,1fr)); gap:7px; margin:4px 0 2px; }
+.icogrid button{ height:42px; border-radius:12px; border:1px solid var(--borde); background:rgba(255,255,255,.05); color:var(--texto); cursor:pointer; display:flex; align-items:center; justify-content:center; }
+.icogrid button.on{ background:rgba(7,146,254,.25); border-color:var(--azul); box-shadow:0 0 0 2px rgba(7,146,254,.35); }
+.switch-row{ display:flex; align-items:center; gap:10px; font-size:14px; font-weight:600; color:var(--texto); margin:12px 0 4px; cursor:pointer; }
+.switch-row input{ width:20px; height:20px; flex:none; accent-color:var(--azul); margin:0; padding:0; }
+.tagpill{ display:inline-block; padding:2px 9px; border-radius:999px; font-size:11.5px; font-weight:700; background:rgba(233,185,73,.16); color:#F2CE84; margin-left:6px; }
+.cta-dot{ width:13px; height:13px; border-radius:50%; display:inline-block; margin-right:8px; flex:none; box-shadow:inset 0 1px 0 rgba(255,255,255,.35), 0 1px 5px rgba(0,0,0,.4); vertical-align:-1px; }
+.fila-edit select{ padding:9px 8px; font-size:14px; }
+.imp-row{ border:1px solid rgba(120,175,240,.18); border-radius:14px; padding:10px; margin-bottom:9px; background:rgba(255,255,255,.04); }
+.imp-row.dup{ border-color:rgba(232,163,61,.55); }
+.imp-row input, .imp-row select{ padding:8px 9px; font-size:14px; }
+.cal .dia .fijo.ing{ background:rgba(53,195,125,.20); color:#A9EBCB; }
+.per-bar{ display:flex; align-items:center; gap:8px; margin:10px 0 4px; }
+.per-bar button{ background:rgba(7,146,254,.16); color:#7FC2FF; border:none; width:36px; height:38px; border-radius:11px; font-size:18px; font-weight:800; cursor:pointer; flex:none; }
+.per-bar select{ flex:1; text-transform:capitalize; }
+.pc-periodo-bar{ display:none; }
+.pc-card-head{ display:flex; justify-content:space-between; align-items:flex-start; gap:8px; }
+.pc-card-head h2{ margin:0; }
+.pc-tools{ display:flex; gap:4px; flex:none; }
+.pc-tool{ background:rgba(255,255,255,.06); border:1px solid rgba(120,175,240,.25); color:#9DB2CE; width:26px; height:26px; border-radius:8px; cursor:pointer; font-size:13px; line-height:1; display:flex; align-items:center; justify-content:center; }
+.pc-tool:hover{ color:#fff; border-color:var(--azul); }
+.pc-gauge-btn{ background:none; border:none; cursor:pointer; color:inherit; padding:4px 6px; border-radius:14px; font:inherit; }
+.pc-gauge-btn:hover{ background:rgba(7,146,254,.10); }
+.pc-trend-wrap{ position:relative; }
+.pc-tip{ position:absolute; z-index:5; pointer-events:none; background:rgba(10,20,38,.95); border:1px solid rgba(127,194,255,.45); color:#EAF2FC; font-size:12px; font-weight:700; padding:5px 9px; border-radius:9px; transform:translate(-50%,-130%); white-space:nowrap; box-shadow:0 8px 20px rgba(0,0,0,.45); }
+.pc-arrastre{ opacity:.55; }
+#panel-pc .card[data-pccard]{ position:relative; }
+@media (min-width:1024px){
+  .pc-periodo-bar{ display:flex; align-items:center; gap:8px; grid-column:1 / -1; }
+  .pc-periodo-bar button{ background:rgba(7,146,254,.16); color:#7FC2FF; border:none; width:36px; height:38px; border-radius:11px; font-size:18px; font-weight:800; cursor:pointer; flex:none; }
+  .pc-periodo-bar select{ width:260px; flex:none; text-transform:capitalize; }
+  #pc-agregar-wrap{ grid-column:1 / -1; }
+}
 </style>
 </head>
 <body>
@@ -213,6 +283,15 @@ footer{ text-align:center; color:#7E93B4; font-size:12px; padding:8px 0 4px; }
     <div>
       <h1>MiPlat<span class="h-accent">app</span><span class="h-dot">.</span></h1>
       <div class="sub" id="sub-mes"></div>
+    </div>
+    <div class="cuenta-menu-wrap">
+      <button class="btn-cuenta" id="btn-menu-cuenta" type="button" aria-label="Menú de cuenta" aria-haspopup="true"><span id="menu-avatar" style="display:flex"></span></button>
+      <div class="menu-cuenta oculto" id="menu-cuenta">
+        <div class="menu-cab" id="menu-cab"></div>
+        <button type="button" id="menu-config"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 8h9M19 8h1M4 16h3M11 16h9"/><circle cx="16" cy="8" r="2.2"/><circle cx="9" cy="16" r="2.2"/></svg>Configuración</button>
+        <button type="button" id="menu-exportar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v11M7.5 10.5L12 15l4.5-4.5M4 20h16"/></svg>Exportar mis datos</button>
+        <button type="button" id="menu-sesion"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3M16 17l5-5-5-5M21 12H9"/></svg><span id="menu-sesion-txt">Cerrar sesión</span></button>
+      </div>
     </div>
   </div>
 </header>
@@ -392,7 +471,49 @@ footer{ text-align:center; color:#7E93B4; font-size:12px; padding:8px 0 4px; }
   <!-- CUENTAS -->
   <section id="tab-cuentas" class="tab">
     <div class="card">
-      <h2>Tu salario</h2>
+      <h2>Tus cuentas</h2>
+      <div id="lista-cuentas"></div>
+      <label for="ct-tipo">Agregar cuenta o tarjeta</label>
+      <select id="ct-tipo"></select>
+      <input id="ct-nombre" class="oculto" type="text" placeholder="Nombre de la cuenta" style="margin-top:8px" />
+      <label for="ct-saldo">Saldo actual</label>
+      <input id="ct-saldo" type="text" inputmode="numeric" placeholder="$ 0" />
+      <div style="height:12px"></div>
+      <button class="btn sec" id="ct-agregar" type="button">Agregar cuenta</button>
+    </div>
+
+    <div class="card">
+      <h2>Configuración</h2>
+      <p class="mut">Tu perfil, tu salario y frecuencia de pago, los gastos fijos, los presupuestos y tus datos ahora viven en un solo lugar: el panel de Configuración.</p>
+      <div style="height:12px"></div>
+      <button class="btn sec" id="btn-ir-config" type="button">Abrir Configuración</button>
+    </div>
+  </section>
+
+  <!-- CONFIGURACIÓN -->
+  <section id="tab-config" class="tab">
+    <div class="card">
+      <h2>Perfil</h2>
+      <div class="row" style="justify-content:flex-start">
+        <span id="cfg-avatar"></span>
+        <span><b id="cfg-nombre-vista" style="font-size:16px"></b><br><span class="mut" id="cfg-correo"></span></span>
+      </div>
+      <label for="cfg-nombre">Nombre para mostrar</label>
+      <input id="cfg-nombre" type="text" placeholder="Ej. Andres Hernández" autocomplete="name" maxlength="60" />
+      <div style="height:12px"></div>
+      <button class="btn sec" id="cfg-guardar-nombre" type="button">Guardar nombre</button>
+      <div id="cfg-perfil-msg"></div>
+      <div class="divisor"></div>
+      <div id="cfg-clave-box"></div>
+    </div>
+
+    <div class="card">
+      <h2>Mi cuenta</h2>
+      <div id="cfg-cuenta"></div>
+    </div>
+
+    <div class="card">
+      <h2>Tu salario y frecuencia de pago</h2>
       <label>¿Cada cuánto te pagan?</label>
       <div class="seg" id="cf-frec">
         <button type="button" data-frec="semanal">Semanal</button>
@@ -408,18 +529,6 @@ footer{ text-align:center; color:#7E93B4; font-size:12px; padding:8px 0 4px; }
       <p class="mut" id="cf-equiv" style="margin-top:8px"></p>
       <div style="height:12px"></div>
       <button class="btn sec" id="cf-guardar" type="button">Guardar salario</button>
-    </div>
-
-    <div class="card">
-      <h2>Tus cuentas</h2>
-      <div id="lista-cuentas"></div>
-      <label for="ct-tipo">Agregar cuenta o tarjeta</label>
-      <select id="ct-tipo"></select>
-      <input id="ct-nombre" class="oculto" type="text" placeholder="Nombre de la cuenta" style="margin-top:8px" />
-      <label for="ct-saldo">Saldo actual</label>
-      <input id="ct-saldo" type="text" inputmode="numeric" placeholder="$ 0" />
-      <div style="height:12px"></div>
-      <button class="btn sec" id="ct-agregar" type="button">Agregar cuenta</button>
     </div>
 
     <div class="card">
@@ -442,15 +551,42 @@ footer{ text-align:center; color:#7E93B4; font-size:12px; padding:8px 0 4px; }
     </div>
 
     <div class="card">
-      <h2>Datos</h2>
+      <h2>Preferencias</h2>
+      <div class="dato-fila"><span class="mut">Moneda</span><b>Peso colombiano (COP)</b></div>
+      <div class="dato-fila"><span class="mut">Frecuencia de pago</span><b id="cfg-pref-frec"></b></div>
+      <p class="mut" style="margin-top:8px">La moneda es fija. La frecuencia de pago se ajusta en «Tu salario y frecuencia de pago», en este mismo panel.</p>
+    </div>
+
+    <div class="card">
+      <h2>Datos personales y privacidad</h2>
+      <h3>Documentos</h3>
+      <a class="btn sec" href="https://plataformaedu.app/privacidad/" target="_blank" rel="noopener">Política de privacidad</a>
+      <div style="height:10px"></div>
+      <a class="btn sec" href="terminos.html" target="_blank" rel="noopener">Términos del servicio</a>
+      <div class="divisor"></div>
+      <h3>Correos y mensajes</h3>
+      <div class="switch-fila">
+        <span style="font-size:14px; font-weight:600">Recibir correos con novedades de MiPlatapp</span>
+        <label class="switch"><input type="checkbox" id="cfg-novedades" /><span class="pista"></span></label>
+      </div>
+      <p class="mut" style="margin-top:6px">Solo novedades y mejoras de MiPlatapp, de vez en cuando. No afecta los mensajes de servicio, como el correo para cambiar tu contraseña.</p>
+      <div class="divisor"></div>
+      <h3>Portabilidad de datos</h3>
+      <p class="mut">Tus datos son tuyos: puedes editar tu perfil, descargar una copia completa cuando quieras y borrarlos definitivamente desde este panel, como lo establece la Ley 1581 de 2012 de Colombia.</p>
+      <div style="height:10px"></div>
       <button class="btn sec" id="btn-export-json" type="button">Exportar datos (JSON)</button>
       <div style="height:10px"></div>
       <button class="btn sec" id="btn-export-csv" type="button">Exportar movimientos (CSV)</button>
       <div style="height:10px"></div>
       <button class="btn sec" id="btn-ejemplo" type="button">Ver con datos de ejemplo</button>
-      <div style="height:10px"></div>
-      <button class="btn rojo" id="btn-reiniciar" type="button">Reiniciar datos</button>
-      <p class="mut" style="margin-top:10px">Si inicias sesión con Google, tus datos se guardan también en tu cuenta y se sincronizan entre tus dispositivos. En modo invitado, quedan solo en este dispositivo.</p>
+    </div>
+
+    <div class="card">
+      <h2>Zona de peligro</h2>
+      <button class="btn rojo" id="btn-borrar-datos" type="button">Borrar todos mis datos</button>
+      <p class="mut" style="margin-top:8px">Borra tus datos de tu cuenta (nube) y de este dispositivo. Tu cuenta sigue existiendo y la app vuelve al paso a paso inicial.</p>
+      <div style="height:14px"></div>
+      <div id="cfg-eliminar-box"></div>
     </div>
   </section>
   <footer>MiPlatapp · Un producto de PlataformaEDU</footer>
@@ -581,6 +717,16 @@ footer{ text-align:center; color:#7E93B4; font-size:12px; padding:8px 0 4px; }
   </div>
 </div>
 
+<!-- MODAL GENÉRICO -->
+<div id="modal-fondo" class="modal-fondo oculto">
+  <div class="modal-caja">
+    <h2 id="modal-titulo"></h2>
+    <p class="mut" id="modal-texto" style="margin-top:6px; line-height:1.55"></p>
+    <div style="height:16px"></div>
+    <div id="modal-botones"></div>
+  </div>
+</div>
+
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
@@ -603,10 +749,10 @@ function esDelMes(f, y, m){ if(!f) return false; var p = String(f).split("-"); r
 function $(id){ return document.getElementById(id); }
 
 function estadoVacio(){
-  return { config:{salario:0, diaPago:1, frecuencia:"mensual", diaSemana:1}, fijos:[], presupuestos:{}, cuentas:[], movimientos:[], metas:[], pagos:{}, deudas:[], onboarded:false };
+  return { nombre:"", novedades:false, config:{salario:0, diaPago:1, frecuencia:"mensual", diaSemana:1, inversionesEnPatrimonio:false}, fijos:[], ingresosFijos:[], presupuestos:{}, cuentas:[], movimientos:[], metas:[], pagos:{}, cobros:{}, deudas:[], catPropias:[], catBaseAjustes:{}, plantillas:[], inversiones:[], monedas:[], reglas:[], panelOrden:["medidores","tendencia","estructura"], panelOcultas:[], onboarded:false };
 }
 function cargar(){
-  try{ var r = localStorage.getItem(LS); if(r){ var s = JSON.parse(r); if(s && typeof s==="object"){ var e = Object.assign(estadoVacio(), s); if(!e.pagos || typeof e.pagos!=="object") e.pagos = {}; if(!Array.isArray(e.deudas)) e.deudas = []; e.config = normalizarCfg(e.config); return e; } } }catch(e){}
+  try{ var r = localStorage.getItem(LS); if(r){ var s = JSON.parse(r); if(s && typeof s==="object"){ var e = Object.assign(estadoVacio(), s); if(!e.pagos || typeof e.pagos!=="object") e.pagos = {}; if(!Array.isArray(e.deudas)) e.deudas = []; e.config = normalizarCfg(e.config); if(typeof e.nombre !== "string") e.nombre = ""; e.novedades = (e.novedades === true); asegurarCampos(e); return e; } } }catch(e){}
   return estadoVacio();
 }
 function guardar(){ guardarLocal(); programarSyncNube(); }
@@ -670,6 +816,158 @@ function datosMes(y, m){
   return { ingreso:ingreso, ingExtra:ingExtra, gastosF:gastosF, gastosV:gastosV, gastos:gastos, ahorro:ahorro, porCat:porCat, queda: ingreso - gastos - ahorro };
 }
 function patrimonio(){ return S.cuentas.reduce(function(a,c){ return a + (c.saldo||0); }, 0); }
+
+/* ============ Campos nuevos del estado ============ */
+function asegurarCampos(e){
+  if(!e || typeof e !== "object") return e;
+  ["fijos","ingresosFijos","cuentas","movimientos","metas","deudas","catPropias","plantillas","inversiones","monedas","reglas","panelOcultas"].forEach(function(k){ if(!Array.isArray(e[k])) e[k] = []; });
+  ["pagos","cobros","presupuestos","catBaseAjustes"].forEach(function(k){ if(!e[k] || typeof e[k] !== "object") e[k] = {}; });
+  if(!Array.isArray(e.panelOrden) || !e.panelOrden.length) e.panelOrden = ["medidores","tendencia","estructura"];
+  if(!e.config || typeof e.config !== "object") e.config = {};
+  if(typeof e.config.inversionesEnPatrimonio !== "boolean") e.config.inversionesEnPatrimonio = !!e.config.inversionesEnPatrimonio;
+  (e.cuentas || []).forEach(function(c){
+    if(!c.moneda) c.moneda = "COP";
+    if(!c.clase) c.clase = (c.tipo === "Efectivo") ? "Efectivo" : "Banco";
+    if(!c.color) c.color = "#0792FE";
+    if(typeof c.archivada !== "boolean") c.archivada = !!c.archivada;
+  });
+  return e;
+}
+function cuentaPorId(id){ return (S.cuentas || []).find(function(x){ return x.id === id; }) || null; }
+
+/* ============ Monedas (base COP + tasas manuales) ============ */
+var MONEDAS_COMUNES = ["USD","EUR","GBP","MXN","PEN","BRL","ARS","CLP","VES"];
+function tasaDe(cod){
+  if(!cod || cod === "COP") return 1;
+  var mn = (S.monedas || []).find(function(x){ return x.codigo === cod; });
+  return (mn && Number(mn.tasa) > 0) ? Number(mn.tasa) : 1;
+}
+function aCOP(n, cod){ return (Number(n) || 0) * tasaDe(cod || "COP"); }
+function fmtDivisa(n, cod){
+  n = Number(n) || 0;
+  if(!cod || cod === "COP") return fmt(n);
+  var v = Math.abs(n).toLocaleString("es-CO", { minimumFractionDigits:2, maximumFractionDigits:2 });
+  return (n < 0 ? "\u2212 " : "") + cod + " " + v;
+}
+function parseTasa(v){
+  var t = String(v == null ? "" : v).replace(/[^\d.,]/g, "");
+  if(!t) return 0;
+  if(t.indexOf(",") >= 0) t = t.replace(/\./g, "").replace(",", ".");
+  var n = parseFloat(t);
+  return isNaN(n) ? 0 : n;
+}
+
+/* ============ Categorías con ícono y color ============ */
+var ICONOS = {
+  utensilios: '<path d="M6 3v7M3.5 3v4a2.5 2.5 0 0 0 5 0V3M6 10v11M17.5 3c-1.8 1.2-2.7 3.6-2.7 6.2 0 1.9 1 3 2.7 3v8.8"/>',
+  casa: '<path d="M3 11l9-8 9 8M5 9.5V21h14V9.5M10 21v-6h4v6"/>',
+  bus: '<path d="M4 15V5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v10M4 15h16M4 15v3M20 15v3M4 10h16"/><circle cx="7.5" cy="18.5" r="1.6"/><circle cx="16.5" cy="18.5" r="1.6"/>',
+  carro: '<path d="M5 11l1.6-4.2A2 2 0 0 1 8.5 5.5h7a2 2 0 0 1 1.9 1.3L19 11M5 11h14M5 11a2 2 0 0 0-2 2v5h2.5M19 11a2 2 0 0 1 2 2v5h-2.5"/><circle cx="7.5" cy="18" r="1.6"/><circle cx="16.5" cy="18" r="1.6"/>',
+  corazon: '<path d="M12 20.5C7 16.5 3.5 13.3 3.5 9.6 3.5 6.9 5.6 5 8.1 5c1.6 0 3.1.8 3.9 2 .8-1.2 2.3-2 3.9-2 2.5 0 4.6 1.9 4.6 4.6 0 3.7-3.5 6.9-8.5 10.9z"/>',
+  entretenimiento: '<path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8L3.5 9.7l5.9-.9z"/>',
+  bolsa: '<path d="M5 8h14l-1.2 12.1a1.5 1.5 0 0 1-1.5 1.4H7.7a1.5 1.5 0 0 1-1.5-1.4zM8.5 10.5V6.5a3.5 3.5 0 0 1 7 0v4"/>',
+  tienda: '<path d="M4 7l1.2-3.5h13.6L20 7M4 7h16M4 7v13h16V7M9.5 20v-6h5v6M4 7a2.6 2.6 0 0 0 5.2 0 2.6 2.6 0 0 0 5.3 0A2.6 2.6 0 0 0 20 7"/>',
+  libro: '<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5zM4 19.5A2.5 2.5 0 0 0 6.5 22H20v-5"/>',
+  billete: '<rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.6"/><path d="M6 9.5h.01M18 14.5h.01"/>',
+  banco: '<path d="M3 9.5L12 4l9 5.5M4 9.5V20M20 9.5V20M8 20v-7M12 20v-7M16 20v-7M2.5 20h19"/>',
+  tarjeta: '<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/>',
+  regalo: '<path d="M12 8v13M5 12v9h14v-9M3.5 8h17v4h-17zM12 8s-4.5.2-4.5-2.2C7.5 4 9 3 10.2 3.6 11.7 4.3 12 8 12 8zm0 0s4.5.2 4.5-2.2C16.5 4 15 3 13.8 3.6 12.3 4.3 12 8 12 8z"/>',
+  pelota: '<circle cx="12" cy="12" r="9"/><path d="M12 3v18M3.2 9.5h17.6M3.2 14.5h17.6"/>',
+  mascota: '<path d="M12 13.5c2.8 0 5.5 2.4 5.5 5 0 1.7-1.3 2.5-3 2.5-1 0-1.7-.4-2.5-.4s-1.5.4-2.5.4c-1.7 0-3-.8-3-2.5 0-2.6 2.7-5 5.5-5z"/><circle cx="5.3" cy="10.3" r="1.3"/><circle cx="9" cy="7.3" r="1.3"/><circle cx="15" cy="7.3" r="1.3"/><circle cx="18.7" cy="10.3" r="1.3"/>',
+  avion: '<path d="M22 2L11 13M22 2l-7 20-4-9-9-4z"/>',
+  telefono: '<rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18.5h2"/>',
+  rayo: '<path d="M13 2L4.5 13.5H11L9.5 22 19 10h-6.5z"/>',
+  gota: '<path d="M12 3s6.5 7 6.5 11.5a6.5 6.5 0 1 1-13 0C5.5 10 12 3 12 3z"/>',
+  wifi: '<path d="M2.5 9a15 15 0 0 1 19 0M5.5 12.5a10 10 0 0 1 13 0M8.6 16a5 5 0 0 1 6.8 0"/><circle cx="12" cy="19" r="1" fill="currentColor"/>',
+  ninos: '<circle cx="8" cy="9" r="3"/><circle cx="16.8" cy="10" r="2.4"/><path d="M3.5 20c.6-3 2.4-4.5 4.5-4.5s3.9 1.5 4.5 4.5M14.2 20c.4-2.3 1.3-3.4 2.7-3.4 1.3 0 2.2 1.1 2.6 3.4"/>',
+  maletin: '<rect x="3" y="8" width="18" height="12" rx="2"/><path d="M9 8V6a3 3 0 0 1 6 0v2M3 13.5h18"/>',
+  grafico: '<path d="M5 20v-6M10.5 20V5M16 20v-9M3.5 20h17"/>',
+  impresora: '<path d="M7 8V3h10v5M7 17H4.5A1.5 1.5 0 0 1 3 15.5v-5A1.5 1.5 0 0 1 4.5 9h15A1.5 1.5 0 0 1 21 10.5v5A1.5 1.5 0 0 1 19.5 17H17M7 14h10v7H7z"/>',
+  pantalla: '<rect x="3" y="4" width="18" height="12" rx="1.5"/><path d="M9 20.5h6M12 16v4.5"/>',
+  documento: '<path d="M7 3h7l4 4v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1zM14 3v4h4M9.5 12h6M9.5 15.5h6"/>',
+  puntos: '<circle cx="5" cy="12" r="1.7" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.7" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.7" fill="currentColor" stroke="none"/>'
+};
+var PALETA_CAT = ["#0792FE","#35C37D","#1E9E62","#E8A33D","#F0665F","#E86A92","#8E7FE0","#6E86A6","#5A6B84","#E9B949","#4FB3BF","#C97B4A"];
+var CATS_BASE = [
+  { nombre:"Transporte", color:"#6E86A6", icono:"bus" },
+  { nombre:"Supermercado", color:"#35C37D", icono:"bolsa" },
+  { nombre:"Restaurantes", color:"#F0665F", icono:"utensilios" },
+  { nombre:"Compras", color:"#8E7FE0", icono:"tarjeta" },
+  { nombre:"Servicios", color:"#E8A33D", icono:"rayo" },
+  { nombre:"Salud", color:"#E86A92", icono:"corazon" },
+  { nombre:"Ocio", color:"#E9B949", icono:"entretenimiento" },
+  { nombre:"Otro", color:"#5A6B84", icono:"puntos" }
+];
+function catDef(nombre){
+  var aj = (S.catBaseAjustes || {})[nombre];
+  var b = null, i;
+  for(i = 0; i < CATS_BASE.length; i++) if(CATS_BASE[i].nombre === nombre) b = CATS_BASE[i];
+  if(b) return { nombre:nombre, color:(aj && aj.color) || b.color, icono:(aj && aj.icono) || b.icono, base:true };
+  var ps = S.catPropias || [];
+  for(i = 0; i < ps.length; i++) if(ps[i].nombre === nombre) return { nombre:nombre, color:ps[i].color || "#5A6B84", icono:ps[i].icono || "puntos", base:false };
+  return { nombre:nombre, color:"#5A6B84", icono:"puntos", base:false };
+}
+function catsTodas(){
+  var out = CATS_BASE.map(function(b){ return b.nombre; });
+  (S.catPropias || []).forEach(function(p){ if(out.indexOf(p.nombre) < 0) out.push(p.nombre); });
+  return out;
+}
+function iconoSVG(clave, tam){
+  return '<svg viewBox="0 0 24 24" width="' + (tam || 15) + '" height="' + (tam || 15) + '" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (ICONOS[clave] || ICONOS.puntos) + '</svg>';
+}
+function chipCat(nombre, soloIcono){
+  var d = catDef(nombre);
+  return '<span class="chip-cat"><span class="cat-ico" style="background:' + d.color + '">' + iconoSVG(d.icono, 15) + '</span>' + (soloIcono ? '' : '<span>' + esc(nombre) + '</span>') + '</span>';
+}
+function iconoSugerido(nombre){
+  var n = String(nombre || "").toLowerCase();
+  var mapa = [
+    ["tv|televisor|pantalla", "pantalla"], ["tinta|impres", "impresora"],
+    ["rappi|domicilio|comida|almuerzo|pizza|hamburguesa", "utensilios"],
+    ["mercado|super|tienda", "tienda"], ["bus|pasaje|transporte", "bus"],
+    ["carro|gasolina|parqueadero|moto", "carro"], ["salud|medic|farmacia|doctor", "corazon"],
+    ["cine|juego|ocio|netflix|spotify|musica", "entretenimiento"],
+    ["ropa|compra|zapatos", "bolsa"], ["colegio|universidad|curso|libro|estudio", "libro"],
+    ["prestamo|credito", "banco"], ["banco", "banco"], ["tarjeta", "tarjeta"],
+    ["regalo|cumple", "regalo"], ["gym|deporte|futbol|ejercicio", "pelota"],
+    ["mascota|perro|gato|veterin", "mascota"], ["viaje|vuelo|hotel|vacacion", "avion"],
+    ["celular|telefono|plan de datos", "telefono"], ["luz|energia", "rayo"],
+    ["agua", "gota"], ["internet|wifi", "wifi"], ["hijo|hija|bebe", "ninos"],
+    ["trabajo|oficina|negocio", "maletin"], ["arriendo|alquiler|casa|hogar|vivienda", "casa"],
+    ["nomina|sueldo|salario", "documento"], ["inversion|ahorro", "grafico"],
+    ["efectivo|dinero", "billete"]
+  ];
+  for(var i = 0; i < mapa.length; i++){ if(new RegExp(mapa[i][0]).test(n)) return mapa[i][1]; }
+  return "puntos";
+}
+
+/* ============ Reglas automáticas ============ */
+function reglaPara(mov){
+  var texto = String((mov && mov.nota) || "").toLowerCase();
+  if(!texto) return null;
+  var regs = S.reglas || [];
+  for(var i = 0; i < regs.length; i++){
+    var r = regs[i];
+    if(r.tipo && r.tipo !== "ambos" && r.tipo !== mov.tipo) continue;
+    var pals = String(r.palabras || "").split(",").map(function(p){ return p.trim().toLowerCase(); }).filter(function(p){ return p; });
+    for(var j = 0; j < pals.length; j++){ if(texto.indexOf(pals[j]) >= 0) return r; }
+  }
+  return null;
+}
+function aplicarRegla(mov, completo){
+  var r = reglaPara(mov);
+  if(!r) return null;
+  if(completo && r.categoria && mov.tipo === "gasto" && !mov.fijoId) mov.categoria = r.categoria;
+  if(r.etiqueta && !mov.etiqueta) mov.etiqueta = r.etiqueta;
+  return r;
+}
+function etiquetasUsadas(){
+  var set = {};
+  (S.movimientos || []).forEach(function(x){ if(x.etiqueta) set[x.etiqueta] = true; });
+  (S.reglas || []).forEach(function(r){ if(r.etiqueta) set[r.etiqueta] = true; });
+  return Object.keys(set).sort();
+}
+
 function nombreFijo(id){ var f = S.fijos.find(function(x){ return x.id===id; }); return f ? f.nombre : "Gasto fijo"; }
 
 /* ============ Render: Inicio ============ */
@@ -1150,13 +1448,28 @@ $("pres-guardar").addEventListener("click", function(){
   document.querySelectorAll("[data-pres-cat]").forEach(function(inp){ S.presupuestos[inp.getAttribute("data-pres-cat")] = num(inp.value); });
   guardar(); renderTodo();
 });
-$("btn-reiniciar").addEventListener("click", function(){
-  if(confirm("¿Seguro? Se borran TODOS tus datos de MiPlatapp en este dispositivo" + (usuarioActual ? " y en tu cuenta de Google" : "") + ". Esta acción no se puede deshacer.")){
-    var terminar = function(){ try{ localStorage.removeItem(LS); localStorage.removeItem(LS + "_invitado"); }catch(e){} location.reload(); };
-    if(usuarioActual && fbDb){ fbDb.ref("miplatapp/usuarios/" + usuarioActual.uid).remove().then(terminar).catch(terminar); }
-    else terminar();
-  }
+$("btn-borrar-datos").addEventListener("click", function(){
+  mostrarModalDatos(
+    "Borrar todos mis datos",
+    "Se borrarán TODOS tus datos de MiPlatapp" + (usuarioActual ? " de tu cuenta (en la nube) y" : "") + " de este dispositivo: nombre, salario, cuentas, movimientos, gastos fijos, presupuestos, metas y deudas. Esta acción no se puede deshacer.",
+    [
+      { texto:"Sí, continuar", clase:"btn rojo", fn:function(){
+          mostrarModalDatos(
+            "¿Estás completamente seguro?",
+            "Última confirmación: al aceptar, tus datos se borran de inmediato y la app vuelve a empezar de cero, como recién instalada. Tu cuenta seguirá existiendo.",
+            [
+              { texto:"Borrar todo definitivamente", clase:"btn rojo", fn:ejecutarBorradoDatos },
+              { texto:"Cancelar", clase:"btn sec", fn:function(){} }
+            ]);
+        } },
+      { texto:"Cancelar", clase:"btn sec", fn:function(){} }
+    ]);
 });
+function ejecutarBorradoDatos(){
+  var terminar = function(){ try{ localStorage.removeItem(LS); localStorage.removeItem(LS_INVITADO); localStorage.removeItem(LS_DUENNO); }catch(e){} location.reload(); };
+  if(usuarioActual && fbDb){ fbDb.ref("miplatapp/usuarios/" + usuarioActual.uid).remove().then(terminar).catch(terminar); }
+  else terminar();
+}
 $("btn-ejemplo").addEventListener("click", function(){
   if(confirm("Se cargarán datos de ejemplo y se reemplazarán los datos actuales. ¿Continuar?")){ cargarEjemplo(); }
 });
@@ -1497,7 +1810,11 @@ document.addEventListener("pointerdown", function(e){
 /* ============ Cuenta Google y sincronización en la nube ============ */
 var FB_CONFIG = {"apiKey": "AIzaSyAwR5Y6af4CBl_gv0iVNPpeJdtwWU1vF1g", "authDomain": "plataformaedu-admin.firebaseapp.com", "databaseURL": "https://plataformaedu-admin-default-rtdb.firebaseio.com", "projectId": "plataformaedu-admin", "storageBucket": "plataformaedu-admin.firebasestorage.app", "messagingSenderId": "677869873209", "appId": "1:677869873209:web:ad8d4650fb96088b5285e8"};
 var LS_INVITADO = LS + "_invitado";
+var LS_DUENNO = LS + "_duenno";
+function marcarDuenno(uid){ try{ localStorage.setItem(LS_DUENNO, uid || "invitado"); }catch(e){} }
+function estadoTieneDatos(e){ return !!(e && (e.onboarded || (e.movimientos && e.movimientos.length) || (e.cuentas && e.cuentas.length) || (e.metas && e.metas.length) || (e.fijos && e.fijos.length) || (e.deudas && e.deudas.length) || (e.config && e.config.salario > 0))); }
 var usuarioActual = null, fbAuth = null, fbDb = null, cargandoNube = false, syncTimer = null, syncBloqueada = false;
+var cuentaRecienEliminada = false;
 try{
   if(window.firebase && FB_CONFIG && FB_CONFIG.apiKey){
     firebase.initializeApp(FB_CONFIG);
@@ -1523,6 +1840,8 @@ function renderCuenta(){
       + '<div id="cuenta-msg"></div>';
     $("btn-google").addEventListener("click", function(){ iniciarConGoogle($("cuenta-msg")); });
   }
+  renderMenuCuenta();
+  renderConfig();
 }
 function errorAuthTexto(err){
   var c = err && err.code ? err.code : "";
@@ -1567,6 +1886,9 @@ function aplicarEstadoNube(nuevo){
   if(!e.pagos || typeof e.pagos !== "object") e.pagos = {};
   if(!Array.isArray(e.deudas)) e.deudas = [];
   e.config = normalizarCfg(e.config);
+  if(typeof e.nombre !== "string") e.nombre = "";
+  e.novedades = (e.novedades === true);
+  asegurarCampos(e);
   S = e;
   guardarLocal();
   cargandoNube = false;
@@ -1578,45 +1900,66 @@ if(fbAuth){
   fbAuth.onAuthStateChanged(function(user){
     if(user){
       if(usuarioActual && usuarioActual.uid === user.uid) return;
-      usuarioActual = user; syncBloqueada = false;
+      usuarioActual = user;
       puertaOK = true; $("acceso").classList.add("oculto");
-      try{ var inv = localStorage.getItem(LS); if(inv && !localStorage.getItem(LS_INVITADO)) localStorage.setItem(LS_INVITADO, inv); }catch(e){}
+      var duennoPrevio = null;
+      try{ duennoPrevio = localStorage.getItem(LS_DUENNO); }catch(e){}
+      var localEsDeLaCuenta = (duennoPrevio === user.uid);
+      var localEsAjeno = !localEsDeLaCuenta && estadoTieneDatos(S);
+      if(localEsAjeno){
+        /* Respaldo del invitado: sus datos quedan guardados aparte.
+           No se suben a la cuenta nueva ni se borran. */
+        try{ localStorage.setItem(LS_INVITADO, JSON.stringify(S)); }catch(e){}
+      }
+      /* Mientras se resuelve de quién son los datos, nada se sincroniza solo. */
+      syncBloqueada = true;
       renderCuenta();
       fbDb.ref("miplatapp/usuarios/" + user.uid).once("value").then(function(snap){
         var val = snap.val();
-        var localTiene = !!(S.onboarded || S.movimientos.length || S.cuentas.length || S.metas.length || (S.deudas && S.deudas.length));
         if(val && val.datosJson){
-          if(val.datosJson === JSON.stringify(S)){ /* ya están iguales */ }
-          else if(localTiene){
-            if(confirm("Ya tienes datos de MiPlatapp guardados en tu cuenta de Google.\n\nAceptar: usar los datos de tu cuenta.\nCancelar: guardar en tu cuenta los datos de este dispositivo.")){
-              try{ aplicarEstadoNube(JSON.parse(val.datosJson)); }catch(e){}
-            } else { subirNube(); }
-          } else {
-            try{ aplicarEstadoNube(JSON.parse(val.datosJson)); }catch(e){}
-          }
-        } else if(localTiene){
-          if(confirm("¿Quieres guardar los datos que ya tienes en este dispositivo en tu cuenta de Google?")){
-            subirNube();
-          } else { syncBloqueada = true; }
+          /* La cuenta ya tiene datos: mandan los de la nube. Los datos locales
+             ajenos quedan en su respaldo, sin mezclarse ni sobrescribir la nube. */
+          try{ aplicarEstadoNube(JSON.parse(val.datosJson)); }catch(e){ S = estadoVacio(); guardarLocal(); renderTodo(); }
+          marcarDuenno(user.uid);
+          syncBloqueada = false;
+        } else if(localEsAjeno){
+          /* Cuenta sin datos en la nube + datos de invitado en el dispositivo:
+             se pregunta SIEMPRE antes de mezclar. */
+          preguntarDatosInvitado(user);
+        } else {
+          if(!localEsDeLaCuenta){ S = estadoVacio(); guardarLocal(); }
+          marcarDuenno(user.uid);
+          syncBloqueada = false;
+          renderTodo();
+          if(!S.onboarded) iniciarOnboarding();
         }
         renderCuenta();
+      }).catch(function(){
+        syncBloqueada = false;
+        renderCuenta();
         if(!S.onboarded) iniciarOnboarding();
-      }).catch(function(){ renderCuenta(); if(!S.onboarded) iniciarOnboarding(); });
+      });
     } else {
       var venia = !!usuarioActual;
       usuarioActual = null;
       if(venia){
+        cerrarModalDatos();
         try{
           var g = localStorage.getItem(LS_INVITADO);
           S = g ? Object.assign(estadoVacio(), JSON.parse(g)) : estadoVacio();
           if(!S.pagos || typeof S.pagos !== "object") S.pagos = {};
           if(!Array.isArray(S.deudas)) S.deudas = [];
+          if(typeof S.nombre !== "string") S.nombre = "";
+          S.novedades = (S.novedades === true);
+          asegurarCampos(S);
           S.config = normalizarCfg(S.config);
           localStorage.removeItem(LS_INVITADO);
         }catch(e){ S = estadoVacio(); }
+        marcarDuenno("invitado");
         guardarLocal();
         $("onboarding").classList.add("oculto");
         mostrarPuerta();
+        if(cuentaRecienEliminada){ cuentaRecienEliminada = false; accesoOk("Tu cuenta y todos tus datos fueron eliminados."); }
         renderTodo();
       }
       renderCuenta();
@@ -1686,6 +2029,233 @@ $("ac-olvide").addEventListener("click", function(){
 });
 $("ac-google").addEventListener("click", function(){ iniciarConGoogle($("acceso-msg")); });
 $("ac-invitado").addEventListener("click", pasarPuerta);
+/* ============ Modal genérico (preguntas y confirmaciones) ============ */
+function mostrarModalDatos(titulo, texto, botones){
+  var fondo = $("modal-fondo"); if(!fondo) return;
+  $("modal-titulo").textContent = titulo;
+  $("modal-texto").textContent = texto;
+  var box = $("modal-botones"); box.innerHTML = "";
+  (botones || []).forEach(function(b, idx){
+    if(idx > 0){ var sp = document.createElement("div"); sp.style.height = "10px"; box.appendChild(sp); }
+    var btn = document.createElement("button");
+    btn.type = "button"; btn.className = b.clase || "btn"; btn.textContent = b.texto;
+    btn.addEventListener("click", function(){ cerrarModalDatos(); if(b.fn) b.fn(); });
+    box.appendChild(btn);
+  });
+  fondo.classList.remove("oculto");
+}
+function cerrarModalDatos(){ var f = $("modal-fondo"); if(f) f.classList.add("oculto"); }
+
+/* ============ Aislamiento: datos de invitado al entrar con cuenta ============ */
+function preguntarDatosInvitado(user){
+  var datosInvitado = S;
+  /* Mientras la persona decide, la app queda limpia: nada de la sesión
+     sin cuenta se muestra como si fuera de la cuenta nueva. */
+  S = estadoVacio(); guardarLocal(); renderTodo();
+  $("onboarding").classList.add("oculto");
+  mostrarModalDatos(
+    "Datos en este dispositivo",
+    "En este dispositivo hay datos de una sesión sin cuenta. ¿Quieres pasarlos a tu cuenta o empezar de cero?",
+    [
+      { texto:"Pasar los datos a mi cuenta", clase:"btn", fn:function(){
+          S = datosInvitado; guardarLocal(); marcarDuenno(user.uid); syncBloqueada = false; subirNube(); renderTodo();
+          if(!S.onboarded) iniciarOnboarding();
+        } },
+      { texto:"Empezar de cero", clase:"btn sec", fn:function(){
+          /* Los datos del invitado NO se suben ni se borran:
+             quedan en su respaldo para cuando se use el modo invitado. */
+          marcarDuenno(user.uid); syncBloqueada = false; renderTodo(); iniciarOnboarding();
+        } }
+    ]);
+}
+
+/* ============ Navegación auxiliar ============ */
+function irATab(nombre){
+  document.querySelectorAll("#tabbar button").forEach(function(x){ x.classList.toggle("on", x.getAttribute("data-tab") === nombre); });
+  document.querySelectorAll(".tab").forEach(function(x){ x.classList.remove("activa"); });
+  var t = $("tab-" + nombre); if(t) t.classList.add("activa");
+  window.scrollTo(0, 0);
+}
+
+/* ============ Menú de cuenta (encabezado) ============ */
+function nombreVisible(){
+  if(S.nombre && S.nombre.trim()) return S.nombre.trim();
+  if(usuarioActual){ return usuarioActual.displayName || (usuarioActual.email || "").split("@")[0] || "Tu cuenta"; }
+  return "Modo invitado";
+}
+function inicialAvatar(){ var n = nombreVisible(); return (n.charAt(0) || "M").toUpperCase(); }
+function renderMenuCuenta(){
+  var av = $("menu-avatar"); if(!av) return;
+  if(usuarioActual && usuarioActual.photoURL){
+    av.innerHTML = '<img class="avatar avatar-menu" src="' + esc(usuarioActual.photoURL) + '" alt="" />';
+  } else {
+    av.innerHTML = '<span class="avatar-inicial avatar-menu">' + esc(inicialAvatar()) + '</span>';
+  }
+  $("menu-cab").innerHTML = "<b>" + esc(nombreVisible()) + "</b><br><span class=\"mut\">" + esc(usuarioActual ? (usuarioActual.email || "Con sesión iniciada") : "Tus datos quedan en este dispositivo") + "</span>";
+  $("menu-sesion-txt").textContent = usuarioActual ? "Cerrar sesión" : "Iniciar sesión";
+}
+$("btn-menu-cuenta").addEventListener("click", function(e){
+  e.stopPropagation();
+  renderMenuCuenta();
+  $("menu-cuenta").classList.toggle("oculto");
+});
+document.addEventListener("click", function(e){
+  var m = $("menu-cuenta");
+  if(m && !m.classList.contains("oculto") && !e.target.closest(".cuenta-menu-wrap")) m.classList.add("oculto");
+});
+$("menu-config").addEventListener("click", function(){ $("menu-cuenta").classList.add("oculto"); irATab("config"); });
+$("menu-exportar").addEventListener("click", function(){ $("menu-cuenta").classList.add("oculto"); $("btn-export-json").click(); });
+$("menu-sesion").addEventListener("click", function(){
+  $("menu-cuenta").classList.add("oculto");
+  if(usuarioActual) cerrarSesion(); else mostrarPuerta();
+});
+$("btn-ir-config").addEventListener("click", function(){ irATab("config"); });
+
+/* ============ Panel de Configuración ============ */
+function renderConfig(){
+  if(!$("cfg-avatar")) return;
+  var av = $("cfg-avatar");
+  if(usuarioActual && usuarioActual.photoURL){
+    av.innerHTML = '<img class="avatar-grande" src="' + esc(usuarioActual.photoURL) + '" alt="" />';
+  } else {
+    av.innerHTML = '<span class="avatar-inicial avatar-grande">' + esc(inicialAvatar()) + '</span>';
+  }
+  $("cfg-nombre-vista").textContent = nombreVisible();
+  $("cfg-correo").textContent = usuarioActual ? (usuarioActual.email || "") : "Sin sesión iniciada";
+  if(document.activeElement !== $("cfg-nombre")) $("cfg-nombre").value = S.nombre || "";
+  $("cfg-novedades").checked = (S.novedades === true);
+  $("cfg-pref-frec").textContent = frecuenciaPago() === "semanal" ? "Semanal" : (frecuenciaPago() === "quincenal" ? "Quincenal" : "Mensual");
+  /* Contraseña */
+  var cb = $("cfg-clave-box");
+  if(usuarioActual){
+    var esClave = (usuarioActual.providerData || []).some(function(p){ return p.providerId === "password"; });
+    if(esClave){
+      cb.innerHTML = '<label>Contraseña</label><button class="btn sec" id="cfg-cambiar-clave" type="button">Cambiar contraseña</button><div id="cfg-clave-msg"></div>';
+      $("cfg-cambiar-clave").addEventListener("click", function(){
+        fbAuth.sendPasswordResetEmail(usuarioActual.email)
+          .then(function(){ $("cfg-clave-msg").innerHTML = '<div class="aviso verde">Te enviamos un correo a ' + esc(usuarioActual.email) + " para cambiar tu contraseña. Revisa tu bandeja de entrada y la carpeta de spam.</div>"; })
+          .catch(function(err){ $("cfg-clave-msg").innerHTML = '<div class="aviso">' + esc(errorAuthTexto(err)) + "</div>"; });
+      });
+    } else {
+      cb.innerHTML = '<label>Contraseña</label><p class="mut">Entraste con Google: tu contraseña la administra Google, no MiPlatapp.</p>';
+    }
+  } else {
+    cb.innerHTML = '<label>Contraseña</label><p class="mut">Estás en modo invitado. Cuando inicies sesión con correo y contraseña podrás cambiarla desde aquí.</p>';
+  }
+  /* Mi cuenta */
+  var cc = $("cfg-cuenta");
+  if(usuarioActual){
+    cc.innerHTML = '<div class="dato-fila"><span class="mut">Sesión</span><b>' + esc(usuarioActual.email || "") + '</b></div>'
+      + '<div class="dato-fila"><span class="mut">Sincronización</span><b>Datos guardados en tu cuenta</b></div>'
+      + '<div style="height:12px"></div><button class="btn sec" id="cfg-salir" type="button">Cerrar sesión</button>';
+    $("cfg-salir").addEventListener("click", cerrarSesion);
+  } else {
+    cc.innerHTML = '<div class="dato-fila"><span class="mut">Sesión</span><b>Modo invitado</b></div>'
+      + '<p class="mut" style="margin-top:6px">Tus datos quedan solo en este dispositivo. Inicia sesión para guardarlos en tu cuenta y verlos en todos tus dispositivos.</p>'
+      + '<div style="height:12px"></div><button class="btn" id="cfg-entrar" type="button">Iniciar sesión o crear cuenta</button>';
+    $("cfg-entrar").addEventListener("click", mostrarPuerta);
+  }
+  /* Zona de peligro: eliminar cuenta */
+  var eb = $("cfg-eliminar-box");
+  if(usuarioActual){
+    eb.innerHTML = '<button class="btn rojo" id="cfg-eliminar-cuenta" type="button">Eliminar mi cuenta y todos mis datos</button>'
+      + '<p class="mut" style="margin-top:8px">Elimina tu usuario de MiPlatapp y el nodo de datos de tu cuenta. No es lo mismo que borrar los datos: la cuenta deja de existir y no podrás volver a entrar con ella.</p>';
+    $("cfg-eliminar-cuenta").addEventListener("click", confirmarEliminarCuenta);
+  } else {
+    eb.innerHTML = '<p class="mut">Estás en modo invitado: no hay una cuenta que eliminar. Si quieres, usa «Borrar todos mis datos» para limpiar este dispositivo.</p>';
+  }
+}
+$("cfg-guardar-nombre").addEventListener("click", function(){
+  S.nombre = $("cfg-nombre").value.trim();
+  guardar(); renderTodo();
+  $("cfg-perfil-msg").innerHTML = '<div class="aviso verde">Nombre guardado. Así te verás en tu cuenta.</div>';
+});
+$("cfg-novedades").addEventListener("change", function(){
+  S.novedades = ($("cfg-novedades").checked === true);
+  guardar();
+});
+
+/* ============ Eliminar cuenta (Auth + datos) ============ */
+function confirmarEliminarCuenta(){
+  if(!usuarioActual) return;
+  mostrarModalDatos(
+    "Eliminar mi cuenta",
+    "Se eliminará tu cuenta de MiPlatapp (" + (usuarioActual.email || "") + ") y todos los datos guardados en ella. La cuenta deja de existir: no podrás volver a entrar con ella. Esta acción no se puede deshacer.",
+    [
+      { texto:"Sí, continuar", clase:"btn rojo", fn:function(){
+          mostrarModalDatos(
+            "¿Estás completamente seguro?",
+            "Última confirmación: al aceptar, tu cuenta y tus datos en la nube se eliminan de inmediato.",
+            [
+              { texto:"Eliminar mi cuenta definitivamente", clase:"btn rojo", fn:ejecutarEliminarCuenta },
+              { texto:"Cancelar", clase:"btn sec", fn:function(){} }
+            ]);
+        } },
+      { texto:"Cancelar", clase:"btn sec", fn:function(){} }
+    ]);
+}
+function ejecutarEliminarCuenta(){
+  if(!usuarioActual) return;
+  var user = usuarioActual;
+  cuentaRecienEliminada = true;
+  var nodo = fbDb ? fbDb.ref("miplatapp/usuarios/" + user.uid).remove().catch(function(){}) : Promise.resolve();
+  nodo.then(function(){ return user.delete(); })
+    .then(function(){ /* onAuthStateChanged muestra la puerta con el aviso */ })
+    .catch(function(err){
+      cuentaRecienEliminada = false;
+      if(err && err.code === "auth/requires-recent-login"){ pedirReautenticacion(); }
+      else {
+        mostrarModalDatos("No se pudo eliminar la cuenta",
+          "Algo falló al eliminar tu cuenta. Revisa tu conexión e inténtalo de nuevo en unos minutos.",
+          [ { texto:"Entendido", clase:"btn", fn:function(){} } ]);
+      }
+    });
+}
+function pedirReautenticacion(){
+  var user = usuarioActual; if(!user) return;
+  var esClave = (user.providerData || []).some(function(p){ return p.providerId === "password"; });
+  if(!esClave){
+    mostrarModalDatos(
+      "Vuelve a iniciar sesión",
+      "Por seguridad, Firebase pide un inicio de sesión reciente para eliminar la cuenta. Cierra sesión, vuelve a entrar con Google e intenta de nuevo la eliminación.",
+      [
+        { texto:"Cerrar sesión ahora", clase:"btn", fn:function(){ cerrarSesion(); } },
+        { texto:"Cancelar", clase:"btn sec", fn:function(){} }
+      ]);
+    return;
+  }
+  var fondo = $("modal-fondo"); if(!fondo) return;
+  $("modal-titulo").textContent = "Confirma tu contraseña";
+  $("modal-texto").textContent = "Por seguridad, Firebase pide que confirmes la contraseña de " + (user.email || "tu cuenta") + " para eliminar la cuenta.";
+  var box = $("modal-botones"); box.innerHTML = "";
+  var wrap = document.createElement("div");
+  wrap.innerHTML = '<label for="modal-clave">Contraseña</label><input id="modal-clave" type="password" autocomplete="current-password" placeholder="Tu contraseña" /><div id="modal-clave-msg"></div>';
+  box.appendChild(wrap);
+  var sp = document.createElement("div"); sp.style.height = "12px"; box.appendChild(sp);
+  var bOk = document.createElement("button");
+  bOk.type = "button"; bOk.className = "btn rojo"; bOk.textContent = "Confirmar y eliminar";
+  bOk.addEventListener("click", function(){
+    var clave = $("modal-clave").value;
+    if(!clave){ $("modal-clave-msg").innerHTML = '<div class="aviso">Escribe tu contraseña.</div>'; return; }
+    var cred = firebase.auth.EmailAuthProvider.credential(user.email, clave);
+    bOk.disabled = true; bOk.style.opacity = ".65";
+    user.reauthenticateWithCredential(cred).then(function(){
+      cerrarModalDatos();
+      ejecutarEliminarCuenta();
+    }).catch(function(err){
+      bOk.disabled = false; bOk.style.opacity = "";
+      $("modal-clave-msg").innerHTML = '<div class="aviso">' + esc(errorAuthTexto(err)) + "</div>";
+    });
+  });
+  box.appendChild(bOk);
+  var sp2 = document.createElement("div"); sp2.style.height = "10px"; box.appendChild(sp2);
+  var bNo = document.createElement("button");
+  bNo.type = "button"; bNo.className = "btn sec"; bNo.textContent = "Cancelar";
+  bNo.addEventListener("click", function(){ cuentaRecienEliminada = false; cerrarModalDatos(); });
+  box.appendChild(bNo);
+  fondo.classList.remove("oculto");
+}
+
 
 /* ============ Inicio ============ */
 $("mv-fecha").value = hoyISO();
