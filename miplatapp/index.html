@@ -301,11 +301,40 @@ a.btn{ text-decoration:none; }
 .mas-lista .mas-flecha{ color:var(--mut); font-size:20px; flex:none; }
 .fab{ position:fixed; right:18px; bottom:calc(94px + env(safe-area-inset-bottom)); width:58px; height:58px; border-radius:50%; background:var(--azul); color:#fff; border:none; font-size:32px; line-height:1; z-index:29; cursor:pointer; display:none; align-items:center; justify-content:center; box-shadow:0 10px 24px rgba(2,8,20,.5); padding-bottom:4px; }
 .fab.visible{ display:flex; }
+/* ===== Capa de movimiento: hoja inferior en móvil, modal centrado en PC ===== */
+.sheet-fondo{ position:fixed; inset:0; z-index:95; background:rgba(3,8,18,.72); display:flex; align-items:flex-end; justify-content:center; }
+.sheet-caja{ width:100%; max-width:560px; max-height:92dvh; overflow-y:auto; background:#141B2C; border:1px solid rgba(120,175,240,.20); border-bottom:none; border-radius:20px 20px 0 0; padding:16px 16px calc(18px + env(safe-area-inset-bottom)); box-shadow:0 -14px 40px rgba(1,6,16,.5); }
+.sheet-cab{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.sheet-cab h2{ font-size:17px; font-weight:800; }
+.sheet-x{ background:none; border:none; color:var(--mut); font-size:28px; line-height:1; cursor:pointer; padding:2px 8px; flex:none; }
+@media (min-width:1024px){
+  .sheet-fondo{ align-items:center; padding:24px; }
+  .sheet-caja{ max-width:480px; max-height:88vh; border-bottom:1px solid rgba(120,175,240,.20); border-radius:20px; padding:20px; }
+}
+/* ===== Movimientos estilo Records: encabezado, chips de periodo y filas ===== */
+.mov-h{ font-size:24px; font-weight:800; margin:2px 0 12px; }
+.mov-busca{ display:flex; gap:8px; margin-bottom:10px; }
+.mov-busca input{ flex:1; border-radius:999px; padding:11px 16px; }
+.mov-filtros-btn{ flex:none; border-radius:999px; padding:0 18px; }
+.chips-periodo{ display:flex; gap:8px; overflow-x:auto; padding:2px 0 10px; scrollbar-width:none; }
+.chips-periodo::-webkit-scrollbar{ display:none; }
+.chips-periodo button{ flex:none; font:inherit; font-size:13.5px; font-weight:600; color:var(--mut); background:#141B2C; border:1px solid rgba(120,175,240,.18); border-radius:999px; padding:7px 14px; cursor:pointer; }
+.chips-periodo button.on{ background:var(--azul); border-color:var(--azul); color:#fff; }
+.mov-fecha{ text-transform:uppercase; letter-spacing:.04em; }
+.mov-row{ display:flex; align-items:flex-start; gap:11px; }
+.mov-row .cat-ico{ width:38px; height:38px; }
+.mov-row .cat-ico svg{ width:19px; height:19px; }
+.mov-main{ flex:1; min-width:0; }
+.mov-main > b{ display:block; }
+.mov-sub{ display:block; font-size:12.5px; }
+.mov-lado{ text-align:right; flex:none; }
+.mov-acciones{ display:block; margin-top:2px; font-size:12.5px; }
+@media (min-width:1024px){ .mov-h, .mov-busca, .chips-periodo{ grid-column:1 / -1; } }
 @media (max-width:1023px){ #tabbar button.solo-pc{ display:none !important; } }
 @media (min-width:1024px){
   #tabbar button.solo-movil{ display:none !important; }
   .solo-movil-bloque{ display:none !important; }
-  .fab{ display:none !important; }
+  .fab{ bottom:30px; right:34px; }
   #tab-planeacion.activa, #tab-mas.activa{ display:block; }
 }
 </style>
@@ -457,48 +486,20 @@ a.btn{ text-decoration:none; }
 
   <!-- MOVIMIENTOS -->
   <section id="tab-movimientos" class="tab">
-    <div class="card">
-      <h2>Registrar movimiento</h2>
-      <div class="seg" id="seg-tipo">
-        <button type="button" data-tipo="gasto" class="on">Gasto</button>
-        <button type="button" data-tipo="ingreso">Ingreso</button>
-        <button type="button" data-tipo="transferencia">Transferencia</button>
-      </div>
-      <label for="mv-monto">Monto</label>
-      <input id="mv-monto" type="text" inputmode="numeric" placeholder="$ 0" />
-      <div id="mv-bloque-destino">
-        <label for="mv-destino">Categoría o gasto fijo</label>
-        <select id="mv-destino"></select>
-        <div id="mv-destino-chip" style="margin-top:8px"></div>
-      </div>
-      <label for="mv-nota">Nota (opcional)</label>
-      <input id="mv-nota" type="text" placeholder="Ej. Mercado de la semana" />
-      <label for="mv-etiqueta">Etiqueta (opcional)</label>
-      <input id="mv-etiqueta" type="text" list="dl-etiquetas" placeholder="Ej. domicilios, trabajo, familia" />
-      <datalist id="dl-etiquetas"></datalist>
-      <label for="mv-fecha">Fecha</label>
-      <input id="mv-fecha" type="date" />
-      <div id="mv-bloque-cuenta">
-        <label for="mv-cuenta" id="mv-cuenta-label">Cuenta</label>
-        <select id="mv-cuenta"></select>
-      </div>
-      <div id="mv-bloque-transf" class="oculto">
-        <label for="mv-cuenta-destino">Cuenta destino</label>
-        <select id="mv-cuenta-destino"></select>
-      </div>
-      <div style="height:14px"></div>
-      <button class="btn" id="mv-guardar" type="button">Guardar movimiento</button>
-      <div style="height:10px"></div>
-      <div class="grid2">
-        <button class="btn sec" id="mv-plantilla" type="button">Guardar como plantilla</button>
-        <button class="btn sec oculto" id="mv-cancelar-edit" type="button">Cancelar edición</button>
-      </div>
-      <div id="mv-msg"></div>
+    <h2 class="mov-h">Movimientos</h2>
+    <div class="mov-busca">
+      <input id="flt-texto" type="search" placeholder="Buscar movimientos…" aria-label="Buscar movimientos" />
+      <button class="btn sec mov-filtros-btn" id="flt-toggle" type="button">Filtros</button>
     </div>
-    <div class="card">
-      <h2>Buscar y filtrar</h2>
-      <label for="flt-texto">Buscar por texto</label>
-      <input id="flt-texto" type="text" placeholder="Ej. rappi, mercado, nómina…" />
+    <div class="chips-periodo" id="chips-periodo" role="group" aria-label="Periodo">
+      <button type="button" data-per="7">7 días</button>
+      <button type="button" data-per="30">30 días</button>
+      <button type="button" data-per="84">12 semanas</button>
+      <button type="button" data-per="182">6 meses</button>
+      <button type="button" data-per="365">1 año</button>
+      <button type="button" data-per="todo" class="on">Todo</button>
+    </div>
+    <div class="card oculto" id="flt-panel">
       <div class="grid2">
         <div><label for="flt-tipo">Tipo</label>
           <select id="flt-tipo"><option value="">Todos</option><option value="gasto">Gastos</option><option value="ingreso">Ingresos</option><option value="transferencia">Transferencias</option></select></div>
@@ -519,7 +520,7 @@ a.btn{ text-decoration:none; }
       <button class="btn sec" id="flt-limpiar" type="button">Limpiar filtros</button>
     </div>
     <div class="card">
-      <div class="row"><h2 style="margin:0" id="mov-titulo">Movimientos del mes</h2><span class="pill" id="mov-total"></span></div>
+      <div class="row"><h2 style="margin:0" id="mov-titulo">Todos los movimientos</h2><span class="pill" id="mov-total"></span></div>
       <div id="lista-movimientos" style="margin-top:6px"></div>
     </div>
     <div class="card">
@@ -854,6 +855,51 @@ a.btn{ text-decoration:none; }
     <button type="button" data-tab="mas" class="solo-movil"><svg viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg>Más</button>
   </nav>
   <button id="fab-mas" class="fab" type="button" aria-label="Agregar movimiento">+</button>
+
+<!-- CAPA: NUEVO / EDITAR MOVIMIENTO -->
+<div id="mov-sheet" class="sheet-fondo oculto">
+  <div class="sheet-caja" role="dialog" aria-modal="true" aria-labelledby="mv-titulo">
+    <div class="sheet-cab">
+      <h2 id="mv-titulo">Nuevo movimiento</h2>
+      <button id="mv-cerrar" class="sheet-x" type="button" aria-label="Cerrar">&times;</button>
+    </div>
+      <div class="seg" id="seg-tipo">
+        <button type="button" data-tipo="gasto" class="on">Gasto</button>
+        <button type="button" data-tipo="ingreso">Ingreso</button>
+        <button type="button" data-tipo="transferencia">Transferencia</button>
+      </div>
+      <label for="mv-monto">Monto</label>
+      <input id="mv-monto" type="text" inputmode="numeric" placeholder="$ 0" />
+      <div id="mv-bloque-destino">
+        <label for="mv-destino">Categoría o gasto fijo</label>
+        <select id="mv-destino"></select>
+        <div id="mv-destino-chip" style="margin-top:8px"></div>
+      </div>
+      <label for="mv-nota">Nota (opcional)</label>
+      <input id="mv-nota" type="text" placeholder="Ej. Mercado de la semana" />
+      <label for="mv-etiqueta">Etiqueta (opcional)</label>
+      <input id="mv-etiqueta" type="text" list="dl-etiquetas" placeholder="Ej. domicilios, trabajo, familia" />
+      <datalist id="dl-etiquetas"></datalist>
+      <label for="mv-fecha">Fecha</label>
+      <input id="mv-fecha" type="date" />
+      <div id="mv-bloque-cuenta">
+        <label for="mv-cuenta" id="mv-cuenta-label">Cuenta</label>
+        <select id="mv-cuenta"></select>
+      </div>
+      <div id="mv-bloque-transf" class="oculto">
+        <label for="mv-cuenta-destino">Cuenta destino</label>
+        <select id="mv-cuenta-destino"></select>
+      </div>
+      <div style="height:14px"></div>
+      <button class="btn" id="mv-guardar" type="button">Guardar movimiento</button>
+      <div style="height:10px"></div>
+      <div class="grid2">
+        <button class="btn sec" id="mv-plantilla" type="button">Guardar como plantilla</button>
+        <button class="btn sec oculto" id="mv-cancelar-edit" type="button">Cancelar edición</button>
+      </div>
+      <div id="mv-msg"></div>
+  </div>
+</div>
 
 <!-- ACCESO -->
 <!-- ARRANQUE / SINCRONIZACIÓN -->
@@ -1438,6 +1484,7 @@ function aplicarOrdenPanel(){
 
 /* ============ Filtros y edición de movimientos ============ */
 var filtrosMov = { texto: "", tipo: "", cuenta: "", cat: "", etiqueta: "", desde: "", hasta: "" };
+var periodoMov = "todo";
 var editandoMovId = null;
 function hayFiltrosMov(){ return !!(filtrosMov.texto || filtrosMov.tipo || filtrosMov.cuenta || filtrosMov.cat || filtrosMov.etiqueta || filtrosMov.desde || filtrosMov.hasta); }
 function poblarFiltrosMov(){
@@ -1737,22 +1784,38 @@ function opcionesDestino(){
   sel.innerHTML = html;
 }
 function itemMovHTML(x){
-  var dest, signo, color;
-  if(x.tipo === "transferencia"){ dest = "Transferencia"; signo = ""; color = "var(--mut)"; }
-  else if(x.tipo === "ingreso"){ dest = "Ingreso"; signo = "+"; color = "var(--verde)"; }
-  else if(x.fijoId){ dest = esc(nombreFijo(x.fijoId)) + " (fijo)"; signo = "\u2212"; color = "var(--rojo)"; }
-  else { dest = chipCat(x.categoria || "Otro"); signo = "\u2212"; color = "var(--rojo)"; }
-  var detalle = "";
-  if(x.tipo === "transferencia") detalle = nombreCuenta(x.cuentaId) + " \u2192 " + nombreCuenta(x.cuentaDestinoId);
-  else if(x.cuentaId) detalle = nombreCuenta(x.cuentaId);
+  var ico, titulo, signo, color;
+  if(x.tipo === "transferencia"){
+    ico = '<span class="cat-ico" style="background:#5A6B84"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h13M13.5 4.5L17 8l-3.5 3.5M20 16H7M10.5 12.5L7 16l3.5 3.5"/></svg></span>';
+    titulo = "Transferencia"; signo = ""; color = "var(--mut)";
+  }
+  else if(x.tipo === "ingreso"){
+    ico = '<span class="cat-ico" style="background:#1E9E62">' + iconoSVG("billete", 15) + '</span>';
+    titulo = x.nota || "Ingreso"; signo = "+"; color = "var(--verde)";
+  }
+  else if(x.fijoId){
+    ico = chipCat(x.categoria || "Otro", true);
+    titulo = nombreFijo(x.fijoId) + " (fijo)"; signo = "\u2212"; color = "var(--rojo)";
+  }
+  else {
+    ico = chipCat(x.categoria || "Otro", true);
+    titulo = x.nota || (x.categoria || "Gasto"); signo = "\u2212"; color = "var(--rojo)";
+  }
+  var cuenta = "";
+  if(x.tipo === "transferencia") cuenta = nombreCuenta(x.cuentaId) + " \u2192 " + nombreCuenta(x.cuentaDestinoId);
+  else if(x.cuentaId) cuenta = nombreCuenta(x.cuentaId);
+  var nota = (x.tipo === "ingreso" || x.tipo === "transferencia") ? (x.nota || "") : (x.nota && titulo !== x.nota ? x.nota : "");
   var montoTxt = fmtDivisa(x.monto, x.moneda) + ((x.moneda && x.moneda !== "COP") ? ' <span class="mut">&asymp; ' + fmt(aCOP(x.monto, x.moneda)) + '</span>' : '');
-  return '<div class="item row"><span><b>' + dest + '</b>' + (x.etiqueta ? '<span class="tagpill">' + esc(x.etiqueta) + '</span>' : '') + (x.nota ? '<br><span class="mut">' + esc(x.nota) + '</span>' : '')
-    + (detalle ? '<br><span class="mut">' + esc(detalle) + '</span>' : '')
+  return '<div class="item mov-row">' + ico
+    + '<span class="mov-main"><b>' + esc(titulo) + '</b>'
+    + (cuenta ? '<span class="mut mov-sub">' + esc(cuenta) + '</span>' : '')
+    + (nota ? '<span class="mut mov-sub">' + esc(nota) + '</span>' : '')
+    + (x.etiqueta ? '<span class="tagpill">' + esc(x.etiqueta) + '</span>' : '')
     + '</span>'
-    + '<span style="text-align:right"><b style="color:' + color + '">' + (signo ? signo + ' ' : '') + montoTxt + '</b><br>'
-    + '<button class="btnlink" data-edit-mov="' + x.id + '" type="button">Editar</button> · '
+    + '<span class="mov-lado"><b style="color:' + color + '">' + (signo ? signo + ' ' : '') + montoTxt + '</b>'
+    + '<span class="mov-acciones"><button class="btnlink" data-edit-mov="' + x.id + '" type="button">Editar</button> · '
     + '<button class="btnlink" data-dup-mov="' + x.id + '" type="button">Duplicar</button> · '
-    + '<button class="btnlink rojo" data-del-mov="' + x.id + '" type="button">Eliminar</button></span></div>';
+    + '<button class="btnlink rojo" data-del-mov="' + x.id + '" type="button">Eliminar</button></span></span></div>';
 }
 function renderMovimientos(){
   opcionesDestino();
@@ -1762,10 +1825,14 @@ function renderMovimientos(){
   $("mv-bloque-transf").classList.toggle("oculto", mvTipo !== "transferencia");
   $("mv-cuenta-label").textContent = mvTipo === "transferencia" ? "Cuenta origen" : "Cuenta";
   pintarChipDestino();
-  var ahora = new Date(), y = ahora.getFullYear(), m = ahora.getMonth();
   var conF = hayFiltrosMov();
+  var desdePer = null;
+  if(periodoMov !== "todo"){
+    var hd = new Date(); hd.setHours(0, 0, 0, 0); hd.setDate(hd.getDate() - (periodoMov - 1));
+    desdePer = hd.getFullYear() + "-" + String(hd.getMonth() + 1).padStart(2, "0") + "-" + String(hd.getDate()).padStart(2, "0");
+  }
   var lista = S.movimientos.filter(function(x){
-    if(!conF) return esDelMes(x.fecha, y, m);
+    if(desdePer && x.fecha < desdePer) return false;
     if(filtrosMov.tipo && x.tipo !== filtrosMov.tipo) return false;
     if(filtrosMov.cuenta && x.cuentaId !== filtrosMov.cuenta && x.cuentaDestinoId !== filtrosMov.cuenta) return false;
     if(filtrosMov.cat && x.categoria !== filtrosMov.cat) return false;
@@ -1780,10 +1847,11 @@ function renderMovimientos(){
   }).sort(function(a, b){ return a.fecha < b.fecha ? 1 : (a.fecha > b.fecha ? -1 : 0); });
   var totG = 0, totI = 0;
   lista.forEach(function(x){ var v = aCOP(x.monto, x.moneda); if(x.tipo === "gasto") totG += v; else if(x.tipo === "ingreso") totI += v; });
-  $("mov-titulo").textContent = conF ? "Movimientos filtrados" : "Movimientos del mes";
-  $("mov-total").textContent = "Gastos " + fmt(totG) + " · Ingresos " + fmt(totI) + (conF ? " (en COP)" : "");
+  var perTxt = { "7": "Últimos 7 días", "30": "Últimos 30 días", "84": "Últimas 12 semanas", "182": "Últimos 6 meses", "365": "Último año" };
+  $("mov-titulo").textContent = conF ? "Movimientos filtrados" : (periodoMov === "todo" ? "Todos los movimientos" : (perTxt[String(periodoMov)] || "Movimientos"));
+  $("mov-total").textContent = "Gastos " + fmt(totG) + " · Ingresos " + fmt(totI);
   if(!lista.length){
-    $("lista-movimientos").innerHTML = '<p class="mut">' + (conF ? "Ningún movimiento coincide con esos filtros." : "No hay movimientos este mes todavía.") + '</p>';
+    $("lista-movimientos").innerHTML = '<p class="mut">' + (conF ? "Ningún movimiento coincide con esos filtros." : (periodoMov === "todo" ? "Todavía no hay movimientos. Toca el botón + para registrar el primero." : "No hay movimientos en este periodo.")) + '</p>';
   } else {
     var htmlMov = "", ultFec = null;
     lista.forEach(function(x){
@@ -1980,13 +2048,16 @@ $("mv-guardar").addEventListener("click", function(){
   ajustarCuenta(mov, 1); guardar();
   $("mv-monto").value = ""; $("mv-nota").value = ""; $("mv-etiqueta").value = ""; msg.innerHTML = editando ? '<div class="ok">Movimiento actualizado.</div>' : "";
   renderTodo();
+  var avisoPres = false;
   if(mvTipo === "gasto" && mov.categoria){
     var ahora = new Date(), d = datosMes(ahora.getFullYear(), ahora.getMonth());
     var pres = S.presupuestos[mov.categoria] || 0;
     if(pres > 0 && d.porCat[mov.categoria] > pres){
-      msg.innerHTML = '<div class="aviso">Ojo: con este gasto te pasaste del presupuesto de ' + esc(mov.categoria) + ' por ' + fmt(d.porCat[mov.categoria]-pres) + '.</div>';
+      avisoPres = true;
+      msg.innerHTML = '<div class="aviso">Ojo: con este gasto te pasaste del presupuesto de ' + esc(mov.categoria) + ' por ' + fmt(d.porCat[mov.categoria]-pres) + '. El movimiento quedó guardado.</div>';
     }
   }
+  if(!avisoPres) cerrarSheetMov();
 });
 document.addEventListener("click", function(e){
   var dm = e.target.closest("[data-del-mov]");
@@ -2824,10 +2895,43 @@ function actualizarFab(nombre){
   f.classList.toggle("visible", nombre === "inicio" || nombre === "movimientos");
 }
 var fabBtn = $("fab-mas");
-if(fabBtn) fabBtn.addEventListener("click", function(){
-  irATab("movimientos");
+if(fabBtn) fabBtn.addEventListener("click", function(){ abrirSheetMov(false); });
+/* ============ Capa superpuesta de nuevo / editar movimiento ============ */
+function limpiarFormMov(){
+  editandoMovId = null;
+  mvTipo = "gasto";
+  document.querySelectorAll("#seg-tipo button").forEach(function(x){ x.classList.toggle("on", x.getAttribute("data-tipo") === "gasto"); });
+  $("mv-bloque-destino").style.display = "block";
+  $("mv-bloque-transf").classList.add("oculto");
+  $("mv-cuenta-label").textContent = "Cuenta";
+  $("mv-monto").value = ""; $("mv-nota").value = ""; $("mv-etiqueta").value = "";
+  $("mv-fecha").value = hoyISO();
+  $("mv-guardar").textContent = "Guardar movimiento";
+  $("mv-cancelar-edit").classList.add("oculto");
+  $("mv-msg").innerHTML = "";
+  pintarChipDestino();
+}
+function abrirSheetMov(editando){
+  var s = $("mov-sheet"); if(!s) return;
+  if(!editando) limpiarFormMov();
+  $("mv-titulo").textContent = editando ? "Editar movimiento" : "Nuevo movimiento";
+  s.classList.remove("oculto");
+  document.body.style.overflow = "hidden";
+  document.documentElement.style.overflow = "hidden";
   setTimeout(function(){ var m = $("mv-monto"); if(m) m.focus({ preventScroll: true }); }, 60);
-});
+}
+function cerrarSheetMov(){
+  var s = $("mov-sheet"); if(!s || s.classList.contains("oculto")) return;
+  s.classList.add("oculto");
+  document.body.style.overflow = "";
+  document.documentElement.style.overflow = "";
+  if(editandoMovId) limpiarFormMov();
+}
+var mvCerrarBtn = $("mv-cerrar");
+if(mvCerrarBtn) mvCerrarBtn.addEventListener("click", cerrarSheetMov);
+var movSheetEl = $("mov-sheet");
+if(movSheetEl) movSheetEl.addEventListener("click", function(e){ if(e.target === movSheetEl) cerrarSheetMov(); });
+document.addEventListener("keydown", function(e){ if(e.key === "Escape") cerrarSheetMov(); });
 var planSeg = $("plan-seg");
 if(planSeg) planSeg.addEventListener("click", function(e){
   var b = e.target.closest("button[data-plan]"); if(!b) return;
@@ -3056,14 +3160,14 @@ function cargarEnFormMov(x){
   $("mv-guardar").textContent = "Guardar cambios";
   $("mv-cancelar-edit").classList.remove("oculto");
   $("mv-msg").innerHTML = '<div class="ok">Editando el movimiento. Ajusta lo que quieras y toca «Guardar cambios».</div>';
-  irATab("movimientos");
-  window.scrollTo({ top: 0, behavior: "smooth" });
+  abrirSheetMov(true);
 }
 $("mv-cancelar-edit").addEventListener("click", function(){
   editandoMovId = null;
   $("mv-guardar").textContent = "Guardar movimiento";
   $("mv-cancelar-edit").classList.add("oculto");
   $("mv-monto").value = ""; $("mv-nota").value = ""; $("mv-etiqueta").value = ""; $("mv-msg").innerHTML = "";
+  cerrarSheetMov();
 });
 $("mv-plantilla").addEventListener("click", function(){
   var monto = num($("mv-monto").value);
@@ -3098,7 +3202,27 @@ function leerFiltros(){
 });
 $("flt-limpiar").addEventListener("click", function(){
   filtrosMov = { texto: "", tipo: "", cuenta: "", cat: "", etiqueta: "", desde: "", hasta: "" };
+  periodoMov = "todo"; pintarChipsPeriodo();
   sincronizarControlesFiltros(); renderMovimientos();
+});
+/* Chips de periodo y despliegue de filtros avanzados */
+function pintarChipsPeriodo(){
+  document.querySelectorAll("#chips-periodo button").forEach(function(x){
+    var v = x.getAttribute("data-per");
+    x.classList.toggle("on", (v === "todo" && periodoMov === "todo") || (+v === periodoMov));
+  });
+}
+$("chips-periodo").addEventListener("click", function(e){
+  var b = e.target.closest("button[data-per]"); if(!b) return;
+  var v = b.getAttribute("data-per");
+  periodoMov = v === "todo" ? "todo" : parseInt(v, 10);
+  pintarChipsPeriodo(); renderMovimientos();
+});
+$("flt-toggle").addEventListener("click", function(){
+  var p = $("flt-panel"); if(!p) return;
+  var abriendo = p.classList.contains("oculto");
+  p.classList.toggle("oculto", !abriendo);
+  $("flt-toggle").textContent = abriendo ? "Ocultar filtros" : "Filtros";
 });
 
 /* Delegación de clics de la ampliación */
