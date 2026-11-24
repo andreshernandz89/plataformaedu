@@ -371,7 +371,6 @@ a.btn{ text-decoration:none; }
         <button type="button" id="pc-per-ant" aria-label="Mes anterior">&lsaquo;</button>
         <select id="pc-per-select" aria-label="Periodo en vista"></select>
         <button type="button" id="pc-per-sig" aria-label="Mes siguiente">&rsaquo;</button>
-        <span class="mut" id="pc-per-vs"></span>
       </div>
       <div id="pc-cuentas"></div>
       <div class="card pc-gauges-card" data-pccard="medidores">
@@ -1460,8 +1459,6 @@ function pintarPeriodo(){
     if(!sel.options.length) sel.innerHTML = opcionesPeriodoHTML();
     sel.value = mesVista.y + "-" + mesVista.m;
   });
-  var vs = $("pc-per-vs");
-  if(vs){ var ant = new Date(mesVista.y, mesVista.m - 1, 1); vs.textContent = "Comparado con " + MESES[ant.getMonth()] + " de " + ant.getFullYear(); }
   var st = $("stats-periodo-txt");
   if(st){ var ant2 = new Date(mesVista.y, mesVista.m - 1, 1); st.textContent = "Viendo " + MESES[mesVista.m] + " de " + mesVista.y + ", comparado con " + MESES[ant2.getMonth()] + " de " + ant2.getFullYear() + "."; }
 }
