@@ -111,6 +111,8 @@ span.ripple{ position:absolute; border-radius:50%; background:rgba(255,255,255,.
 .fila-edit input{ padding:9px 8px; font-size:14px; }
 .fila-edit .x{ background:rgba(240,102,95,.15); color:#FF9D99; border:none; border-radius:9px; height:38px; font-size:16px; font-weight:800; cursor:pointer; }
 .oculto{ display:none !important; }
+.divisor{ display:flex; align-items:center; gap:10px; color:var(--mut); font-size:12px; font-weight:700; margin:16px 0 14px; }
+.divisor::before,.divisor::after{ content:""; flex:1; height:1px; background:rgba(120,175,240,.22); }
 .aviso{ background:rgba(240,102,95,.14); color:#FFB3AE; border-radius:12px; padding:9px 12px; font-size:13px; font-weight:600; margin-top:8px; }
 .aviso.ambar{ background:rgba(232,163,61,.14); color:#FFD9A0; }
 .aviso.verde{ background:rgba(53,195,125,.14); color:#6FE3AC; }
@@ -356,6 +358,41 @@ footer{ text-align:center; color:#7E93B4; font-size:12px; padding:8px 0 4px; }
   <button type="button" data-tab="deudas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 7h13M8 7l3-3M8 7l3 3M16 17H3M16 17l-3-3M16 17l-3 3"/></svg>Deudas</button>
   <button type="button" data-tab="cuentas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/></svg>Cuentas</button>
 </nav>
+
+<!-- ACCESO -->
+<div id="acceso" class="overlay">
+  <div class="inner">
+    <div class="marca" style="font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--azul); font-weight:700">PlataformaEDU</div>
+    <img class="logo-grande" src="data:image/jpeg;base64,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" alt="Logo de MiPlatapp" />
+    <h1 style="font-size:26px; font-weight:800; margin-top:4px">MiPlatapp</h1>
+    <p class="mut" style="margin-top:6px">Tu presupuesto bajo control. Crea tu cuenta o inicia sesión para guardar tus datos en la nube y verlos en todos tus dispositivos.</p>
+    <div style="height:16px"></div>
+    <div class="card">
+      <div class="seg" id="acceso-seg">
+        <button type="button" data-modo="entrar" class="on">Iniciar sesión</button>
+        <button type="button" data-modo="crear">Crear cuenta</button>
+      </div>
+      <label for="ac-correo">Correo electrónico</label>
+      <input id="ac-correo" type="email" autocomplete="email" placeholder="tucorreo@ejemplo.com" />
+      <label for="ac-clave">Contraseña</label>
+      <input id="ac-clave" type="password" autocomplete="current-password" placeholder="Tu contraseña" />
+      <div id="ac-clave2-box" class="oculto">
+        <label for="ac-clave2">Confirma tu contraseña</label>
+        <input id="ac-clave2" type="password" autocomplete="new-password" placeholder="Repite tu contraseña" />
+      </div>
+      <div style="height:14px"></div>
+      <button class="btn" id="ac-enviar" type="button">Entrar</button>
+      <div id="ac-olvide-box" style="text-align:center; margin-top:10px"><button class="btnlink" id="ac-olvide" type="button">¿Olvidaste tu contraseña?</button></div>
+      <div id="acceso-msg"></div>
+      <div class="divisor">o</div>
+      <button class="btn google" id="ac-google" type="button"><svg width="20" height="20" viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.1H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 8 3l5.7-5.7C34.3 6.1 29.3 4 24 4 13 4 4 13 4 24s9 20 20 20 20-9 20-20c0-1.3-.1-2.7-.4-3.9z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 8 3l5.7-5.7C34.3 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.1H42V20H24v8h11.3c-.8 2.3-2.3 4.3-4.1 5.6l6.2 5.2C36.9 39.2 44 34 44 24c0-1.3-.1-2.7-.4-3.9z"/></svg>Continuar con Google</button>
+    </div>
+    <div style="text-align:center; margin-top:4px">
+      <button class="btnlink" id="ac-invitado" type="button" style="color:var(--mut); font-weight:600">Explorar sin cuenta</button>
+      <p class="mut" style="margin-top:4px">En modo invitado tus datos quedan solo en este dispositivo.</p>
+    </div>
+  </div>
+</div>
 
 <!-- ONBOARDING -->
 <div id="onboarding" class="overlay oculto">
@@ -1109,11 +1146,20 @@ function renderCuenta(){
 }
 function errorAuthTexto(err){
   var c = err && err.code ? err.code : "";
-  if(c === "auth/unauthorized-domain") return "Este dominio aún no está autorizado para ingresar con Google. Avísale al equipo de PlataformaEDU.";
-  if(c === "auth/operation-not-allowed") return "El ingreso con Google aún no está activado para MiPlatapp. Avísale al equipo de PlataformaEDU.";
+  if(c === "auth/unauthorized-domain") return "Este dominio aún no está autorizado para ingresar. Avísale al equipo de PlataformaEDU.";
+  if(c === "auth/operation-not-allowed") return "Este método de ingreso aún no está activado para MiPlatapp. Avísale al equipo de PlataformaEDU.";
   if(c === "auth/popup-closed-by-user" || c === "auth/cancelled-popup-request") return "Cerraste la ventana de Google antes de terminar. Inténtalo de nuevo.";
   if(c === "auth/network-request-failed") return "Sin conexión. Revisa tu internet e inténtalo de nuevo.";
-  return "No se pudo iniciar sesión. Inténtalo de nuevo.";
+  if(c === "auth/invalid-email") return "Escribe un correo válido, por ejemplo tucorreo@ejemplo.com.";
+  if(c === "auth/missing-password") return "Escribe tu contraseña.";
+  if(c === "auth/weak-password") return "La contraseña debe tener al menos 6 caracteres.";
+  if(c === "auth/email-already-in-use") return "Ese correo ya tiene una cuenta. Toca «Iniciar sesión» y entra con tu contraseña.";
+  if(c === "auth/user-not-found") return "No existe una cuenta con ese correo. Revisa el correo o crea una cuenta nueva.";
+  if(c === "auth/wrong-password") return "Contraseña incorrecta. Inténtalo de nuevo o restablécela con «¿Olvidaste tu contraseña?».";
+  if(c === "auth/invalid-credential" || c === "auth/invalid-login-credentials") return "Correo o contraseña incorrectos. Revísalos e inténtalo de nuevo.";
+  if(c === "auth/too-many-requests") return "Demasiados intentos seguidos. Espera unos minutos e inténtalo de nuevo.";
+  if(c === "auth/user-disabled") return "Esta cuenta está deshabilitada. Avísale al equipo de PlataformaEDU.";
+  return "No se pudo completar la operación. Inténtalo de nuevo.";
 }
 function iniciarConGoogle(msgEl){
   if(!fbAuth){ if(msgEl) msgEl.innerHTML = '<div class="aviso">El ingreso con Google no está disponible en este momento.</div>'; return; }
@@ -1152,6 +1198,7 @@ if(fbAuth){
     if(user){
       if(usuarioActual && usuarioActual.uid === user.uid) return;
       usuarioActual = user; syncBloqueada = false;
+      puertaOK = true; $("acceso").classList.add("oculto");
       try{ var inv = localStorage.getItem(LS); if(inv && !localStorage.getItem(LS_INVITADO)) localStorage.setItem(LS_INVITADO, inv); }catch(e){}
       renderCuenta();
       fbDb.ref("miplatapp/usuarios/" + user.uid).once("value").then(function(snap){
@@ -1172,7 +1219,8 @@ if(fbAuth){
           } else { syncBloqueada = true; }
         }
         renderCuenta();
-      }).catch(function(){ renderCuenta(); });
+        if(!S.onboarded) iniciarOnboarding();
+      }).catch(function(){ renderCuenta(); if(!S.onboarded) iniciarOnboarding(); });
     } else {
       var venia = !!usuarioActual;
       usuarioActual = null;
@@ -1185,7 +1233,8 @@ if(fbAuth){
           localStorage.removeItem(LS_INVITADO);
         }catch(e){ S = estadoVacio(); }
         guardarLocal();
-        if(S.onboarded) $("onboarding").classList.add("oculto"); else iniciarOnboarding();
+        $("onboarding").classList.add("oculto");
+        mostrarPuerta();
         renderTodo();
       }
       renderCuenta();
@@ -1194,10 +1243,78 @@ if(fbAuth){
 }
 $("ob-google").addEventListener("click", function(){ iniciarConGoogle($("ob-acceso-msg")); });
 
+/* ============ Pantalla de acceso (correo, Google e invitado) ============ */
+var puertaOK = false, modoAcceso = "entrar";
+function mostrarPuerta(){
+  puertaOK = false;
+  $("onboarding").classList.add("oculto");
+  $("acceso").classList.remove("oculto");
+  window.scrollTo(0, 0);
+}
+function pasarPuerta(){
+  puertaOK = true;
+  $("acceso").classList.add("oculto");
+  if(S.onboarded) $("onboarding").classList.add("oculto"); else iniciarOnboarding();
+}
+function accesoError(txt){ $("acceso-msg").innerHTML = '<div class="aviso">' + esc(txt) + '</div>'; }
+function accesoOk(txt){ $("acceso-msg").innerHTML = '<div class="aviso verde">' + esc(txt) + '</div>'; }
+function correoValido(v){ return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v); }
+function fijarModoAcceso(m){
+  modoAcceso = m;
+  document.querySelectorAll("#acceso-seg button").forEach(function(b){ b.classList.toggle("on", b.getAttribute("data-modo") === m); });
+  $("ac-clave2-box").classList.toggle("oculto", m !== "crear");
+  $("ac-olvide-box").style.display = m === "crear" ? "none" : "";
+  $("ac-enviar").textContent = m === "crear" ? "Crear mi cuenta" : "Entrar";
+  $("ac-clave").setAttribute("autocomplete", m === "crear" ? "new-password" : "current-password");
+  $("acceso-msg").innerHTML = "";
+}
+$("acceso-seg").addEventListener("click", function(e){
+  var b = e.target.closest("button[data-modo]"); if(!b) return;
+  fijarModoAcceso(b.getAttribute("data-modo"));
+});
+$("ac-enviar").addEventListener("click", function(){
+  if(!fbAuth){ accesoError("El ingreso con cuenta no está disponible en este momento. Puedes explorar sin cuenta."); return; }
+  var correo = $("ac-correo").value.trim(), clave = $("ac-clave").value;
+  if(!correoValido(correo)){ accesoError("Escribe un correo válido, por ejemplo tucorreo@ejemplo.com."); return; }
+  if(!clave){ accesoError("Escribe tu contraseña."); return; }
+  var btn = $("ac-enviar");
+  var listo = function(){ btn.disabled = false; btn.style.opacity = ""; };
+  btn.disabled = true; btn.style.opacity = ".65";
+  if(modoAcceso === "crear"){
+    if(clave.length < 6){ listo(); accesoError("La contraseña debe tener al menos 6 caracteres."); return; }
+    if(clave !== $("ac-clave2").value){ listo(); accesoError("Las contraseñas no coinciden. Revísalas e inténtalo de nuevo."); return; }
+    fbAuth.createUserWithEmailAndPassword(correo, clave)
+      .then(function(){ $("ac-clave").value = ""; $("ac-clave2").value = ""; })
+      .catch(function(err){ accesoError(errorAuthTexto(err)); })
+      .then(listo);
+  } else {
+    fbAuth.signInWithEmailAndPassword(correo, clave)
+      .then(function(){ $("ac-clave").value = ""; })
+      .catch(function(err){ accesoError(errorAuthTexto(err)); })
+      .then(listo);
+  }
+});
+$("ac-olvide").addEventListener("click", function(){
+  if(!fbAuth){ accesoError("El restablecimiento de contraseña no está disponible en este momento."); return; }
+  var correo = $("ac-correo").value.trim();
+  if(!correoValido(correo)){ accesoError("Escribe tu correo en el campo de arriba y vuelve a tocar «¿Olvidaste tu contraseña?» para enviarte el enlace de restablecimiento."); return; }
+  fbAuth.sendPasswordResetEmail(correo)
+    .then(function(){ accesoOk("Te enviamos un correo para restablecer tu contraseña. Revisa tu bandeja de entrada y la carpeta de spam."); })
+    .catch(function(err){ accesoError(errorAuthTexto(err)); });
+});
+$("ac-google").addEventListener("click", function(){ iniciarConGoogle($("acceso-msg")); });
+$("ac-invitado").addEventListener("click", pasarPuerta);
+
 /* ============ Inicio ============ */
 $("mv-fecha").value = hoyISO();
 renderTodo();
-if(!S.onboarded) iniciarOnboarding();
+if(!fbAuth){
+  /* Sin Auth disponible: no bloquear, se entra en modo invitado como antes. */
+  $("acceso").classList.add("oculto");
+  if(!S.onboarded) iniciarOnboarding();
+}
+/* Con Auth: la pantalla de acceso queda visible hasta que onAuthStateChanged
+   confirme sesión (la oculta) o la persona elija «Explorar sin cuenta». */
 </script>
 </body>
 </html>
