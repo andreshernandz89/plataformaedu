@@ -799,32 +799,6 @@ a.btn{ text-decoration:none; }
     </div>
   </section>
 
-  <!-- INVERTIR -->
-  <section id="tab-invertir" class="tab">
-    <div class="card">
-      <div class="row"><h2 style="margin:0">Mis inversiones</h2><span class="pill" id="inv-total-pill">$ 0</span></div>
-      <div id="inv-resumen" style="margin-top:8px"></div>
-      <label class="switch-row"><input type="checkbox" id="inv-en-patrimonio" /> Sumar el valor actual a mi patrimonio</label>
-    </div>
-    <div class="card">
-      <h2>Agregar inversión</h2>
-      <label for="iv-nombre">Nombre</label>
-      <input id="iv-nombre" type="text" placeholder="Ej. CDT Bancolombia, Nu, Bitcoin" />
-      <label for="iv-tipo">Tipo</label>
-      <select id="iv-tipo"><option value="CDT">CDT</option><option value="Acciones">Acciones</option><option value="Cripto">Cripto</option><option value="Otro">Otro</option></select>
-      <div class="grid2">
-        <div><label for="iv-invertido">Valor invertido</label><input id="iv-invertido" type="text" inputmode="numeric" placeholder="$ 0" /></div>
-        <div><label for="iv-actual">Valor actual</label><input id="iv-actual" type="text" inputmode="numeric" placeholder="$ 0" /></div>
-      </div>
-      <div style="height:12px"></div>
-      <button class="btn sec" id="iv-agregar" type="button">Agregar inversión</button>
-      <div id="iv-msg"></div>
-    </div>
-    <div class="card">
-      <h2>Portafolio</h2>
-      <div id="lista-inversiones"></div>
-    </div>
-  </section>
   <!-- MÁS -->
   <section id="tab-mas" class="tab">
     <div class="card">
@@ -832,7 +806,6 @@ a.btn{ text-decoration:none; }
       <div class="mas-lista">
         <button type="button" data-ir-tab="planeacion"><span><b>Planeación</b><br><span class="mut">Calendario, metas, deudas e ingresos planeados</span></span><span class="mas-flecha">&rsaquo;</span></button>
         <button type="button" data-ir-tab="cuentas"><span><b>Cuentas</b><br><span class="mut">Tus cuentas, tarjetas y saldos</span></span><span class="mas-flecha">&rsaquo;</span></button>
-        <button type="button" data-ir-tab="invertir"><span><b>Invertir</b><br><span class="mut">Tu portafolio de inversiones</span></span><span class="mas-flecha">&rsaquo;</span></button>
         <button type="button" data-ir-tab="config"><span><b>Configuración</b><br><span class="mut">Perfil, salario, categorías, reglas y tus datos</span></span><span class="mas-flecha">&rsaquo;</span></button>
         <button type="button" id="mas-exportar"><span><b>Exportar mis datos</b><br><span class="mut">Descarga una copia en formato JSON</span></span><span class="mas-flecha">&rsaquo;</span></button>
         <button type="button" id="mas-sesion"><span><b id="mas-sesion-txt">Cerrar sesión</b></span><span class="mas-flecha">&rsaquo;</span></button>
@@ -850,7 +823,6 @@ a.btn{ text-decoration:none; }
     <button type="button" data-tab="estadisticas"><svg viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 20v-7M12 20V6M18 20v-11M3.5 20h17"/></svg>Estadísticas</button>
     <button type="button" data-tab="planeacion" class="solo-pc"><svg viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Planeación</button>
     <button type="button" data-tab="cuentas" class="solo-pc"><svg viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>Cuentas</button>
-    <button type="button" data-tab="invertir" class="solo-pc"><svg viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 20v-6M10.5 20V5M16 20v-9M3.5 20h17"/></svg>Invertir</button>
     <button type="button" data-tab="config" class="solo-pc"><svg viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h9M19 8h1M4 16h3M11 16h9"/><circle cx="16" cy="8" r="2.2"/><circle cx="9" cy="16" r="2.2"/></svg>Configuración</button>
     <button type="button" data-tab="mas" class="solo-movil"><svg viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg>Más</button>
   </nav>
@@ -1076,7 +1048,7 @@ function esDelMes(f, y, m){ if(!f) return false; var p = String(f).split("-"); r
 function $(id){ return document.getElementById(id); }
 
 function estadoVacio(){
-  return { nombre:"", novedades:false, config:{salario:0, diaPago:1, frecuencia:"mensual", diaSemana:1, inversionesEnPatrimonio:false}, fijos:[], ingresosFijos:[], presupuestos:{}, cuentas:[], movimientos:[], metas:[], pagos:{}, cobros:{}, deudas:[], catPropias:[], catBaseAjustes:{}, plantillas:[], inversiones:[], monedas:[], reglas:[], panelOrden:["medidores","tendencia","estructura"], panelOcultas:[], onboarded:false };
+  return { nombre:"", novedades:false, config:{salario:0, diaPago:1, frecuencia:"mensual", diaSemana:1}, fijos:[], ingresosFijos:[], presupuestos:{}, cuentas:[], movimientos:[], metas:[], pagos:{}, cobros:{}, deudas:[], catPropias:[], catBaseAjustes:{}, plantillas:[], monedas:[], reglas:[], panelOrden:["medidores","tendencia","estructura"], panelOcultas:[], onboarded:false };
 }
 function cargar(){
   try{ var r = localStorage.getItem(LS); if(r){ var s = JSON.parse(r); if(s && typeof s==="object"){ var e = Object.assign(estadoVacio(), s); if(!e.pagos || typeof e.pagos!=="object") e.pagos = {}; if(!Array.isArray(e.deudas)) e.deudas = []; e.config = normalizarCfg(e.config); if(typeof e.nombre !== "string") e.nombre = ""; e.novedades = (e.novedades === true); asegurarCampos(e); return e; } } }catch(e){}
@@ -1147,21 +1119,16 @@ function datosMes(y, m){
   return { ingreso: ingreso, ingExtra: ingExtra, ingFijos: ingFijos, gastosF: gastosF, gastosV: gastosV, gastos: gastos, ahorro: ahorro, porCat: porCat, queda: ingreso - gastos - ahorro };
 }
 function patrimonio(){
-  var t = S.cuentas.reduce(function(a, c){ return c.archivada ? a : a + aCOP(c.saldo, c.moneda); }, 0);
-  if(S.config && S.config.inversionesEnPatrimonio){
-    t += (S.inversiones || []).reduce(function(a, v){ return a + (v.actual || 0); }, 0);
-  }
-  return t;
+  return S.cuentas.reduce(function(a, c){ return c.archivada ? a : a + aCOP(c.saldo, c.moneda); }, 0);
 }
 
 /* ============ Campos nuevos del estado ============ */
 function asegurarCampos(e){
   if(!e || typeof e !== "object") return e;
-  ["fijos","ingresosFijos","cuentas","movimientos","metas","deudas","catPropias","plantillas","inversiones","monedas","reglas","panelOcultas"].forEach(function(k){ if(!Array.isArray(e[k])) e[k] = []; });
+  ["fijos","ingresosFijos","cuentas","movimientos","metas","deudas","catPropias","plantillas","monedas","reglas","panelOcultas"].forEach(function(k){ if(!Array.isArray(e[k])) e[k] = []; });
   ["pagos","cobros","presupuestos","catBaseAjustes"].forEach(function(k){ if(!e[k] || typeof e[k] !== "object") e[k] = {}; });
   if(!Array.isArray(e.panelOrden) || !e.panelOrden.length) e.panelOrden = ["medidores","tendencia","estructura"];
   if(!e.config || typeof e.config !== "object") e.config = {};
-  if(typeof e.config.inversionesEnPatrimonio !== "boolean") e.config.inversionesEnPatrimonio = !!e.config.inversionesEnPatrimonio;
   (e.cuentas || []).forEach(function(c){
     if(!c.moneda) c.moneda = "COP";
     if(!c.clase) c.clase = (c.tipo === "Efectivo") ? "Efectivo" : "Banco";
@@ -1535,30 +1502,6 @@ function desmarcarRecibidoIng(ingId, clave){
   if(ix >= 0){ ajustarCuenta(S.movimientos[ix], -1); S.movimientos.splice(ix, 1); }
   delete S.cobros[clave][ingId];
   guardar(); renderTodo();
-}
-
-/* ============ Inversiones ============ */
-function renderInversiones(){
-  var box = $("lista-inversiones"); if(!box) return;
-  var invs = S.inversiones || [];
-  var totInv = 0, totAct = 0;
-  invs.forEach(function(v){ totInv += v.invertido || 0; totAct += v.actual || 0; });
-  var dif = totAct - totInv, pct = totInv > 0 ? Math.round(dif / totInv * 100) : 0;
-  $("inv-total-pill").textContent = fmt(totAct);
-  $("inv-resumen").innerHTML = invs.length
-    ? '<div class="row"><span class="mut">Invertido</span><b>' + fmt(totInv) + '</b></div>'
-      + '<div class="row"><span class="mut">Valor actual</span><b>' + fmt(totAct) + '</b></div>'
-      + '<div class="row"><span class="mut">Ganancia / pérdida</span><b style="color:' + (dif < 0 ? "var(--rojo)" : "var(--verde)") + '">' + (dif < 0 ? "\u2212 " : "+ ") + fmt(Math.abs(dif)) + ' (' + pct + '%)</b></div>'
-    : '<p class="mut">Todavía no registras inversiones. Agrega tu CDT, tus acciones o tus criptos y sigue su valor aquí.</p>';
-  var chk = $("inv-en-patrimonio"); if(chk) chk.checked = !!(S.config && S.config.inversionesEnPatrimonio);
-  box.innerHTML = invs.length ? invs.map(function(v){
-    var dd = (v.actual || 0) - (v.invertido || 0);
-    return '<div class="fila-edit" style="grid-template-columns:1fr 96px 96px 34px">'
-      + '<span><b>' + esc(v.nombre) + '</b><br><span class="mut">' + esc(v.tipo || "Otro") + ' · ' + (dd < 0 ? '<span style="color:var(--rojo)">\u2212 ' + fmt(Math.abs(dd)) + '</span>' : '<span style="color:var(--verde)">+ ' + fmt(dd) + '</span>') + '</span></span>'
-      + '<input type="text" inputmode="numeric" data-inv-invertido="' + v.id + '" value="' + (v.invertido ? v.invertido.toLocaleString("es-CO") : "") + '" placeholder="Invertido" title="Valor invertido" />'
-      + '<input type="text" inputmode="numeric" data-inv-actual="' + v.id + '" value="' + (v.actual ? v.actual.toLocaleString("es-CO") : "") + '" placeholder="Actual" title="Valor actual" />'
-      + '<button class="x" data-del-inversion="' + v.id + '" type="button" title="Eliminar">×</button></div>';
-  }).join("") : '<p class="mut">Sin inversiones todavía.</p>';
 }
 
 /* ============ Configuración extra: monedas, categorías y reglas ============ */
@@ -1980,7 +1923,7 @@ function renderCuentas(){
   }).join("");
 }
 
-function renderTodo(){ renderInicio(); renderEstadisticas(); renderMovimientos(); renderCalendario(); renderMetas(); renderDeudas(); renderCuentas(); renderCuenta(); renderPanelPC(); renderInversiones(); renderAjustesExtra(); }
+function renderTodo(){ renderInicio(); renderEstadisticas(); renderMovimientos(); renderCalendario(); renderMetas(); renderDeudas(); renderCuentas(); renderCuenta(); renderPanelPC(); renderAjustesExtra(); }
 
 /* ============ Navegación ============ */
 $("tabbar").addEventListener("click", function(e){
@@ -3272,7 +3215,6 @@ document.addEventListener("click", function(e){
   if((v = val("data-recibir-ing"))){ var br = t.closest("[data-clave]"); if(br) marcarRecibidoIng(v, br.getAttribute("data-clave")); return; }
   if((v = val("data-desrecibir-ing"))){ var bd = t.closest("[data-clave]"); if(bd) desmarcarRecibidoIng(v, bd.getAttribute("data-clave")); return; }
   if((v = val("data-del-ingreso"))){ S.ingresosFijos = (S.ingresosFijos || []).filter(function(g){ return g.id !== v; }); guardar(); renderTodo(); return; }
-  if((v = val("data-del-inversion"))){ S.inversiones = (S.inversiones || []).filter(function(g){ return g.id !== v; }); guardar(); renderTodo(); return; }
   if((v = val("data-del-moneda"))){
     if(S.cuentas.some(function(c){ return (c.moneda || "COP") === v; })){ mostrarModalDatos("Moneda en uso", "Hay cuentas en " + v + ": cámbiales la moneda antes de eliminarla.", [{ texto: "Entendido" }]); return; }
     S.monedas = (S.monedas || []).filter(function(mm){ return mm.codigo !== v; }); guardar(); renderTodo(); return;
@@ -3335,30 +3277,6 @@ $("lista-ingresos-edit").addEventListener("change", function(e){
     if(dd === g.dia) return;
     g.dia = dd;
   }
-  guardar(); renderTodo();
-});
-
-/* Inversiones */
-$("iv-agregar").addEventListener("click", function(){
-  var nombre = $("iv-nombre").value.trim();
-  var invertido = num($("iv-invertido").value), actual = num($("iv-actual").value);
-  if(!nombre || invertido <= 0){ $("iv-msg").innerHTML = '<div class="aviso">Escribe el nombre y el valor invertido.</div>'; return; }
-  if(!S.inversiones) S.inversiones = [];
-  S.inversiones.push({ id: uid(), nombre: nombre, tipo: $("iv-tipo").value, invertido: invertido, actual: actual > 0 ? actual : invertido });
-  guardar();
-  $("iv-nombre").value = ""; $("iv-invertido").value = ""; $("iv-actual").value = ""; $("iv-msg").innerHTML = "";
-  renderTodo();
-});
-$("lista-inversiones").addEventListener("change", function(e){
-  var t = e.target, vv;
-  function buscar(id){ return (S.inversiones || []).find(function(x){ return x.id === id; }); }
-  if(t.hasAttribute("data-inv-invertido")){ vv = buscar(t.getAttribute("data-inv-invertido")); if(!vv) return; if(!/\d/.test(t.value)){ t.value = vv.invertido ? vv.invertido.toLocaleString("es-CO") : ""; return; } vv.invertido = num(t.value); }
-  else if(t.hasAttribute("data-inv-actual")){ vv = buscar(t.getAttribute("data-inv-actual")); if(!vv) return; if(!/\d/.test(t.value)){ t.value = vv.actual ? vv.actual.toLocaleString("es-CO") : ""; return; } vv.actual = num(t.value); }
-  else return;
-  guardar(); renderTodo();
-});
-$("inv-en-patrimonio").addEventListener("change", function(){
-  S.config.inversionesEnPatrimonio = $("inv-en-patrimonio").checked;
   guardar(); renderTodo();
 });
 
