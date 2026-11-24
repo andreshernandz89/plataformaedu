@@ -362,6 +362,7 @@ a.btn{ text-decoration:none; }
 </header>
 
 <main>
+  <div id="sus-banner" class="oculto" style="margin:12px 16px 0"></div>
   <!-- INICIO -->
   <section id="tab-inicio" class="tab activa">
     <!-- PANEL PC (solo visible en pantallas ≥1024px) -->
@@ -656,6 +657,11 @@ a.btn{ text-decoration:none; }
     <div class="card">
       <h2>Mi cuenta</h2>
       <div id="cfg-cuenta"></div>
+    </div>
+
+    <div class="card">
+      <h2>Suscripción</h2>
+      <div id="cfg-suscripcion"></div>
     </div>
 
     <div class="card">
@@ -1059,7 +1065,24 @@ function cargar(){
   try{ var r = localStorage.getItem(LS); if(r){ var s = JSON.parse(r); if(s && typeof s==="object"){ var e = Object.assign(estadoVacio(), s); if(!e.pagos || typeof e.pagos!=="object") e.pagos = {}; if(!Array.isArray(e.deudas)) e.deudas = []; e.config = normalizarCfg(e.config); if(typeof e.nombre !== "string") e.nombre = ""; e.novedades = (e.novedades === true); asegurarCampos(e); return e; } } }catch(e){}
   return estadoVacio();
 }
-function guardar(){ guardarLocal(); programarSyncNube(); }
+function guardar(){
+  /* En modo solo lectura (prueba vencida sin pago) NINGÚN cambio se guarda:
+     se revierte al último estado persistido. Todas las acciones de edición
+     de la app pasan por aquí, así que este es el candado central. */
+  if(typeof suscripcionInfo === "function" && suscripcionInfo().fase === "lectura"){
+    revertirALoGuardado();
+    if(!avisoSusYaMostrado){ avisoSusYaMostrado = true; mostrarAvisoSuscripcion(); }
+    return;
+  }
+  guardarLocal(); programarSyncNube();
+}
+function revertirALoGuardado(){
+  try{
+    var g = localStorage.getItem(LS);
+    if(g){ S = Object.assign(estadoVacio(), JSON.parse(g)); asegurarCampos(S); S.config = normalizarCfg(S.config); }
+  }catch(e){}
+  renderTodo();
+}
 function guardarLocal(){ try{ localStorage.setItem(LS, JSON.stringify(S)); }catch(e){} }
 
 var S = cargar();
@@ -1950,6 +1973,7 @@ $("seg-tipo").addEventListener("click", function(e){
   $("mv-cuenta-label").textContent = mvTipo === "transferencia" ? "Cuenta origen" : "Cuenta";
 });
 $("mv-guardar").addEventListener("click", function(){
+  if(!puedeEditar()){ cerrarSheetMov(); mostrarAvisoSuscripcion(); return; }
   var monto = num($("mv-monto").value);
   var fecha = $("mv-fecha").value || hoyISO();
   var msg = $("mv-msg");
@@ -2149,7 +2173,12 @@ function ejecutarBorradoDatos(){
   clearTimeout(syncTimer);
   var terminar = function(){ limpiezaTotalDispositivo(); location.reload(); };
   if(usuarioActual && fbDb){
-    fbDb.ref("miplatapp/usuarios/" + usuarioActual.uid).remove()
+    /* Se borran solo los datos (datosJson/actualizadoEn): el registro de
+       suscripción y el apuntador de equipo NO se tocan, para que un
+       suscriptor que borra sus datos no pierda su suscripción paga. */
+    var nodoU = fbDb.ref("miplatapp/usuarios/" + usuarioActual.uid);
+    nodoU.child("datosJson").remove()
+      .then(function(){ return nodoU.child("actualizadoEn").remove(); })
       .then(terminar)
       .catch(function(){
         mostrarModalDatos("No se pudieron borrar los datos",
@@ -2622,6 +2651,7 @@ function programarSyncNube(){
 }
 function subirNube(){
   if(!usuarioActual || !fbDb || syncBloqueada) return;
+  if(suscripcionInfo().fase === "lectura") return; /* Solo lectura: nada sube a la nube. */
   var ts = Date.now();
   var datos = { datosJson: JSON.stringify(S), actualizadoEn: ts };
   if(equipoActual) datos.porUid = usuarioActual.uid;
@@ -2643,6 +2673,92 @@ function aplicarEstadoNube(nuevo){
   cargandoNube = false;
   if(S.onboarded) $("onboarding").classList.add("oculto"); else iniciarOnboarding();
   renderTodo();
+}
+
+/* ============ Suscripción ============
+   Modelo (Andres, 2026-11-24): $5.000/mes. Al registrarse, 15 días gratis
+   de todo (la fecha de registro la da Firebase Auth: metadata.creationTime).
+   Vencida la prueba sin pago, la cuenta queda en SOLO LECTURA hasta pagar.
+   El pago lo activa la administración en usuarios/{uid}/suscripcion
+   (activaHasta); ese registro solo lo puede escribir la cuenta admin
+   (reglas RTDB), el usuario no puede alterarlo. */
+var PRECIO_SUSCRIPCION = 5000, DIAS_PRUEBA = 15;
+var suscripcionRemota = null, suscripcionRef = null, avisoSusYaMostrado = false;
+function suscripcionInfo(){
+  if(!usuarioActual) return { fase:"invitado" };
+  var ahora = Date.now();
+  var creada = (usuarioActual.metadata && usuarioActual.metadata.creationTime) ? Date.parse(usuarioActual.metadata.creationTime) : ahora;
+  if(isNaN(creada)) creada = ahora;
+  var pruebaHasta = creada + DIAS_PRUEBA * 86400000;
+  var activaHasta = (suscripcionRemota && suscripcionRemota.activaHasta) || 0;
+  if(activaHasta > ahora) return { fase:"activa", activaHasta: activaHasta };
+  if(ahora < pruebaHasta) return { fase:"prueba", pruebaHasta: pruebaHasta, diasRestantes: Math.max(1, Math.ceil((pruebaHasta - ahora) / 86400000)) };
+  return { fase:"lectura", pruebaHasta: pruebaHasta };
+}
+function puedeEditar(){ return suscripcionInfo().fase !== "lectura"; }
+function fechaLegible(ts){ try{ return new Date(ts).toLocaleDateString("es-CO", { day:"numeric", month:"long", year:"numeric" }); }catch(e){ return ""; } }
+function mostrarAvisoSuscripcion(){
+  var correo = usuarioActual ? (usuarioActual.email || "") : "";
+  mostrarModalDatos("Suscripción MiPlatapp",
+    "Tu periodo de prueba gratis terminó y tu cuenta está en modo solo lectura: puedes ver todos tus datos, pero no agregar ni editar. Suscríbete por $5.000 al mes para volver a usar todo, incluido crear equipos de hasta 5 personas.",
+    [
+      { texto:"Quiero suscribirme", clase:"btn", fn:function(){
+          var msg = "Hola, quiero suscribirme a MiPlatapp ($5.000/mes). El correo de mi cuenta es: " + correo;
+          window.open("https://wa.me/573001363681?text=" + encodeURIComponent(msg), "_blank");
+        } },
+      { texto:"Ahora no", clase:"btn sec", fn:function(){} }
+    ]);
+}
+function renderSuscripcion(){
+  var box = $("cfg-suscripcion"); if(!box) return;
+  var info = suscripcionInfo();
+  if(info.fase === "invitado"){
+    box.innerHTML = '<p class="mut">MiPlatapp funciona por suscripción: al registrarte tienes ' + DIAS_PRUEBA + ' días gratis de todo; después, la cuenta queda en solo lectura hasta que pagues $5.000 al mes.</p>';
+    return;
+  }
+  if(info.fase === "prueba"){
+    box.innerHTML = '<div class="dato-fila"><span class="mut">Estado</span><b>Prueba gratis</b></div>'
+      + '<p class="mut" style="margin-top:6px">Te quedan ' + info.diasRestantes + ' día(s) de prueba, hasta el ' + fechaLegible(info.pruebaHasta) + '. Al terminar, tu cuenta pasará a solo lectura.</p>'
+      + '<div style="height:10px"></div><button class="btn" id="sus-btn" type="button">Suscribirme · $5.000/mes</button>';
+  } else if(info.fase === "activa"){
+    box.innerHTML = '<div class="dato-fila"><span class="mut">Estado</span><b>Suscripción activa</b></div>'
+      + '<p class="mut" style="margin-top:6px">Tu suscripción está paga hasta el ' + fechaLegible(info.activaHasta) + '. Tienes todo activo, incluido crear equipos de hasta 5 personas.</p>';
+  } else {
+    box.innerHTML = '<div class="dato-fila"><span class="mut">Estado</span><b>Solo lectura</b></div>'
+      + '<p class="mut" style="margin-top:6px">Tu prueba gratis terminó el ' + fechaLegible(info.pruebaHasta) + '. Puedes ver tus datos; para agregar y editar, suscríbete.</p>'
+      + '<div style="height:10px"></div><button class="btn" id="sus-btn" type="button">Suscribirme · $5.000/mes</button>';
+  }
+  var b = $("sus-btn"); if(b) b.addEventListener("click", mostrarAvisoSuscripcion);
+}
+function pintarBannerSuscripcion(){
+  var bn = $("sus-banner"); if(!bn) return;
+  var info = suscripcionInfo();
+  var estilo = 'display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:12px 14px;border:1px solid #22304d;border-radius:12px;background:#141B2C';
+  if(info.fase === "lectura"){
+    bn.classList.remove("oculto");
+    bn.innerHTML = '<div style="' + estilo + '"><span><b>Modo solo lectura.</b> Tu prueba gratis terminó: puedes ver tus datos, pero no editarlos.</span><button class="btn" id="sus-banner-btn" type="button" style="width:auto;padding:8px 14px">Suscribirme · $5.000/mes</button></div>';
+    $("sus-banner-btn").addEventListener("click", mostrarAvisoSuscripcion);
+  } else if(info.fase === "prueba" && info.diasRestantes <= 3){
+    bn.classList.remove("oculto");
+    bn.innerHTML = '<div style="' + estilo + '"><span><b>Prueba gratis:</b> te quedan ' + info.diasRestantes + ' día(s). El ' + fechaLegible(info.pruebaHasta) + ' tu cuenta pasará a solo lectura si no te suscribes.</span><button class="btn sec" id="sus-banner-btn" type="button" style="width:auto;padding:8px 14px">Suscribirme</button></div>';
+    $("sus-banner-btn").addEventListener("click", mostrarAvisoSuscripcion);
+  } else {
+    bn.classList.add("oculto");
+    bn.innerHTML = "";
+  }
+}
+function escucharSuscripcion(uid){
+  desescucharSuscripcion();
+  if(!fbDb || !uid) return;
+  suscripcionRef = fbDb.ref("miplatapp/usuarios/" + uid + "/suscripcion");
+  suscripcionRef.on("value", function(s){
+    suscripcionRemota = s.val();
+    renderSuscripcion();
+    pintarBannerSuscripcion();
+  });
+}
+function desescucharSuscripcion(){
+  if(suscripcionRef){ try{ suscripcionRef.off(); }catch(e){} suscripcionRef = null; }
 }
 
 /* ============ Modo Equipo ============ */
@@ -2898,6 +3014,7 @@ function renderEquipo(){
       + '<button class="btn sec" id="eq-unirse" type="button">Unirme</button></div>'
       + '<div id="eq-msg"></div>';
     $("eq-crear").addEventListener("click", function(){
+      if(!puedeEditar()){ mostrarAvisoSuscripcion(); return; } /* Crear equipos es de la suscripción (o de la prueba). */
       modalConInput("Crear un equipo", "El equipo nace con tus datos actuales: tus cuentas, movimientos y metas serán los datos compartidos.", "Nombre del equipo", "Mi equipo", "Ej. Familia, Casa, Negocio", "Crear equipo", function(v, btn, msgEl){ crearEquipo(v, btn, msgEl); });
     });
     $("eq-unirse").addEventListener("click", function(){ unirseAEquipo($("eq-codigo").value); });
@@ -2970,9 +3087,13 @@ if(fbAuth){
       }
       /* Mientras se resuelve de quién son los datos, nada se sincroniza solo. */
       syncBloqueada = true;
+      escucharSuscripcion(user.uid);
       renderCuenta();
       fbDb.ref("miplatapp/usuarios/" + user.uid).once("value").then(function(snap){
         var val = snap.val();
+        if(val && val.suscripcion) suscripcionRemota = val.suscripcion;
+        renderSuscripcion();
+        pintarBannerSuscripcion();
         if(val && val.equipoId){
           /* Tiene equipo asignado: si sigue siendo miembro, manda el equipo. */
           return fbDb.ref("miplatapp/equipos/" + val.equipoId).once("value").then(function(snapEq){
@@ -3009,6 +3130,11 @@ if(fbAuth){
       var venia = !!usuarioActual;
       usuarioActual = null;
       salirDeEquipoLocal();
+      desescucharSuscripcion();
+      suscripcionRemota = null;
+      avisoSusYaMostrado = false;
+      renderSuscripcion();
+      pintarBannerSuscripcion();
       if(venia){
         cerrarModalDatos();
         if(cuentaRecienEliminada){
@@ -3182,6 +3308,7 @@ function limpiarFormMov(){
   pintarChipDestino();
 }
 function abrirSheetMov(editando){
+  if(!puedeEditar()){ mostrarAvisoSuscripcion(); return; }
   var s = $("mov-sheet"); if(!s) return;
   if(!editando) limpiarFormMov();
   $("mv-titulo").textContent = editando ? "Editar movimiento" : "Nuevo movimiento";
@@ -3305,6 +3432,7 @@ function renderConfig(){
     eb.innerHTML = '<p class="mut">Estás en modo invitado: no hay una cuenta que eliminar. Si quieres, usa «Borrar todos mis datos» para limpiar este dispositivo.</p>';
   }
   renderEquipo();
+  renderSuscripcion();
 }
 $("cfg-guardar-nombre").addEventListener("click", function(){
   S.nombre = $("cfg-nombre").value.trim();
