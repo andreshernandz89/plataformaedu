@@ -805,8 +805,11 @@ function renderCuentas(){
       + '<span style="text-align:right"><b>' + fmt(c.saldo) + '</b><br><button class="btnlink rojo" data-del-cuenta="' + c.id + '" type="button">Eliminar</button></span></div>';
   }).join("") : '<p class="mut">No tienes cuentas registradas.</p>';
   $("lista-fijos-edit").innerHTML = S.fijos.length ? S.fijos.slice().sort(function(a,b){ return a.dia-b.dia; }).map(function(f){
-    return '<div class="item row"><span><b>' + esc(f.nombre) + '</b><br><span class="mut">Día ' + f.dia + '</span></span>'
-      + '<span style="text-align:right"><b>' + fmt(f.monto) + '</b><br><button class="btnlink rojo" data-del-fijo="' + f.id + '" type="button">Eliminar</button></span></div>';
+    return '<div class="fila-edit">'
+      + '<input type="text" data-fijo-nombre="' + f.id + '" value="' + esc(f.nombre) + '" placeholder="Nombre" />'
+      + '<input type="text" inputmode="numeric" data-fijo-monto="' + f.id + '" value="' + (f.monto ? f.monto.toLocaleString("es-CO") : "") + '" placeholder="$ 0" />'
+      + '<input type="number" min="1" max="31" data-fijo-dia="' + f.id + '" value="' + f.dia + '" placeholder="Día" />'
+      + '<button class="x" data-del-fijo="' + f.id + '" type="button" title="Eliminar">×</button></div>';
   }).join("") : '<p class="mut">Sin gastos fijos.</p>';
   $("lista-pres-edit").innerHTML = CATS.map(function(c){
     return '<label>' + esc(c) + '</label><input type="text" inputmode="numeric" data-pres-cat="' + esc(c) + '" value="' + (S.presupuestos[c] ? S.presupuestos[c].toLocaleString("es-CO") : "") + '" placeholder="$ 0" />';
@@ -945,6 +948,30 @@ $("fj-agregar").addEventListener("click", function(){
   if(!nombre || monto <= 0 || !(dia >= 1 && dia <= 31)){ alert("Completa nombre, monto y día (1 a 31) del gasto fijo."); return; }
   S.fijos.push({ id: uid(), nombre: nombre, monto: monto, dia: dia });
   guardar(); $("fj-nombre").value = ""; $("fj-monto").value = ""; $("fj-dia").value = ""; renderTodo();
+});
+$("lista-fijos-edit").addEventListener("change", function(e){
+  var t = e.target;
+  var id = t.getAttribute("data-fijo-nombre") || t.getAttribute("data-fijo-monto") || t.getAttribute("data-fijo-dia");
+  if(!id) return;
+  var f = S.fijos.find(function(x){ return x.id === id; });
+  if(!f) return;
+  if(t.hasAttribute("data-fijo-nombre")){
+    var n = t.value.trim();
+    if(!n){ t.value = f.nombre; return; }
+    if(n === f.nombre) return;
+    f.nombre = n;
+  } else if(t.hasAttribute("data-fijo-monto")){
+    if(!/\d/.test(t.value)){ t.value = f.monto ? f.monto.toLocaleString("es-CO") : ""; return; }
+    var m = num(t.value);
+    if(m === f.monto){ t.value = m ? m.toLocaleString("es-CO") : ""; return; }
+    f.monto = m;
+  } else {
+    var d = parseInt(t.value, 10);
+    if(!(d >= 1 && d <= 31)){ t.value = f.dia; return; }
+    if(d === f.dia) return;
+    f.dia = d;
+  }
+  guardar(); renderTodo();
 });
 $("pres-guardar").addEventListener("click", function(){
   document.querySelectorAll("[data-pres-cat]").forEach(function(inp){ S.presupuestos[inp.getAttribute("data-pres-cat")] = num(inp.value); });
