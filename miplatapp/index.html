@@ -659,6 +659,11 @@ a.btn{ text-decoration:none; }
     </div>
 
     <div class="card">
+      <h2>Modo Equipo</h2>
+      <div id="cfg-equipo"></div>
+    </div>
+
+    <div class="card">
       <h2>Tu salario y frecuencia de pago</h2>
       <label>¿Cada cuánto te pagan?</label>
       <div class="seg" id="cf-frec">
@@ -2549,6 +2554,9 @@ function limpiezaTotalDispositivo(){
 function estadoTieneDatos(e){ return !!(e && (e.onboarded || (e.movimientos && e.movimientos.length) || (e.cuentas && e.cuentas.length) || (e.metas && e.metas.length) || (e.fijos && e.fijos.length) || (e.deudas && e.deudas.length) || (e.config && e.config.salario > 0))); }
 var usuarioActual = null, fbAuth = null, fbDb = null, cargandoNube = false, syncTimer = null, syncBloqueada = false;
 var cuentaRecienEliminada = false;
+/* Modo Equipo: datos compartidos entre varios usuarios registrados.
+   equipoActual = { id, nombre, creadoPor, codigo, miembros } o null (personal). */
+var equipoActual = null, equipoDatosRef = null, ultimoTsPropio = 0, ultimoEditLocal = 0;
 try{
   if(window.firebase && FB_CONFIG && FB_CONFIG.apiKey){
     firebase.initializeApp(FB_CONFIG);
@@ -2606,14 +2614,18 @@ function iniciarConGoogle(msgEl){
 function cerrarSesion(){ if(fbAuth) fbAuth.signOut(); }
 function programarSyncNube(){
   if(!usuarioActual || cargandoNube || syncBloqueada) return;
+  ultimoEditLocal = Date.now();
   pintarSyncInd("sincronizando");
   clearTimeout(syncTimer);
   syncTimer = setTimeout(subirNube, 800);
 }
 function subirNube(){
   if(!usuarioActual || !fbDb || syncBloqueada) return;
-  fbDb.ref("miplatapp/usuarios/" + usuarioActual.uid).set({ datosJson: JSON.stringify(S), actualizadoEn: Date.now() })
-    .then(function(){ var el = $("sync-estado"); if(el) el.textContent = "Datos sincronizados con tu cuenta"; pintarSyncInd("ok"); })
+  var ts = Date.now();
+  var datos = { datosJson: JSON.stringify(S), actualizadoEn: ts };
+  if(equipoActual) datos.porUid = usuarioActual.uid;
+  rutaDatosRef().update(datos)
+    .then(function(){ ultimoTsPropio = ts; var el = $("sync-estado"); if(el) el.textContent = equipoActual ? "Datos del equipo sincronizados" : "Datos sincronizados con tu cuenta"; pintarSyncInd("ok"); })
     .catch(function(){ var el = $("sync-estado"); if(el) el.textContent = "Sin sincronización: revisa tu conexión"; pintarSyncInd("error"); });
 }
 function aplicarEstadoNube(nuevo){
@@ -2630,6 +2642,284 @@ function aplicarEstadoNube(nuevo){
   cargandoNube = false;
   if(S.onboarded) $("onboarding").classList.add("oculto"); else iniciarOnboarding();
   renderTodo();
+}
+
+/* ============ Modo Equipo ============ */
+function rutaDatosRef(){
+  if(equipoActual && usuarioActual) return fbDb.ref("miplatapp/equipos/" + equipoActual.id + "/datos");
+  return fbDb.ref("miplatapp/usuarios/" + usuarioActual.uid);
+}
+function genCodigoEquipo(){
+  var abc = "ABCDEFGHJKMNPQRSTUVWXYZ23456789", c = "";
+  for(var i = 0; i < 8; i++) c += abc.charAt(Math.floor(Math.random() * abc.length));
+  return c;
+}
+function escucharDatosEquipo(){
+  desescucharDatosEquipo();
+  if(!equipoActual || !fbDb) return;
+  equipoDatosRef = fbDb.ref("miplatapp/equipos/" + equipoActual.id + "/datos");
+  equipoDatosRef.on("value", function(snap){
+    var val = snap.val();
+    if(!val || !val.datosJson || !usuarioActual || !equipoActual) return;
+    if(val.porUid && val.porUid === usuarioActual.uid){ ultimoTsPropio = val.actualizadoEn || ultimoTsPropio; return; }
+    if(!val.actualizadoEn || val.actualizadoEn <= ultimoTsPropio) return;
+    if(Date.now() - ultimoEditLocal < 2500) return; /* edición local en curso: manda la subida propia */
+    try{
+      aplicarEstadoNube(JSON.parse(val.datosJson));
+      ultimoTsPropio = val.actualizadoEn;
+      var el = $("sync-estado"); if(el) el.textContent = "Datos actualizados por tu equipo";
+      pintarSyncInd("ok");
+    }catch(e){}
+  }, function(){
+    /* Sin permiso (ya no es miembro): volver al espacio personal. */
+    if(equipoActual){ volverAEspacioPersonal("Ya no haces parte de este equipo. Volviste a tu espacio personal."); }
+  });
+}
+function desescucharDatosEquipo(){
+  if(equipoDatosRef){ try{ equipoDatosRef.off(); }catch(e){} equipoDatosRef = null; }
+}
+function entrarEnEquipo(id, datosEquipo){
+  equipoActual = {
+    id: id,
+    nombre: datosEquipo.nombre || "Mi equipo",
+    creadoPor: datosEquipo.creadoPor || "",
+    codigo: datosEquipo.codigo || "",
+    miembros: datosEquipo.miembros || {}
+  };
+  escucharDatosEquipo();
+}
+function salirDeEquipoLocal(){
+  desescucharDatosEquipo();
+  equipoActual = null;
+  ultimoTsPropio = 0;
+}
+function cargarEspacioPersonal(){
+  if(!usuarioActual || !fbDb) return;
+  fbDb.ref("miplatapp/usuarios/" + usuarioActual.uid).once("value").then(function(snap){
+    var val = snap.val();
+    if(val && val.datosJson){
+      try{ aplicarEstadoNube(JSON.parse(val.datosJson)); }catch(e){ S = estadoVacio(); guardarLocal(); renderTodo(); }
+    } else {
+      S = estadoVacio(); guardarLocal(); renderTodo();
+      if(!S.onboarded) iniciarOnboarding();
+    }
+    syncBloqueada = false;
+    renderCuenta();
+  }).catch(function(){ syncBloqueada = false; renderCuenta(); });
+}
+function volverAEspacioPersonal(aviso){
+  salirDeEquipoLocal();
+  syncBloqueada = true;
+  cargarEspacioPersonal();
+  if(aviso) mostrarModalDatos("Modo Equipo", aviso, [{ texto:"Entendido", clase:"btn", fn:function(){} }]);
+}
+function modalConInput(titulo, texto, etiqueta, valorIni, placeholder, textoBoton, fn){
+  var fondo = $("modal-fondo"); if(!fondo) return;
+  $("modal-titulo").textContent = titulo;
+  $("modal-texto").textContent = texto;
+  var box = $("modal-botones"); box.innerHTML = "";
+  var wrap = document.createElement("div");
+  wrap.innerHTML = '<label for="modal-input">' + esc(etiqueta) + '</label><input id="modal-input" type="text" value="' + esc(valorIni || "") + '" placeholder="' + esc(placeholder || "") + '" autocomplete="off" /><div id="modal-input-msg"></div>';
+  box.appendChild(wrap);
+  var sp = document.createElement("div"); sp.style.height = "12px"; box.appendChild(sp);
+  var bOk = document.createElement("button");
+  bOk.type = "button"; bOk.className = "btn"; bOk.textContent = textoBoton;
+  bOk.addEventListener("click", function(){
+    var v = $("modal-input").value.trim();
+    fn(v, bOk, $("modal-input-msg"));
+  });
+  box.appendChild(bOk);
+  var sp2 = document.createElement("div"); sp2.style.height = "10px"; box.appendChild(sp2);
+  var bNo = document.createElement("button");
+  bNo.type = "button"; bNo.className = "btn sec"; bNo.textContent = "Cancelar";
+  bNo.addEventListener("click", cerrarModalDatos);
+  box.appendChild(bNo);
+  fondo.classList.remove("oculto");
+  setTimeout(function(){ var i = $("modal-input"); if(i){ i.focus(); i.select(); } }, 60);
+}
+function crearEquipo(nombre, btn, msgEl){
+  if(!usuarioActual || !fbDb) return;
+  if(!nombre){ if(msgEl) msgEl.innerHTML = '<div class="aviso">Escribe un nombre para el equipo.</div>'; return; }
+  btn.disabled = true; btn.style.opacity = ".65";
+  var uid = usuarioActual.uid;
+  var id = fbDb.ref("miplatapp/equipos").push().key;
+  var codigo = genCodigoEquipo();
+  var miembros = {}; miembros[uid] = { correo: usuarioActual.email || "", rol: "dueno", desde: Date.now() };
+  var equipo = { nombre: nombre, creadoPor: uid, creadoEn: Date.now(), codigo: codigo, miembros: miembros,
+    datos: { datosJson: JSON.stringify(S), actualizadoEn: Date.now(), porUid: uid } };
+  fbDb.ref("miplatapp/equipos/" + id).set(equipo)
+    .then(function(){ return fbDb.ref("miplatapp/invitaciones/" + codigo).set({ equipoId: id, nombreEquipo: nombre, creadoPor: uid }); })
+    .then(function(){ return fbDb.ref("miplatapp/usuarios/" + uid).update({ equipoId: id }); })
+    .then(function(){
+      cerrarModalDatos();
+      entrarEnEquipo(id, equipo);
+      renderCuenta(); renderTodo();
+      mostrarModalDatos("¡Equipo creado!",
+        "Tu equipo «" + nombre + "» ya está activo con tus datos actuales. Comparte este código de invitación con las personas que quieras sumar: " + codigo + ". Lo encuentran siempre en Configuración → Modo Equipo.",
+        [{ texto:"Entendido", clase:"btn", fn:function(){} }]);
+    })
+    .catch(function(err){
+      btn.disabled = false; btn.style.opacity = "";
+      if(msgEl) msgEl.innerHTML = '<div class="aviso">No se pudo crear el equipo. Revisa tu conexión e inténtalo de nuevo.' + (err && err.code ? " (" + err.code + ")" : "") + "</div>";
+    });
+}
+function unirseAEquipo(codigo){
+  if(!usuarioActual || !fbDb) return;
+  codigo = (codigo || "").trim().toUpperCase();
+  var msg = $("eq-msg");
+  if(codigo.length < 6){ if(msg) msg.innerHTML = '<div class="aviso">Escribe el código de invitación completo.</div>'; return; }
+  fbDb.ref("miplatapp/invitaciones/" + codigo).once("value").then(function(snap){
+    var inv = snap.val();
+    if(!inv || !inv.equipoId){ if(msg) msg.innerHTML = '<div class="aviso">Ese código no corresponde a ningún equipo. Revísalo e inténtalo de nuevo.</div>'; return; }
+    mostrarModalDatos("Unirte a un equipo",
+      "Vas a entrar al equipo «" + (inv.nombreEquipo || "Mi equipo") + "». Desde ese momento verás y editarás los datos del equipo. Tus datos personales quedan guardados en tu espacio personal y vuelven cuando salgas del equipo.",
+      [
+        { texto:"Sí, unirme", clase:"btn", fn:function(){
+            var uid = usuarioActual.uid;
+            var miembro = { correo: usuarioActual.email || "", rol: "miembro", desde: Date.now() };
+            fbDb.ref("miplatapp/equipos/" + inv.equipoId + "/miembros/" + uid).set(miembro)
+              .then(function(){ return fbDb.ref("miplatapp/usuarios/" + uid).update({ equipoId: inv.equipoId }); })
+              .then(function(){ return fbDb.ref("miplatapp/equipos/" + inv.equipoId).once("value"); })
+              .then(function(snapEq){
+                var eq = snapEq.val();
+                if(!eq){ if(msg) msg.innerHTML = '<div class="aviso">No se pudo cargar el equipo.</div>'; return; }
+                syncBloqueada = true;
+                entrarEnEquipo(inv.equipoId, eq);
+                if(eq.datos && eq.datos.datosJson){
+                  try{ aplicarEstadoNube(JSON.parse(eq.datos.datosJson)); }catch(e){}
+                  if(eq.datos.actualizadoEn) ultimoTsPropio = eq.datos.actualizadoEn;
+                }
+                syncBloqueada = false;
+                renderCuenta(); renderTodo();
+                mostrarModalDatos("¡Ya estás en el equipo!", "Ahora compartes los datos de «" + (eq.nombre || "Mi equipo") + "» con sus demás miembros.", [{ texto:"Entendido", clase:"btn", fn:function(){} }]);
+              })
+              .catch(function(err){ if(msg) msg.innerHTML = '<div class="aviso">No se pudo completar el ingreso al equipo.' + (err && err.code ? " (" + err.code + ")" : "") + "</div>"; });
+          } },
+        { texto:"Cancelar", clase:"btn sec", fn:function(){} }
+      ]);
+  }).catch(function(){ if(msg) msg.innerHTML = '<div class="aviso">No se pudo verificar el código. Revisa tu conexión.</div>'; });
+}
+function salirDelEquipo(){
+  if(!equipoActual || !usuarioActual) return;
+  var eq = equipoActual, uid = usuarioActual.uid;
+  mostrarModalDatos("Salir del equipo",
+    "Dejarás de ver los datos de «" + eq.nombre + "» y volverás a tu espacio personal, con los datos que tenías guardados ahí.",
+    [
+      { texto:"Sí, salir del equipo", clase:"btn rojo", fn:function(){
+          salirDeEquipoLocal();
+          syncBloqueada = true;
+          fbDb.ref("miplatapp/equipos/" + eq.id + "/miembros/" + uid).remove()
+            .catch(function(){})
+            .then(function(){ return fbDb.ref("miplatapp/usuarios/" + uid).update({ equipoId: null }); })
+            .catch(function(){})
+            .then(function(){ cargarEspacioPersonal(); });
+        } },
+      { texto:"Cancelar", clase:"btn sec", fn:function(){} }
+    ]);
+}
+function quitarMiembroEquipo(uidM){
+  if(!equipoActual || !usuarioActual || equipoActual.creadoPor !== usuarioActual.uid) return;
+  var correo = (equipoActual.miembros[uidM] && equipoActual.miembros[uidM].correo) || "este miembro";
+  mostrarModalDatos("Quitar del equipo",
+    "«" + correo + "» dejará de ver y editar los datos del equipo «" + equipoActual.nombre + "».",
+    [
+      { texto:"Sí, quitar", clase:"btn rojo", fn:function(){
+          fbDb.ref("miplatapp/equipos/" + equipoActual.id + "/miembros/" + uidM).remove()
+            .then(function(){ delete equipoActual.miembros[uidM]; renderEquipo(); })
+            .catch(function(){});
+        } },
+      { texto:"Cancelar", clase:"btn sec", fn:function(){} }
+    ]);
+}
+function disolverEquipo(){
+  if(!equipoActual || !usuarioActual || equipoActual.creadoPor !== usuarioActual.uid) return;
+  var eq = equipoActual, uid = usuarioActual.uid;
+  mostrarModalDatos("Disolver el equipo",
+    "Se eliminará el equipo «" + eq.nombre + "» y sus datos compartidos dejarán de existir para todos los miembros. Cada quien volverá a su espacio personal. Esta acción no se puede deshacer.",
+    [
+      { texto:"Sí, disolver", clase:"btn rojo", fn:function(){
+          salirDeEquipoLocal();
+          syncBloqueada = true;
+          var p = Promise.resolve();
+          if(eq.codigo) p = p.then(function(){ return fbDb.ref("miplatapp/invitaciones/" + eq.codigo).remove(); }).catch(function(){});
+          p.then(function(){ return fbDb.ref("miplatapp/equipos/" + eq.id).remove(); })
+            .catch(function(){})
+            .then(function(){ return fbDb.ref("miplatapp/usuarios/" + uid).update({ equipoId: null }); })
+            .catch(function(){})
+            .then(function(){ cargarEspacioPersonal(); });
+        } },
+      { texto:"Cancelar", clase:"btn sec", fn:function(){} }
+    ]);
+}
+function renderEquipo(){
+  var box = $("cfg-equipo"); if(!box) return;
+  if(!usuarioActual){
+    box.innerHTML = '<p class="mut">Comparte tus cuentas con otras personas registradas: todos ven, agregan y editan los mismos datos, como un presupuesto en común. Necesitas iniciar sesión para usarlo.</p>';
+    return;
+  }
+  if(!equipoActual){
+    box.innerHTML = '<p class="mut">Comparte tus cuentas con otras personas registradas: todos ven, agregan y editan los mismos datos, como un presupuesto en común.</p>'
+      + '<div style="height:12px"></div>'
+      + '<button class="btn" id="eq-crear" type="button">Crear un equipo con mis datos</button>'
+      + '<div class="divisor"></div>'
+      + '<label for="eq-codigo">¿Te invitaron? Escribe el código del equipo</label>'
+      + '<div class="fila-edit" style="grid-template-columns:1fr 120px">'
+      + '<input id="eq-codigo" type="text" placeholder="Ej. K7QX2M9A" autocomplete="off" style="text-transform:uppercase" />'
+      + '<button class="btn sec" id="eq-unirse" type="button">Unirme</button></div>'
+      + '<div id="eq-msg"></div>';
+    $("eq-crear").addEventListener("click", function(){
+      modalConInput("Crear un equipo", "El equipo nace con tus datos actuales: tus cuentas, movimientos y metas serán los datos compartidos.", "Nombre del equipo", "Mi equipo", "Ej. Familia, Casa, Negocio", "Crear equipo", function(v, btn, msgEl){ crearEquipo(v, btn, msgEl); });
+    });
+    $("eq-unirse").addEventListener("click", function(){ unirseAEquipo($("eq-codigo").value); });
+    return;
+  }
+  var esDueno = equipoActual.creadoPor === usuarioActual.uid;
+  var lista = Object.keys(equipoActual.miembros || {}).map(function(mUid){
+    var m = equipoActual.miembros[mUid];
+    var rol = m.rol === "dueno" ? "Creador" : "Miembro";
+    var quitar = (esDueno && mUid !== usuarioActual.uid) ? ' <button class="btn sec" data-quitar-miembro="' + mUid + '" type="button" style="width:auto;padding:6px 12px">Quitar</button>' : "";
+    return '<div class="dato-fila"><span><b>' + esc(m.correo || "Miembro") + '</b><br><span class="mut">' + rol + (mUid === usuarioActual.uid ? " · Tú" : "") + '</span></span>' + quitar + "</div>";
+  }).join("");
+  box.innerHTML = '<div class="dato-fila"><span class="mut">Equipo activo</span><b>' + esc(equipoActual.nombre) + '</b></div>'
+    + '<p class="mut" style="margin-top:6px">Estás en Modo Equipo: todo lo que registres se comparte con los miembros y se sincroniza en vivo.</p>'
+    + '<div class="divisor"></div><h3 style="margin:0 0 6px">Miembros</h3>' + lista
+    + '<div class="divisor"></div>'
+    + '<label>Código de invitación</label>'
+    + '<div class="fila-edit" style="grid-template-columns:1fr 120px"><input type="text" readonly value="' + esc(equipoActual.codigo || "") + '" id="eq-codigo-vista" /><button class="btn sec" id="eq-copiar" type="button">Copiar</button></div>'
+    + '<p class="mut" style="margin-top:6px">Quien tenga este código y una cuenta de MiPlatapp puede entrar al equipo.</p>'
+    + '<div id="eq-msg"></div>'
+    + '<div style="height:12px"></div>'
+    + '<button class="btn sec" id="eq-salir" type="button">Salir del equipo</button>'
+    + (esDueno ? '<div style="height:10px"></div><button class="btn rojo" id="eq-disolver" type="button">Disolver el equipo</button>' : "");
+  box.querySelectorAll("[data-quitar-miembro]").forEach(function(b){ b.addEventListener("click", function(){ quitarMiembroEquipo(b.getAttribute("data-quitar-miembro")); }); });
+  $("eq-copiar").addEventListener("click", function(){
+    var i = $("eq-codigo-vista"); i.select();
+    try{ navigator.clipboard.writeText(i.value); }catch(e){ try{ document.execCommand("copy"); }catch(e2){} }
+    $("eq-msg").innerHTML = '<div class="aviso verde">Código copiado. Compártelo con quien quieras sumar al equipo.</div>';
+  });
+  $("eq-salir").addEventListener("click", salirDelEquipo);
+  if(esDueno) $("eq-disolver").addEventListener("click", disolverEquipo);
+}
+function cargarFlujoPersonal(user, val, localEsDeLaCuenta, localEsAjeno){
+  if(val && val.datosJson){
+    /* La cuenta ya tiene datos: mandan los de la nube. Los datos locales
+       ajenos quedan en su respaldo, sin mezclarse ni sobrescribir la nube. */
+    try{ aplicarEstadoNube(JSON.parse(val.datosJson)); }catch(e){ S = estadoVacio(); guardarLocal(); renderTodo(); }
+    marcarDuenno(user.uid);
+    syncBloqueada = false;
+  } else if(localEsAjeno){
+    /* Cuenta sin datos en la nube + datos de invitado en el dispositivo:
+       se pregunta SIEMPRE antes de mezclar. */
+    preguntarDatosInvitado(user);
+  } else {
+    if(!localEsDeLaCuenta){ S = estadoVacio(); guardarLocal(); }
+    marcarDuenno(user.uid);
+    syncBloqueada = false;
+    renderTodo();
+    if(!S.onboarded) iniciarOnboarding();
+  }
+  renderCuenta();
+  arranqueListo();
 }
 if(fbAuth){
   fbAuth.getRedirectResult().catch(function(){});
@@ -2653,25 +2943,31 @@ if(fbAuth){
       renderCuenta();
       fbDb.ref("miplatapp/usuarios/" + user.uid).once("value").then(function(snap){
         var val = snap.val();
-        if(val && val.datosJson){
-          /* La cuenta ya tiene datos: mandan los de la nube. Los datos locales
-             ajenos quedan en su respaldo, sin mezclarse ni sobrescribir la nube. */
-          try{ aplicarEstadoNube(JSON.parse(val.datosJson)); }catch(e){ S = estadoVacio(); guardarLocal(); renderTodo(); }
-          marcarDuenno(user.uid);
-          syncBloqueada = false;
-        } else if(localEsAjeno){
-          /* Cuenta sin datos en la nube + datos de invitado en el dispositivo:
-             se pregunta SIEMPRE antes de mezclar. */
-          preguntarDatosInvitado(user);
-        } else {
-          if(!localEsDeLaCuenta){ S = estadoVacio(); guardarLocal(); }
-          marcarDuenno(user.uid);
-          syncBloqueada = false;
-          renderTodo();
-          if(!S.onboarded) iniciarOnboarding();
+        if(val && val.equipoId){
+          /* Tiene equipo asignado: si sigue siendo miembro, manda el equipo. */
+          return fbDb.ref("miplatapp/equipos/" + val.equipoId).once("value").then(function(snapEq){
+            var eq = snapEq.val();
+            if(eq && eq.miembros && eq.miembros[user.uid]){
+              entrarEnEquipo(val.equipoId, eq);
+              if(eq.datos && eq.datos.datosJson){
+                try{ aplicarEstadoNube(JSON.parse(eq.datos.datosJson)); }catch(e){}
+                if(eq.datos.actualizadoEn) ultimoTsPropio = eq.datos.actualizadoEn;
+              } else {
+                renderTodo();
+                if(!S.onboarded) iniciarOnboarding();
+              }
+              marcarDuenno(user.uid);
+              syncBloqueada = false;
+              renderCuenta();
+              arranqueListo();
+              return null;
+            }
+            /* Ya no es miembro (o el equipo no existe): limpiar el apuntador
+               y seguir con su espacio personal. */
+            return fbDb.ref("miplatapp/usuarios/" + user.uid).update({ equipoId: null }).catch(function(){}).then(function(){ cargarFlujoPersonal(user, val, localEsDeLaCuenta, localEsAjeno); });
+          }).catch(function(){ cargarFlujoPersonal(user, val, localEsDeLaCuenta, localEsAjeno); });
         }
-        renderCuenta();
-        arranqueListo();
+        cargarFlujoPersonal(user, val, localEsDeLaCuenta, localEsAjeno);
       }).catch(function(){
         syncBloqueada = false;
         renderCuenta();
@@ -2682,6 +2978,7 @@ if(fbAuth){
       arranquePaso(60, "Cargando tus datos de este dispositivo…");
       var venia = !!usuarioActual;
       usuarioActual = null;
+      salirDeEquipoLocal();
       if(venia){
         cerrarModalDatos();
         if(cuentaRecienEliminada){
@@ -2977,6 +3274,7 @@ function renderConfig(){
   } else {
     eb.innerHTML = '<p class="mut">Estás en modo invitado: no hay una cuenta que eliminar. Si quieres, usa «Borrar todos mis datos» para limpiar este dispositivo.</p>';
   }
+  renderEquipo();
 }
 $("cfg-guardar-nombre").addEventListener("click", function(){
   S.nombre = $("cfg-nombre").value.trim();
@@ -3015,7 +3313,10 @@ function ejecutarEliminarCuenta(){
   syncBloqueada = true;
   clearTimeout(syncTimer);
   cuentaRecienEliminada = true;
-  var borrarNodo = fbDb ? fbDb.ref("miplatapp/usuarios/" + user.uid).remove() : Promise.resolve();
+  /* Si está en un equipo, primero sale de la lista de miembros. */
+  var salirEquipo = (equipoActual && fbDb) ? fbDb.ref("miplatapp/equipos/" + equipoActual.id + "/miembros/" + user.uid).remove().catch(function(){}) : Promise.resolve();
+  salirDeEquipoLocal();
+  var borrarNodo = salirEquipo.then(function(){ return fbDb ? fbDb.ref("miplatapp/usuarios/" + user.uid).remove() : Promise.resolve(); });
   borrarNodo.then(function(){ return user.delete(); })
     .then(function(){
       /* Borrado confirmado en la nube y en Auth: limpieza total del
