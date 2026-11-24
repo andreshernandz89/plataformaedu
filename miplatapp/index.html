@@ -3581,7 +3581,7 @@ function cargarEnFormMov(x){
   pintarChipDestino();
   $("mv-guardar").textContent = "Guardar cambios";
   $("mv-cancelar-edit").classList.remove("oculto");
-  $("mv-msg").innerHTML = '<div class="ok">Editando el movimiento. Ajusta lo que quieras y toca «Guardar cambios».</div>';
+  $("mv-msg").innerHTML = "";
   abrirSheetMov(true);
 }
 $("mv-cancelar-edit").addEventListener("click", function(){
