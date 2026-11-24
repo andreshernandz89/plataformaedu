@@ -348,7 +348,7 @@ a.btn{ text-decoration:none; }
       <h1>MiPlat<span class="h-accent">app</span></h1>
       <div class="sub" id="sub-mes"></div>
     </div>
-    <span class="sync-ind" id="sync-ind"><span class="sync-dot"></span><span id="sync-ind-txt">Sincronizado</span></span>
+    <span class="sync-ind" id="sync-ind"><span class="sync-dot"></span><span id="sync-ind-txt">Este dispositivo</span></span>
     <div class="cuenta-menu-wrap">
       <button class="btn-cuenta" id="btn-menu-cuenta" type="button" aria-label="Menú de cuenta" aria-haspopup="true"><span id="menu-avatar" style="display:flex"></span></button>
       <div class="menu-cuenta oculto" id="menu-cuenta">
@@ -3031,7 +3031,7 @@ function ejecutarEliminarCuenta(){
         /* Si el nodo no se pudo borrar, el usuario de Auth NO se borra:
            la cuenta sigue activa y se ofrece reintentar. */
         mostrarModalDatos("No se pudo eliminar la cuenta",
-          "Algo falló al eliminar tu cuenta: sigue activa y tus datos están a salvo. Revisa tu conexión e inténtalo de nuevo.",
+          "Algo falló al eliminar tu cuenta: sigue activa y tus datos están a salvo. Revisa tu conexión e inténtalo de nuevo." + (err && (err.code || err.message) ? " (Detalle: " + (err.code || err.message) + ")" : ""),
           [
             { texto:"Reintentar", clase:"btn rojo", fn:ejecutarEliminarCuenta },
             { texto:"Cancelar", clase:"btn sec", fn:function(){ syncBloqueada = false; } }
