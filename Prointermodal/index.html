@@ -198,6 +198,8 @@ a.next-load { font-size: 12px; font-weight: 700; }
 .eta-label { display: inline-flex; flex-direction: column; align-items: flex-start; gap: 1px; }
 .eta-hos-line { display: block; font-size: 10px; font-weight: 600; color: var(--dim); white-space: nowrap; letter-spacing: .01em; line-height: 1.3; }
 .eta-hos-line .hos-risk-inline { color: var(--danger); }
+.eta-hos-line a.hos-link { color: inherit; text-decoration: none; border-bottom: 1px dotted currentColor; cursor: pointer; }
+.eta-hos-line a.hos-link:hover { color: var(--accent, #0792FE); }
 .hos-risk-inline { color: #ff776d; font-weight: 800; }
 
 .miles-cell { grid-area: miles; display: flex; align-items: baseline; gap: 5px; color: var(--dim); }
@@ -875,6 +877,12 @@ function hosLineHtml(s){
   const hosCo=(s.hosCo&&typeof s.hosCo==="object")?s.hosCo:null;
   const hasCo=hosCo&&(hosCo.driveMin!=null||hosCo.shiftMin!=null||hosCo.cycleMin!=null);
   const lineOf=h=>"D: "+fmtHos(h.driveMin)+" · S: "+fmtHos(h.shiftMin)+" · C: "+fmtHos(h.cycleMin);
+  // Enlace al libro del conductor en Samsara (driverId/org los escriben el Bridge y gps_refresh).
+  const hosLink=(h,inner)=>{
+    if(!h||!h.driverId||!h.org) return inner;
+    const url="https://cloud.samsara.com/o/"+encodeURIComponent(h.org)+"/fleet/reports/hos/driver/"+encodeURIComponent(h.driverId)+"?duration=691199&end_ms="+Date.now();
+    return '<a class="hos-link" href="'+url+'" target="_blank" rel="noopener" title="Open this driver\'s HOS log in Samsara">'+inner+'</a>';
+  };
   const firstName=n=>{ const t=String(n||"").trim().split(/\s+/)[0]||""; return t?t.charAt(0).toUpperCase()+t.slice(1).toLowerCase():""; };
   let riskHtml="";
   if(hosRiskFlag(s)){
@@ -882,12 +890,12 @@ function hosLineHtml(s){
   }
   // Team (2026-11-20): una linea por conductor, con su primer nombre.
   if(hasHos&&hasCo&&s.co){
-    return '<span class="eta-hos-line">'+esc(firstName(s.driver))+" "+lineOf(hos)+(riskHtml?" · "+riskHtml:"")+'</span>'+
-           '<span class="eta-hos-line">'+esc(firstName(s.co))+" "+lineOf(hosCo)+'</span>';
+    return '<span class="eta-hos-line">'+hosLink(hos,esc(firstName(s.driver))+" "+lineOf(hos))+(riskHtml?" · "+riskHtml:"")+'</span>'+
+           '<span class="eta-hos-line">'+hosLink(hosCo,esc(firstName(s.co))+" "+lineOf(hosCo))+'</span>';
   }
   let hosLine="";
-  if(hasHos){ hosLine=lineOf(hos); }
-  else if(hasCo&&s.co){ hosLine=esc(firstName(s.co))+" "+lineOf(hosCo); }
+  if(hasHos){ hosLine=hosLink(hos,lineOf(hos)); }
+  else if(hasCo&&s.co){ hosLine=hosLink(hosCo,esc(firstName(s.co))+" "+lineOf(hosCo)); }
   if(riskHtml){
     hosLine+=(hosLine?" · ":"")+riskHtml;
   }
