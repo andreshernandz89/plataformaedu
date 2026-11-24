@@ -171,6 +171,9 @@ footer{ text-align:center; color:#7E93B4; font-size:12px; padding:8px 0 4px; }
       linear-gradient(180deg,#0B1526 0%, #12223F 52%, #0C1830 100%); }
   main{ max-width:1280px; padding:22px 26px 10px; }
   .top{ padding:16px 26px 14px; }
+  /* En PC la marca vive en la barra lateral: fuera el título repetido del encabezado */
+  header.top .logo-app{ display:none; }
+  .top-flex > div:not(.cuenta-menu-wrap){ display:none; }
   /* Navegación lateral */
   .tabbar{ left:0; right:auto; top:0; bottom:0; width:216px; max-width:none; margin:0; flex-direction:column; justify-content:flex-start; align-items:stretch; gap:6px; border-radius:0; border:none; border-right:1px solid rgba(120,175,240,.25); padding:104px 14px 18px; z-index:15; }
   .tabbar button{ flex:none; flex-direction:row; justify-content:flex-start; gap:11px; font-size:14px; padding:12px 14px; border-radius:13px; text-align:left; }
