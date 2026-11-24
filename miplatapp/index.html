@@ -118,7 +118,10 @@ span.ripple{ position:absolute; border-radius:50%; background:rgba(255,255,255,.
 .aviso.verde{ background:rgba(53,195,125,.14); color:#6FE3AC; }
 .top-flex{ display:flex; gap:12px; align-items:center; }
 .logo{ width:52px; height:52px; border-radius:14px; flex:none; display:block; box-shadow:0 4px 16px rgba(0,0,0,.45), 0 0 18px rgba(7,146,254,.20); }
-.logo-grande{ width:84px; height:84px; border-radius:21px; display:block; margin:0 auto 12px; box-shadow:0 6px 20px rgba(0,0,0,.5), 0 0 24px rgba(7,146,254,.22); }
+.ob-logo-wrap{ position:relative; width:140px; height:140px; margin:10px auto 16px; display:flex; align-items:center; justify-content:center; }
+.ob-logo-wrap::before{ content:""; position:absolute; inset:-34px; border-radius:50%; background:radial-gradient(circle, rgba(7,146,254,.38) 0%, rgba(7,146,254,.16) 46%, rgba(7,146,254,0) 70%); }
+.ob-logo-wrap::after{ content:""; position:absolute; inset:-7px; border-radius:50%; border:1px solid rgba(127,194,255,.40); box-shadow:0 0 26px rgba(7,146,254,.25); }
+.logo-grande{ position:relative; z-index:1; width:140px; height:140px; border-radius:50%; display:block; box-shadow:0 0 38px rgba(7,146,254,.35), 0 12px 30px rgba(0,0,0,.45); }
 .avatar{ width:44px; height:44px; border-radius:50%; flex:none; display:block; border:2px solid rgba(127,194,255,.65); box-shadow:0 0 14px rgba(7,146,254,.35); }
 footer{ text-align:center; color:#7E93B4; font-size:12px; padding:8px 0 4px; }
 @media (prefers-reduced-motion: reduce){ *{ animation:none !important; transition:none !important; } }
@@ -143,11 +146,11 @@ footer{ text-align:center; color:#7E93B4; font-size:12px; padding:8px 0 4px; }
 #acceso .inner > *:nth-child(6){ animation-delay:.28s; }
 #acceso .inner > *:nth-child(7){ animation-delay:.36s; }
 @keyframes acSube{ from{ opacity:0; transform:translateY(18px); } to{ opacity:1; transform:none; } }
-.ac-logo-wrap{ position:relative; width:134px; height:134px; margin:8px auto 16px; display:flex; align-items:center; justify-content:center; }
+.ac-logo-wrap{ position:relative; width:152px; height:152px; margin:8px auto 16px; display:flex; align-items:center; justify-content:center; }
 .ac-logo-wrap::before{ content:""; position:absolute; inset:-22px; border-radius:50%; background:radial-gradient(circle, rgba(233,185,73,.32) 0%, rgba(233,185,73,.12) 46%, rgba(233,185,73,0) 70%); }
 .ac-logo-wrap::after{ content:""; position:absolute; inset:-6px; border-radius:50%; border:1px solid rgba(233,185,73,.45); box-shadow:0 0 22px rgba(233,185,73,.18); animation:acAnillo 7s ease-in-out infinite; }
 @keyframes acAnillo{ 0%,100%{ opacity:.45; transform:scale(1); } 50%{ opacity:.95; transform:scale(1.035); } }
-.logo-heroe{ width:112px; height:112px; border-radius:50%; display:block; box-shadow:0 0 34px rgba(233,185,73,.25), 0 12px 28px rgba(0,0,0,.35); animation:acFlota 6s ease-in-out infinite; }
+.logo-heroe{ width:128px; height:128px; border-radius:50%; display:block; box-shadow:0 0 34px rgba(233,185,73,.25), 0 12px 28px rgba(0,0,0,.35); animation:acFlota 6s ease-in-out infinite; }
 @keyframes acFlota{ 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-7px); } }
 .ac-titulo{ font-size:37px; font-weight:800; letter-spacing:-.02em; text-align:center; text-shadow:0 0 30px rgba(7,146,254,.35); }
 .ac-eslogan{ text-align:center; margin:8px auto 0; max-width:430px; font-size:13.5px; line-height:1.5; }
@@ -198,7 +201,7 @@ footer{ text-align:center; color:#7E93B4; font-size:12px; padding:8px 0 4px; }
           </div>
           <div class="row"><span><span class="dot" style="background:var(--azul)"></span>Gastos</span><b id="dm-gastos">$ 0</b></div>
           <div class="row"><span><span class="dot" style="background:var(--verde)"></span>Ahorro</span><b id="dm-ahorro">$ 0</b></div>
-          <div class="row"><span><span class="dot" style="background:#C9D5E4"></span>Ingreso</span><b id="dm-ingreso">$ 0</b></div>
+          <div class="row"><span><span class="dot" style="background:#C9D5E4"></span>Ingreso <span class="mut" id="dm-ingreso-frec"></span></span><b id="dm-ingreso">$ 0</b></div>
           <div class="mut" id="dm-pct" style="margin-top:6px"></div>
         </div>
       </div>
@@ -331,10 +334,19 @@ footer{ text-align:center; color:#7E93B4; font-size:12px; padding:8px 0 4px; }
   <section id="tab-cuentas" class="tab">
     <div class="card">
       <h2>Tu salario</h2>
-      <div class="grid2">
-        <div><label for="cf-salario">Salario mensual</label><input id="cf-salario" type="text" inputmode="numeric" /></div>
-        <div><label for="cf-dia">Día de pago</label><input id="cf-dia" type="number" min="1" max="31" /></div>
+      <label>¿Cada cuánto te pagan?</label>
+      <div class="seg" id="cf-frec">
+        <button type="button" data-frec="semanal">Semanal</button>
+        <button type="button" data-frec="quincenal">Quincenal</button>
+        <button type="button" data-frec="mensual">Mensual</button>
       </div>
+      <div style="height:10px"></div>
+      <div class="grid2">
+        <div><label for="cf-salario" id="cf-salario-et">Salario mensual</label><input id="cf-salario" type="text" inputmode="numeric" /></div>
+        <div id="cf-bloque-dia"><label for="cf-dia" id="cf-dia-et">Día de pago</label><input id="cf-dia" type="number" min="1" max="31" /></div>
+        <div id="cf-bloque-semana" class="oculto"><label for="cf-diasemana">Día de la semana</label><select id="cf-diasemana"></select></div>
+      </div>
+      <p class="mut" id="cf-equiv" style="margin-top:8px"></p>
       <div style="height:12px"></div>
       <button class="btn sec" id="cf-guardar" type="button">Guardar salario</button>
     </div>
@@ -432,7 +444,7 @@ footer{ text-align:center; color:#7E93B4; font-size:12px; padding:8px 0 4px; }
 <!-- ONBOARDING -->
 <div id="onboarding" class="overlay oculto">
   <div class="inner">
-    <img class="logo-grande" src="data:image/jpeg;base64,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" alt="Logo de MiPlatapp" />
+    <div class="ob-logo-wrap"><img class="logo-grande" src="data:image/jpeg;base64,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" alt="Logo de MiPlatapp" /></div>
     <h1 style="font-size:26px; font-weight:800; margin-top:4px">Bienvenido a MiPlatapp</h1>
     <p class="mut" style="margin-top:6px">En menos de un minuto dejas tu mes organizado: salario, gastos fijos y presupuestos. Todo queda guardado en tu dispositivo.</p>
     <div class="pasos"><div id="ps-1" class="on"></div><div id="ps-2"></div><div id="ps-3"></div><div id="ps-4"></div></div>
@@ -448,10 +460,23 @@ footer{ text-align:center; color:#7E93B4; font-size:12px; padding:8px 0 4px; }
 
     <div class="card" id="ob-paso-1">
       <h2>Paso 1 · Tu ingreso</h2>
-      <label for="ob-salario">¿Cuánto es tu salario mensual?</label>
+      <label>¿Cada cuánto te pagan?</label>
+      <div class="seg" id="ob-frec">
+        <button type="button" data-frec="semanal">Semanal</button>
+        <button type="button" data-frec="quincenal">Quincenal</button>
+        <button type="button" data-frec="mensual" class="on">Mensual</button>
+      </div>
+      <label for="ob-salario" id="ob-salario-et">¿Cuánto es tu salario mensual?</label>
       <input id="ob-salario" type="text" inputmode="numeric" placeholder="$ 0" />
-      <label for="ob-dia">¿Qué día del mes te pagan?</label>
-      <input id="ob-dia" type="number" min="1" max="31" placeholder="Ej. 30" />
+      <div id="ob-bloque-dia">
+        <label for="ob-dia" id="ob-dia-et">¿Qué día del mes te pagan?</label>
+        <input id="ob-dia" type="number" min="1" max="31" placeholder="Ej. 30" />
+      </div>
+      <div id="ob-bloque-semana" class="oculto">
+        <label for="ob-diasemana">¿Qué día de la semana te pagan?</label>
+        <select id="ob-diasemana"></select>
+      </div>
+      <p class="mut" id="ob-equiv" style="margin-top:8px"></p>
       <div style="height:16px"></div>
       <button class="btn" id="ob-next-1" type="button">Siguiente</button>
       <div style="height:10px"></div>
@@ -519,10 +544,10 @@ function esDelMes(f, y, m){ if(!f) return false; var p = String(f).split("-"); r
 function $(id){ return document.getElementById(id); }
 
 function estadoVacio(){
-  return { config:{salario:0, diaPago:1}, fijos:[], presupuestos:{}, cuentas:[], movimientos:[], metas:[], pagos:{}, deudas:[], onboarded:false };
+  return { config:{salario:0, diaPago:1, frecuencia:"mensual", diaSemana:1}, fijos:[], presupuestos:{}, cuentas:[], movimientos:[], metas:[], pagos:{}, deudas:[], onboarded:false };
 }
 function cargar(){
-  try{ var r = localStorage.getItem(LS); if(r){ var s = JSON.parse(r); if(s && typeof s==="object"){ var e = Object.assign(estadoVacio(), s); if(!e.pagos || typeof e.pagos!=="object") e.pagos = {}; if(!Array.isArray(e.deudas)) e.deudas = []; return e; } } }catch(e){}
+  try{ var r = localStorage.getItem(LS); if(r){ var s = JSON.parse(r); if(s && typeof s==="object"){ var e = Object.assign(estadoVacio(), s); if(!e.pagos || typeof e.pagos!=="object") e.pagos = {}; if(!Array.isArray(e.deudas)) e.deudas = []; e.config = normalizarCfg(e.config); return e; } } }catch(e){}
   return estadoVacio();
 }
 function guardar(){ guardarLocal(); programarSyncNube(); }
@@ -531,6 +556,44 @@ function guardarLocal(){ try{ localStorage.setItem(LS, JSON.stringify(S)); }catc
 var S = cargar();
 var calCursor = new Date(); calCursor.setDate(1);
 var mvTipo = "gasto";
+
+/* ============ Frecuencia de pago ============ */
+var DIAS_SEMANA = ["lunes","martes","miércoles","jueves","viernes","sábado","domingo"];
+function normalizarCfg(c){
+  var out = Object.assign({ salario:0, diaPago:1, frecuencia:"mensual", diaSemana:1 }, (c && typeof c === "object") ? c : {});
+  if(["semanal","quincenal","mensual"].indexOf(out.frecuencia) < 0) out.frecuencia = "mensual";
+  var ds = parseInt(out.diaSemana, 10); out.diaSemana = (ds >= 1 && ds <= 7) ? ds : 1;
+  return out;
+}
+function frecuenciaPago(){ var f = S.config.frecuencia; return (f === "semanal" || f === "quincenal") ? f : "mensual"; }
+function factorMensual(){ var f = frecuenciaPago(); return f === "semanal" ? 52/12 : (f === "quincenal" ? 2 : 1); }
+function salarioMensual(){ return Math.round((S.config.salario || 0) * factorMensual()); }
+function diasEnMes(y, m){ return new Date(y, m + 1, 0).getDate(); }
+function fechasPagoMes(y, m){
+  var f = frecuenciaPago(), out = [], dm = diasEnMes(y, m), d;
+  if(f === "mensual"){ out.push(Math.min(Math.max(S.config.diaPago || 1, 1), dm)); }
+  else if(f === "quincenal"){ var d1 = Math.min(Math.max(S.config.diaPago || 1, 1), 15); out.push(d1); out.push(Math.min(d1 + 15, dm)); }
+  else { var objetivo = (S.config.diaSemana || 1) % 7; for(d = 1; d <= dm; d++){ if(new Date(y, m, d).getDay() === objetivo) out.push(d); } }
+  return out;
+}
+function proximoPago(){
+  var hoy = new Date(); hoy.setHours(0,0,0,0);
+  var y = hoy.getFullYear(), m = hoy.getMonth(), i, j;
+  for(i = 0; i < 3; i++){
+    var yy = y + Math.floor((m + i) / 12), mm = (m + i) % 12, dias = fechasPagoMes(yy, mm);
+    for(j = 0; j < dias.length; j++){ var f = new Date(yy, mm, dias[j]); if(f >= hoy) return f; }
+  }
+  return null;
+}
+function textoProximoPago(){
+  var f = proximoPago(); if(!f) return "";
+  var base = f.getDate() + " de " + MESES[f.getMonth()];
+  return frecuenciaPago() === "semanal" ? "el " + DIAS_SEMANA[(S.config.diaSemana || 1) - 1] + " " + base : "el " + base;
+}
+function opcionesDiasSemana(sel){
+  if(!sel || sel.options.length) return;
+  DIAS_SEMANA.forEach(function(d, i){ var o = document.createElement("option"); o.value = i + 1; o.textContent = d.charAt(0).toUpperCase() + d.slice(1); sel.appendChild(o); });
+}
 
 /* ============ Cálculos del mes ============ */
 function datosMes(y, m){
@@ -543,7 +606,7 @@ function datosMes(y, m){
   });
   S.metas.forEach(function(mt){ (mt.aportes||[]).forEach(function(ap){ if(esDelMes(ap.fecha, y, m)) ahorro += ap.monto; }); });
   var gastosF = S.fijos.reduce(function(a,f){ return a + (f.monto||0); }, 0);
-  var ingreso = (S.config.salario||0) + ingExtra;
+  var ingreso = salarioMensual() + ingExtra;
   var gastos = gastosF + gastosV;
   return { ingreso:ingreso, ingExtra:ingExtra, gastosF:gastosF, gastosV:gastosV, gastos:gastos, ahorro:ahorro, porCat:porCat, queda: ingreso - gastos - ahorro };
 }
@@ -563,6 +626,10 @@ function renderInicio(){
   $("dm-gastos").textContent = fmt(d.gastos);
   $("dm-ahorro").textContent = fmt(d.ahorro);
   $("dm-ingreso").textContent = fmt(d.ingreso);
+  if(S.config.salario > 0){
+    var fpI = frecuenciaPago();
+    $("dm-ingreso-frec").textContent = (fpI !== "mensual" ? "· " + fmt(S.config.salario) + " " + fpI + " " : "· ") + "próximo pago: " + textoProximoPago();
+  } else $("dm-ingreso-frec").textContent = "";
   var C = 2 * Math.PI * 62;
   var pG = d.ingreso > 0 ? Math.min(d.gastos / d.ingreso, 1) : 0;
   var pA = d.ingreso > 0 ? Math.min(d.ahorro / d.ingreso, 1) : 0;
@@ -695,8 +762,19 @@ function renderCalendario(){
             : '<span class="pill">Pendiente</span> <button class="btnlink" data-pagar-fijo="' + f.id + '" data-clave="' + claveCal + '" type="button">Marcar pagado</button>')
       + '</span></div>';
   }).join("");
-  var salarioRow = '<div class="item row"><span><b>Salario</b><br><span class="mut">' + (S.config.diaPago||1) + ' de ' + MESES[m] + ' · día de pago</span></span><span class="pill verde">' + fmt(S.config.salario||0) + '</span></div>';
-  $("lista-vencimientos").innerHTML = (S.config.salario > 0 ? salarioRow : "") + (ven || '<p class="mut">Sin gastos fijos.</p>');
+  var salC = S.config.salario || 0, fpC = frecuenciaPago(), filasSal = "";
+  if(salC > 0){
+    if(fpC === "mensual"){
+      filasSal = '<div class="item row"><span><b>Salario</b><br><span class="mut">' + Math.min(Math.max(S.config.diaPago || 1, 1), diasMes) + ' de ' + MESES[m] + ' · día de pago</span></span><span class="pill verde">' + fmt(salC) + '</span></div>';
+    } else if(fpC === "quincenal"){
+      filasSal = fechasPagoMes(y, m).map(function(d, i){
+        return '<div class="item row"><span><b>Salario</b><br><span class="mut">' + d + ' de ' + MESES[m] + ' · ' + (i === 0 ? "primera" : "segunda") + ' quincena</span></span><span class="pill verde">' + fmt(salC) + '</span></div>';
+      }).join("");
+    } else {
+      filasSal = '<div class="item row"><span><b>Salario</b><br><span class="mut">Cada ' + DIAS_SEMANA[(S.config.diaSemana || 1) - 1] + ' · pago semanal</span></span><span class="pill verde">' + fmt(salC) + '</span></div>';
+    }
+  }
+  $("lista-vencimientos").innerHTML = filasSal + (ven || '<p class="mut">Sin gastos fijos.</p>');
 }
 
 /* ============ Render: Metas ============ */
@@ -718,6 +796,8 @@ function renderMetas(){
 function renderCuentas(){
   $("cf-salario").value = S.config.salario ? S.config.salario.toLocaleString("es-CO") : "";
   $("cf-dia").value = S.config.diaPago || 1;
+  cfFrec = frecuenciaPago();
+  pintarFrecCF();
   var sel = $("ct-tipo");
   sel.innerHTML = BANCOS.map(function(b){ return '<option value="' + esc(b) + '">' + esc(b) + '</option>'; }).join("");
   $("lista-cuentas").innerHTML = S.cuentas.length ? S.cuentas.map(function(c){
@@ -823,9 +903,41 @@ $("ct-agregar").addEventListener("click", function(){
   S.cuentas.push({ id: uid(), nombre: nombre, tipo: tipo, saldo: num($("ct-saldo").value) });
   guardar(); $("ct-saldo").value = ""; $("ct-nombre").value = ""; renderTodo();
 });
+var cfFrec = "mensual";
+function pintarFrecCF(){
+  document.querySelectorAll("#cf-frec button").forEach(function(b){ b.classList.toggle("on", b.getAttribute("data-frec") === cfFrec); });
+  var esSem = cfFrec === "semanal";
+  $("cf-bloque-dia").classList.toggle("oculto", esSem);
+  $("cf-bloque-semana").classList.toggle("oculto", !esSem);
+  opcionesDiasSemana($("cf-diasemana"));
+  if(esSem) $("cf-diasemana").value = S.config.diaSemana || 1;
+  $("cf-salario-et").textContent = cfFrec === "semanal" ? "Salario por semana" : (cfFrec === "quincenal" ? "Salario por quincena" : "Salario mensual");
+  var de = $("cf-dia");
+  if(cfFrec === "quincenal"){ $("cf-dia-et").textContent = "Día de la primera quincena"; de.min = 1; de.max = 15; }
+  else { $("cf-dia-et").textContent = "Día de pago"; de.min = 1; de.max = 31; }
+  equivCF();
+}
+function equivCF(){
+  var monto = num($("cf-salario").value), el = $("cf-equiv");
+  if(!monto || cfFrec === "mensual"){ el.textContent = ""; return; }
+  var eq = Math.round(monto * (cfFrec === "semanal" ? 52/12 : 2));
+  el.textContent = "Equivale a " + fmt(eq) + " al mes: ese valor alimenta tu círculo del mes, presupuestos y estadísticas." + (cfFrec === "quincenal" ? " El segundo pago cae 15 días después del primero." : "");
+}
+$("cf-frec").addEventListener("click", function(e){
+  var b = e.target.closest("button[data-frec]"); if(!b) return;
+  cfFrec = b.getAttribute("data-frec"); pintarFrecCF();
+});
+$("cf-salario").addEventListener("input", equivCF);
 $("cf-guardar").addEventListener("click", function(){
   S.config.salario = num($("cf-salario").value);
-  var dia = parseInt($("cf-dia").value, 10); S.config.diaPago = (dia >= 1 && dia <= 31) ? dia : 1;
+  S.config.frecuencia = cfFrec;
+  if(cfFrec === "semanal"){
+    var ds = parseInt($("cf-diasemana").value, 10); S.config.diaSemana = (ds >= 1 && ds <= 7) ? ds : 1;
+  } else if(cfFrec === "quincenal"){
+    var dq = parseInt($("cf-dia").value, 10); S.config.diaPago = (dq >= 1 && dq <= 15) ? dq : 1;
+  } else {
+    var dia = parseInt($("cf-dia").value, 10); S.config.diaPago = (dia >= 1 && dia <= 31) ? dia : 1;
+  }
   guardar(); renderTodo();
 });
 $("fj-agregar").addEventListener("click", function(){
@@ -859,7 +971,7 @@ function cargarEjemplo(){
   var f = function(nombre, monto, dia){ return { id: uid(), nombre: nombre, monto: monto, dia: dia }; };
   var mv = function(tipo, monto, categoria, nota, dia){ return { id: uid(), tipo: tipo, monto: monto, categoria: categoria, fijoId: null, nota: nota, fecha: fechaMes(dia) }; };
   S = {
-    config: { salario: 4200000, diaPago: 28 },
+    config: { salario: 4200000, diaPago: 28, frecuencia: "mensual", diaSemana: 1 },
     fijos: [ f("Alquiler", 1200000, 1), f("Servicios públicos", 280000, 15), f("Internet", 119900, 5), f("Netflix", 27900, 12), f("Spotify", 20900, 10) ],
     presupuestos: { "Transporte":300000, "Supermercado":800000, "Restaurantes":250000, "Compras":300000, "Servicios":150000, "Salud":120000, "Ocio":200000, "Otro":100000 },
     cuentas: [
@@ -937,8 +1049,36 @@ function iniciarOnboarding(){
     return '<label>' + esc(c) + '</label><input type="text" inputmode="numeric" data-ob-pres="' + esc(c) + '" placeholder="$ 0" />';
   }).join("");
   var cc = $("ob-cuentas"); cc.innerHTML = ""; cc.appendChild(filaCuentaOB());
+  obFrec = frecuenciaPago();
+  pintarFrecOB();
+  $("ob-diasemana").value = S.config.diaSemana || 1;
   irPaso(1);
 }
+var obFrec = "mensual";
+function pintarFrecOB(){
+  document.querySelectorAll("#ob-frec button").forEach(function(b){ b.classList.toggle("on", b.getAttribute("data-frec") === obFrec); });
+  var esSem = obFrec === "semanal";
+  $("ob-bloque-dia").classList.toggle("oculto", esSem);
+  $("ob-bloque-semana").classList.toggle("oculto", !esSem);
+  opcionesDiasSemana($("ob-diasemana"));
+  $("ob-salario-et").textContent = obFrec === "semanal" ? "¿Cuánto te pagan por semana?" : (obFrec === "quincenal" ? "¿Cuánto te pagan por quincena?" : "¿Cuánto es tu salario mensual?");
+  var de = $("ob-dia");
+  if(obFrec === "quincenal"){ $("ob-dia-et").textContent = "¿Qué día te pagan la primera quincena?"; de.min = 1; de.max = 15; de.placeholder = "Ej. 1 o 15"; }
+  else { $("ob-dia-et").textContent = "¿Qué día del mes te pagan?"; de.min = 1; de.max = 31; de.placeholder = "Ej. 30"; }
+  equivOB();
+}
+function equivOB(){
+  var monto = num($("ob-salario").value), el = $("ob-equiv");
+  if(!monto){ el.textContent = obFrec === "quincenal" ? "El segundo pago cae 15 días después del primero." : ""; return; }
+  if(obFrec === "mensual"){ el.textContent = ""; return; }
+  var eq = Math.round(monto * (obFrec === "semanal" ? 52/12 : 2));
+  el.textContent = "Equivale a " + fmt(eq) + " al mes: con ese valor armamos tu círculo del mes y tus presupuestos." + (obFrec === "quincenal" ? " El segundo pago cae 15 días después del primero." : "");
+}
+$("ob-frec").addEventListener("click", function(e){
+  var b = e.target.closest("button[data-frec]"); if(!b) return;
+  obFrec = b.getAttribute("data-frec"); pintarFrecOB();
+});
+$("ob-salario").addEventListener("input", equivOB);
 $("ob-next-1").addEventListener("click", function(){ irPaso(2); });
 $("ob-next-2").addEventListener("click", function(){ irPaso(3); });
 $("ob-next-3").addEventListener("click", function(){ irPaso(4); });
@@ -950,8 +1090,14 @@ $("ob-cuenta-add").addEventListener("click", function(){ $("ob-cuentas").appendC
 $("ob-ejemplo").addEventListener("click", function(){ cargarEjemplo(); });
 $("ob-fin").addEventListener("click", function(){
   S.config.salario = num($("ob-salario").value);
-  var dia = parseInt($("ob-dia").value, 10);
-  S.config.diaPago = (dia >= 1 && dia <= 31) ? dia : 1;
+  S.config.frecuencia = obFrec;
+  if(obFrec === "semanal"){
+    var ds = parseInt($("ob-diasemana").value, 10); S.config.diaSemana = (ds >= 1 && ds <= 7) ? ds : 1;
+  } else if(obFrec === "quincenal"){
+    var dq = parseInt($("ob-dia").value, 10); S.config.diaPago = (dq >= 1 && dq <= 15) ? dq : 1;
+  } else {
+    var dia = parseInt($("ob-dia").value, 10); S.config.diaPago = (dia >= 1 && dia <= 31) ? dia : 1;
+  }
   S.fijos = [];
   $("ob-fijos").querySelectorAll(".fila-edit").forEach(function(fila){
     var ins = fila.querySelectorAll("input");
@@ -1220,6 +1366,7 @@ function aplicarEstadoNube(nuevo){
   var e = Object.assign(estadoVacio(), nuevo || {});
   if(!e.pagos || typeof e.pagos !== "object") e.pagos = {};
   if(!Array.isArray(e.deudas)) e.deudas = [];
+  e.config = normalizarCfg(e.config);
   S = e;
   guardarLocal();
   cargandoNube = false;
@@ -1264,6 +1411,7 @@ if(fbAuth){
           S = g ? Object.assign(estadoVacio(), JSON.parse(g)) : estadoVacio();
           if(!S.pagos || typeof S.pagos !== "object") S.pagos = {};
           if(!Array.isArray(S.deudas)) S.deudas = [];
+          S.config = normalizarCfg(S.config);
           localStorage.removeItem(LS_INVITADO);
         }catch(e){ S = estadoVacio(); }
         guardarLocal();
