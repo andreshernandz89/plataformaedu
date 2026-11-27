@@ -414,7 +414,7 @@
     $("chat-msgs").scrollTop = $("chat-msgs").scrollHeight;
   }
   $("chat-btn").addEventListener("click", () => {
-    if ($("chat-panel").classList.contains("abierto")) { $("chat-panel").classList.remove("abierto"); } else { abrir(); }
+    window.open("https://wa.me/573001363681?text=" + encodeURIComponent("Hola PlataformaEDU \uD83D\uDC4B Quiero información sobre sus servicios."), "_blank");
   });
   $("btn-chat-contacto").addEventListener("click", abrir);
   $("chat-cerrar").addEventListener("click", () => $("chat-panel").classList.remove("abierto"));
