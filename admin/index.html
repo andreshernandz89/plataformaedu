@@ -42,6 +42,19 @@
   .resumen{ display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:12px; margin-bottom:18px; }
   .stat{ background:#fff; border:1px solid var(--borde); border-radius:14px; padding:14px 16px; box-shadow:0 2px 8px rgba(19,33,63,.05); }
   .stat .n{ font-size:24px; font-weight:800; color:var(--marino); }
+  .apps-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:14px; }
+  .app-card{ background:#fff; border:1px solid var(--borde); border-radius:16px; padding:18px; box-shadow:0 2px 8px rgba(19,33,63,.05); display:flex; flex-direction:column; gap:6px; }
+  .app-card .ic{ font-size:30px; }
+  .app-card h3{ margin:0; color:var(--marino); font-size:17px; }
+  .app-card p{ margin:0; color:#5A6B84; font-size:13.5px; line-height:1.45; flex:1; }
+  .app-card .cifra{ font-weight:800; color:var(--marino); font-size:15px; }
+  .app-card .cifra span{ display:block; font-weight:600; color:#5A6B84; font-size:12.5px; }
+  .app-card button, .app-card a.btn-app{ margin-top:8px; text-align:center; background:linear-gradient(90deg,#0792FE,#0A6ED1); color:#fff; border:none; border-radius:10px; padding:10px 12px; font-family:inherit; font-size:14px; font-weight:700; cursor:pointer; text-decoration:none; }
+  .app-card a.btn-app.sec{ background:#EEF4FF; color:#0A6ED1; }
+  .app-chip{ align-self:flex-start; background:#E9F9F0; color:#0B6B3A; border:1px solid #7BD7A8; font-size:11.5px; font-weight:700; border-radius:999px; padding:2px 9px; }
+  .app-chip.prep{ background:#FFF7E6; color:#8A6100; border-color:#F0D9A0; }
+  #prod-banner{ display:none; align-items:center; gap:10px; background:#EEF4FF; border:1px solid #C9D6F5; border-radius:12px; padding:9px 13px; margin-bottom:14px; font-size:14px; color:var(--marino); }
+  #prod-banner button{ margin-left:auto; background:#fff; border:1.5px solid #C9D6F5; color:#0A6ED1; border-radius:9px; padding:6px 12px; font-family:inherit; font-weight:700; cursor:pointer; }
   .stat .l{ font-size:12.5px; color:var(--gris); margin-top:2px; }
   .barra{ display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px; }
   .barra input[type=search]{ flex:1; min-width:200px; padding:10px 12px; border:1.5px solid var(--borde); border-radius:10px; background:#fff; }
@@ -275,12 +288,23 @@
   <div class="layout">
     <aside class="side">
       <div class="side-t">MÓDULOS</div>
-      <button class="mod-btn on" id="nav-clientes">🏢 Clientes</button>
+      <button class="mod-btn on" id="nav-apps">🧩 Aplicaciones</button>
+      <button class="mod-btn" id="nav-clientes">🏢 Clientes</button>
       <button class="mod-btn" id="nav-perfiles">🪪 Perfiles</button>
       <button class="mod-btn" id="nav-chat">💬 Chat<span class="bdg" id="chat-bdg" style="display:none">0</span></button>
     </aside>
     <main class="contenido">
-    <div id="mod-clientes">
+    <div id="mod-apps">
+      <div class="resumen">
+        <div class="stat"><div class="n" id="a-activas">0</div><div class="l">Suscripciones activas</div></div>
+        <div class="stat"><div class="n" id="a-vencidas">0</div><div class="l">Con pago vencido</div></div>
+        <div class="stat"><div class="n" id="a-ingreso">$0</div><div class="l">Ingreso mensual (activas)</div></div>
+        <div class="stat"><div class="n" id="a-proximos">0</div><div class="l">Pagos en los próximos 7 días</div></div>
+      </div>
+      <div class="apps-grid" id="apps-grid"></div>
+    </div>
+    <div id="mod-clientes" style="display:none">
+    <div id="prod-banner"><span id="prod-banner-txt"></span><button type="button" id="prod-todos">Ver todos los clientes</button></div>
     <div class="resumen">
       <div class="stat"><div class="n" id="st-activas">0</div><div class="l">Suscripciones activas</div></div>
       <div class="stat"><div class="n" id="st-vencidas">0</div><div class="l">Con pago vencido</div></div>
@@ -496,28 +520,68 @@
     $("vista-consola").style.display = "block";
     $("quien").textContent = quienTexto;
     const mods = (sesion.perfil && Array.isArray(sesion.perfil.modulos)) ? sesion.perfil.modulos : ["Clientes"];
+    $("nav-apps").style.display = (sesion.duenio || mods.includes("Clientes")) ? "" : "none";
     $("nav-clientes").style.display = mods.includes("Clientes") ? "" : "none";
     $("nav-perfiles").style.display = (sesion.duenio || mods.includes("Perfiles")) ? "" : "none";
     $("nav-chat").style.display = (sesion.duenio || mods.includes("Chat")) ? "" : "none";
     escucharClientes();
     if (sesion.duenio || mods.includes("Chat")) escucharChats();
     if (sesion.duenio || mods.includes("Clientes")) escucharPresencia();
-    irModulo(mods.includes("Clientes") ? "clientes" : (mods.includes("Chat") ? "chat" : "perfiles"));
+    irModulo((sesion.duenio || mods.includes("Clientes")) ? "apps" : (mods.includes("Chat") ? "chat" : "perfiles"));
   }
 
   /* ---------- Navegación entre módulos ---------- */
   function irModulo(m){
+    $("mod-apps").style.display = m === "apps" ? "" : "none";
     $("mod-clientes").style.display = m === "clientes" ? "" : "none";
     $("mod-perfiles").style.display = m === "perfiles" ? "" : "none";
     $("mod-chat").style.display = m === "chat" ? "" : "none";
+    $("nav-apps").classList.toggle("on", m === "apps");
     $("nav-clientes").classList.toggle("on", m === "clientes");
     $("nav-perfiles").classList.toggle("on", m === "perfiles");
     $("nav-chat").classList.toggle("on", m === "chat");
     window.scrollTo({ top:0, behavior:"smooth" });
   }
+  $("nav-apps").addEventListener("click", () => irModulo("apps"));
   $("nav-clientes").addEventListener("click", () => irModulo("clientes"));
+  $("prod-todos").addEventListener("click", () => { filtroProducto = "todos"; pintar(); });
   $("nav-perfiles").addEventListener("click", () => irModulo("perfiles"));
   $("nav-chat").addEventListener("click", () => irModulo("chat"));
+
+  /* ---------- Aplicaciones (productos) ---------- */
+  const PRODUCTOS = [
+    { id:"colegios", icono:"🏫", nombre:"Plataforma Colegios", desc:"La plataforma de gestión para colegios: notas, boletines, consulta de padres, pagos y matrícula en línea.", tipo:"clientes" },
+    { id:"tablero", icono:"🚛", nombre:"Track & Trace", desc:"Tableros de paradas pendientes y GPS en vivo para empresas de transporte.", tipo:"clientes" },
+    { id:"miplatapp", icono:"💰", nombre:"MiPlatapp", desc:"App de presupuesto personal por suscripción ($5.000 al mes), con modo equipo.", tipo:"externa", url:"https://plataformaedu.app/miplatapp/", estado:"En producción" },
+    { id:"taxivoz", icono:"🚕", nombre:"Taxivoz", desc:"Traductor en vivo para taxistas que atienden turistas extranjeros.", tipo:"externa", url:"https://plataformaedu.app/taxivoz/", estado:"En producción" },
+    { id:"arriendos", icono:"🏠", nombre:"ArriendOS", desc:"Control de arriendos para propietarios y administradoras.", tipo:"externa", url:"https://plataformaedu.app/productos/", estado:"En preparación" },
+    { id:"agente-wa", icono:"🤖", nombre:"Agente de WhatsApp", desc:"Atención automática a clientes por WhatsApp.", tipo:"externa", url:"https://plataformaedu.app/productos/", estado:"Muy pronto" }
+  ];
+  let filtroProducto = "todos";
+  function productoDe(c){ return c && c.esTablero ? "tablero" : "colegios"; }
+  function irAProducto(pid){ filtroProducto = pid; irModulo("clientes"); pintar(); }
+  function pintarApps(ids){
+    const grid = $("apps-grid"); if (!grid) return;
+    let tAct = 0, tVen = 0, tIng = 0, tProx = 0;
+    const porProd = {};
+    ids.forEach(id => { const c = clientes[id]; const pid = productoDe(c);
+      porProd[pid] = porProd[pid] || { n:0, act:0, ing:0 };
+      porProd[pid].n++;
+      if (c.estado === "ACTIVA"){ tAct++; tIng += Number(c.valorMes)||0; porProd[pid].act++; porProd[pid].ing += Number(c.valorMes)||0; }
+      if (c.estado === "PAGO VENCIDO") tVen++;
+      const d = diasHasta(c.proximoPago);
+      if (c.estado === "ACTIVA" && d !== null && d >= 0 && d <= 7) tProx++;
+    });
+    $("a-activas").textContent = tAct; $("a-vencidas").textContent = tVen;
+    $("a-ingreso").textContent = fmtCOP(tIng); $("a-proximos").textContent = tProx;
+    grid.innerHTML = PRODUCTOS.map(p => {
+      if (p.tipo === "clientes"){ const d = porProd[p.id] || { n:0, act:0, ing:0 };
+        return `<div class="app-card"><div class="ic">${p.icono}</div><h3>${esc(p.nombre)}</h3><p>${esc(p.desc)}</p><div class="cifra">${d.act} cliente(s) activo(s)<span>${fmtCOP(d.ing)} al mes · ${d.n} registrado(s) en total</span></div><button type="button" data-app="${p.id}">Ver clientes</button></div>`;
+      }
+      return `<div class="app-card"><div class="ic">${p.icono}</div><h3>${esc(p.nombre)}</h3><p>${esc(p.desc)}</p><span class="app-chip ${p.estado === "En producción" ? "" : "prep"}">${esc(p.estado)}</span><a class="btn-app sec" href="${p.url}" target="_blank" rel="noopener">Abrir la aplicación</a></div>`;
+    }).join("");
+    grid.querySelectorAll("[data-app]").forEach(b => b.addEventListener("click", () => irAProducto(b.dataset.app)));
+  }
 
   /* ---------- Datos en tiempo real ---------- */
   let escuchando = false;
@@ -545,9 +609,10 @@
     const fe = $("filtro-estado").value;
     const ids = Object.keys(clientes).sort((a,b) =>
       String(clientes[a].institucion||"").localeCompare(String(clientes[b].institucion||""), "es"));
-    /* Resumen */
+    /* Resumen (según la aplicación elegida) */
+    const idsProd = ids.filter(id => filtroProducto === "todos" || productoDe(clientes[id]) === filtroProducto);
     let activas = 0, vencidas = 0, ingreso = 0, proximos = 0;
-    ids.forEach(id => { const c = clientes[id];
+    idsProd.forEach(id => { const c = clientes[id];
       if (c.estado === "ACTIVA"){ activas++; ingreso += Number(c.valorMes)||0; }
       if (c.estado === "PAGO VENCIDO") vencidas++;
       const d = diasHasta(c.proximoPago);
@@ -557,13 +622,20 @@
     $("st-vencidas").textContent = vencidas;
     $("st-ingreso").textContent = fmtCOP(ingreso);
     $("st-proximos").textContent = proximos;
+    const bn = $("prod-banner");
+    if (filtroProducto !== "todos"){ bn.style.display = "flex"; $("prod-banner-txt").innerHTML = "Aplicación: <strong>" + esc((PRODUCTOS.find(p => p.id === filtroProducto) || {}).nombre || filtroProducto) + "</strong> — solo ves los clientes de esta aplicación."; }
+    else bn.style.display = "none";
+    pintarApps(ids);
     /* Lista */
     const visibles = ids.filter(id => { const c = clientes[id];
+      if (filtroProducto !== "todos" && productoDe(c) !== filtroProducto) return false;
       if (fe && c.estado !== fe) return false;
       if (!q) return true;
       return [c.institucion, c.contactoNombre, c.contactoEmail, c.plan].join(" ").toLowerCase().includes(q);
     });
     $("vacio").style.display = ids.length === 0 ? "block" : "none";
+    if (ids.length !== 0 && visibles.length === 0){ $("vacio").style.display = "block"; $("vacio").innerHTML = "Ningún cliente coincide con este filtro."; }
+    else if (ids.length === 0){ $("vacio").innerHTML = "Todavía no hay clientes registrados.<br>Usa «+ Agregar cliente» para registrar el primero."; }
     $("lista").innerHTML = visibles.map(id => { const c = clientes[id];
       const d = diasHasta(c.proximoPago);
       const claseVence = (d !== null && d <= 7 && c.estado === "ACTIVA") ? " vence-pronto" : "";
