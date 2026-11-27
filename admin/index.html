@@ -299,7 +299,6 @@
       <button class="mod-btn on" id="nav-apps">🧩 Aplicaciones</button>
       <button class="mod-btn" id="nav-clientes">🏢 Clientes</button>
       <button class="mod-btn" id="nav-perfiles">🪪 Perfiles</button>
-      <button class="mod-btn" id="nav-chat">💬 Chat<span class="bdg" id="chat-bdg" style="display:none">0</span></button>
     </aside>
     <main class="contenido">
     <div id="mod-apps">
@@ -389,7 +388,7 @@
           <div class="campo" id="campo-clave"><label>Contraseña inicial *</label><input id="p-clave" type="password" autocomplete="new-password">
             <div class="ayuda">Mínimo 6 caracteres. Se la entregas al trabajador; ingresa con su correo y esta contraseña.</div></div>
           <div class="campo ancho"><label>Módulos permitidos</label>
-            <div class="mods-check"><label><input type="checkbox" id="p-mod-clientes" checked> Clientes</label> <label><input type="checkbox" id="p-mod-chat"> Chat</label></div>
+            <div class="mods-check"><label><input type="checkbox" id="p-mod-clientes" checked> Clientes</label></div>
             <div class="ayuda">El módulo Perfiles es solo para ti (el dueño).</div></div>
         </div>
         <div class="error" id="perfil-error" style="display:none"></div>
@@ -512,7 +511,7 @@
       return;
     }
     if ((user.email || "").toLowerCase() === ADMIN_EMAIL) {
-      sesion = { duenio:true, perfil:{ nombre:"PlataformaEDU", modulos:["Clientes","Perfiles","Chat"] } };
+      sesion = { duenio:true, perfil:{ nombre:"PlataformaEDU", modulos:["Clientes","Perfiles"] } };
       entrarConsola(user.email);
       escucharEquipo();
       return;
@@ -539,12 +538,10 @@
     $("nav-apps").style.display = (sesion.duenio || mods.includes("Clientes")) ? "" : "none";
     $("nav-clientes").style.display = mods.includes("Clientes") ? "" : "none";
     $("nav-perfiles").style.display = (sesion.duenio || mods.includes("Perfiles")) ? "" : "none";
-    $("nav-chat").style.display = (sesion.duenio || mods.includes("Chat")) ? "" : "none";
     escucharClientes();
     escucharMP();
-    if (sesion.duenio || mods.includes("Chat")) escucharChats();
     if (sesion.duenio || mods.includes("Clientes")) escucharPresencia();
-    irModulo((sesion.duenio || mods.includes("Clientes")) ? "apps" : (mods.includes("Chat") ? "chat" : "perfiles"));
+    irModulo((sesion.duenio || mods.includes("Clientes")) ? "apps" : "perfiles");
   }
 
   /* ---------- Navegación entre módulos ---------- */
@@ -552,19 +549,16 @@
     $("mod-apps").style.display = m === "apps" ? "" : "none";
     $("mod-clientes").style.display = m === "clientes" ? "" : "none";
     $("mod-perfiles").style.display = m === "perfiles" ? "" : "none";
-    $("mod-chat").style.display = m === "chat" ? "" : "none";
     $("mod-mp").style.display = m === "mp" ? "" : "none";
     $("nav-apps").classList.toggle("on", m === "apps");
     $("nav-clientes").classList.toggle("on", m === "clientes");
     $("nav-perfiles").classList.toggle("on", m === "perfiles");
-    $("nav-chat").classList.toggle("on", m === "chat");
     window.scrollTo({ top:0, behavior:"smooth" });
   }
   $("nav-apps").addEventListener("click", () => irModulo("apps"));
   $("nav-clientes").addEventListener("click", () => irModulo("clientes"));
   $("prod-todos").addEventListener("click", () => { filtroProducto = "todos"; pintar(); });
   $("nav-perfiles").addEventListener("click", () => irModulo("perfiles"));
-  $("nav-chat").addEventListener("click", () => irModulo("chat"));
   $("mp-volver").addEventListener("click", () => irModulo("apps"));
 
   /* ---------- Aplicaciones (productos) ---------- */
@@ -1069,7 +1063,6 @@
     $("p-clave").value = "";
     $("campo-clave").style.display = uid ? "none" : "";
     $("p-mod-clientes").checked = !uid || !Array.isArray(p.modulos) || p.modulos.includes("Clientes");
-    $("p-mod-chat").checked = !!uid && Array.isArray(p.modulos) && p.modulos.includes("Chat");
     $("perfil-error").style.display = "none";
     $("form-perfil").style.display = "block";
     $("form-perfil").scrollIntoView({ behavior:"smooth", block:"start" });
@@ -1090,7 +1083,7 @@
       rol: $("p-rol").value,
       estado: $("p-estado").value,
       telefono: $("p-telefono").value.trim(),
-      modulos: [ $("p-mod-clientes").checked ? "Clientes" : null, $("p-mod-chat").checked ? "Chat" : null ].filter(Boolean),
+      modulos: [ $("p-mod-clientes").checked ? "Clientes" : null ].filter(Boolean),
       actualizadoEn: new Date().toISOString()
     };
     if (!datos.nombre) return errorPerfil("Escribe el nombre del trabajador.");
