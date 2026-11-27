@@ -255,6 +255,7 @@
       <label for="login-pass">Contraseña</label>
       <input id="login-pass" type="password" autocomplete="current-password" required placeholder="••••••••">
       <button class="btn btn-azul" type="submit" id="btn-login">Ingresar</button>
+      <button class="btn" type="button" id="btn-google" style="width:100%;margin-top:10px;background:#fff;color:#13213F;border:1.5px solid #C9D6F5">Ingresar con Google</button>
       <div class="error" id="login-error"></div>
     </form>
     <div class="copy">© 2026 PlataformaEDU · Todos los derechos reservados</div>
@@ -437,9 +438,22 @@
       .catch(err => {
         $("btn-login").textContent = "Ingresar"; $("btn-login").disabled = false;
         const el = $("login-error"); el.style.display = "block";
-        el.textContent = (err.code === "auth/invalid-credential" || err.code === "auth/wrong-password" || err.code === "auth/user-not-found")
-          ? "Correo o contraseña incorrectos." : "No se pudo ingresar: " + err.message;
+        el.textContent = err.code === "auth/too-many-requests"
+          ? "Demasiados intentos desde este dispositivo: Firebase bloqueó el ingreso por un rato. Espera unos 30 minutos o entra con el botón «Ingresar con Google»."
+          : (err.code === "auth/invalid-credential" || err.code === "auth/wrong-password" || err.code === "auth/user-not-found")
+          ? "Correo o contraseña incorrectos. Tu cuenta es de Google: usa el botón «Ingresar con Google»." : "No se pudo ingresar: " + err.message;
       });
+  });
+  $("btn-google").addEventListener("click", () => {
+    $("login-error").style.display = "none";
+    const prov = new firebase.auth.GoogleAuthProvider();
+    auth.signInWithPopup(prov).catch(err => {
+      const el = $("login-error"); el.style.display = "block";
+      el.textContent = err.code === "auth/too-many-requests"
+        ? "Demasiados intentos desde este dispositivo: espera unos 30 minutos o inténtalo desde tu celular."
+        : err.code === "auth/popup-closed-by-user" ? "Cerraste la ventana de Google antes de terminar. Inténtalo de nuevo."
+        : "No se pudo ingresar con Google: " + err.message;
+    });
   });
   $("btn-salir").addEventListener("click", () => auth.signOut());
 
