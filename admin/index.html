@@ -61,6 +61,15 @@
   .app-card a.btn-app.sec{ background:#EEF4FF; color:#0A6ED1; }
   .app-chip{ align-self:flex-start; background:#E9F9F0; color:#0B6B3A; border:1px solid #7BD7A8; font-size:11.5px; font-weight:700; border-radius:999px; padding:2px 9px; }
   .app-chip.prep{ background:#FFF7E6; color:#8A6100; border-color:#F0D9A0; }
+  @media (max-width:640px){
+    .apps-grid{ grid-template-columns:1fr 1fr; gap:10px; }
+    .app-card{ padding:14px 10px; align-items:center; text-align:center; gap:8px; cursor:pointer; }
+    .app-card:active{ transform:scale(.98); }
+    .app-logo{ height:46px; justify-content:center; }
+    .app-logo img, .app-logo svg{ height:44px; max-width:110px; }
+    .app-card h3{ font-size:14.5px; line-height:1.25; }
+    .app-card p, .app-card .cifra, .app-card .app-chip, .app-card button, .app-card a.btn-app{ display:none; }
+  }
   #prod-banner{ display:none; align-items:center; gap:10px; background:#EEF4FF; border:1px solid #C9D6F5; border-radius:12px; padding:9px 13px; margin-bottom:14px; font-size:14px; color:var(--marino); }
   #prod-banner button{ margin-left:auto; background:#fff; border:1.5px solid #C9D6F5; color:#0A6ED1; border-radius:9px; padding:6px 12px; font-family:inherit; font-weight:700; cursor:pointer; }
   .stat .l{ font-size:12.5px; color:var(--gris); margin-top:2px; }
@@ -598,6 +607,7 @@
     }).join("");
     grid.querySelectorAll("[data-app]").forEach(b => b.addEventListener("click", () => irAProducto(b.dataset.app)));
     grid.querySelectorAll("[data-mp]").forEach(b => b.addEventListener("click", () => { escucharMP(); irModulo("mp"); }));
+    if (!grid._cardTap){ grid._cardTap = true; grid.addEventListener("click", e => { if (window.innerWidth > 640) return; const card = e.target.closest(".app-card"); if (!card || e.target.closest("button, a")) return; const b = card.querySelector("button, a.btn-app"); if (b) b.click(); }); }
   }
 
   /* ---------- Clientes de MiPlatapp ---------- */
