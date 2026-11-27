@@ -3092,6 +3092,23 @@ function cargarFlujoPersonal(user, val, localEsDeLaCuenta, localEsAjeno){
   renderCuenta();
   arranqueListo();
 }
+function registrarClienteMP(user){
+  /* Ficha de cliente para la consola de PlataformaEDU (solo nombre, correo y fechas;
+     los datos del presupuesto NO se tocan). La lee unicamente la cuenta duena. */
+  if(!fbDb || !user) return;
+  var ref = fbDb.ref("miplatapp/clientes/" + user.uid);
+  var ahora = new Date().toISOString();
+  var creada = (user.metadata && user.metadata.creationTime) ? new Date(user.metadata.creationTime).toISOString() : ahora;
+  ref.once("value").then(function(snap){
+    if(snap.exists()){
+      var upd = { correo: user.email || "", ultimoAcceso: ahora };
+      if(user.displayName) upd.nombre = user.displayName;
+      ref.update(upd);
+    } else {
+      ref.set({ correo: user.email || "", nombre: user.displayName || "", creadoEn: creada, ultimoAcceso: ahora });
+    }
+  }).catch(function(){});
+}
 if(fbAuth){
   fbAuth.getRedirectResult().catch(function(){});
   fbAuth.onAuthStateChanged(function(user){
@@ -3112,6 +3129,7 @@ if(fbAuth){
       /* Mientras se resuelve de quién son los datos, nada se sincroniza solo. */
       syncBloqueada = true;
       escucharSuscripcion(user.uid);
+      registrarClienteMP(user);
       renderCuenta();
       fbDb.ref("miplatapp/usuarios/" + user.uid).once("value").then(function(snap){
         var val = snap.val();
