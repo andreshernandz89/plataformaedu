@@ -306,7 +306,6 @@
     <aside class="side">
       <div class="side-t">MÓDULOS</div>
       <button class="mod-btn on" id="nav-apps">🧩 Aplicaciones</button>
-      <button class="mod-btn" id="nav-clientes">🏢 Clientes</button>
       <button class="mod-btn" id="nav-perfiles">🪪 Perfiles</button>
     </aside>
     <main class="contenido">
@@ -545,7 +544,6 @@
     $("quien").textContent = quienTexto;
     const mods = (sesion.perfil && Array.isArray(sesion.perfil.modulos)) ? sesion.perfil.modulos : ["Clientes"];
     $("nav-apps").style.display = (sesion.duenio || mods.includes("Clientes")) ? "" : "none";
-    $("nav-clientes").style.display = mods.includes("Clientes") ? "" : "none";
     $("nav-perfiles").style.display = (sesion.duenio || mods.includes("Perfiles")) ? "" : "none";
     escucharClientes();
     escucharMP();
@@ -560,12 +558,10 @@
     $("mod-perfiles").style.display = m === "perfiles" ? "" : "none";
     $("mod-mp").style.display = m === "mp" ? "" : "none";
     $("nav-apps").classList.toggle("on", m === "apps");
-    $("nav-clientes").classList.toggle("on", m === "clientes");
     $("nav-perfiles").classList.toggle("on", m === "perfiles");
     window.scrollTo({ top:0, behavior:"smooth" });
   }
   $("nav-apps").addEventListener("click", () => irModulo("apps"));
-  $("nav-clientes").addEventListener("click", () => irModulo("clientes"));
   $("prod-todos").addEventListener("click", () => { filtroProducto = "todos"; pintar(); });
   $("nav-perfiles").addEventListener("click", () => irModulo("perfiles"));
   $("mp-volver").addEventListener("click", () => irModulo("apps"));
